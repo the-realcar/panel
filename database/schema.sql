@@ -201,6 +201,7 @@ CREATE INDEX idx_logi_data ON logi_systemowe(data_zdarzenia);
 
 -- Przykładowy użytkownik administratora (hasło: admin123 - ZMIENIĆ W PRODUKCJI!)
 -- Hash wygenerowany dla 'admin123' używając bcrypt
+-- UWAGA BEZPIECZEŃSTWA: To konto należy usunąć lub zmienić hasło po pierwszym logowaniu!
 INSERT INTO konta_uzytkownikow (login, haslo_hash, email, imie, nazwisko, id_roli) VALUES
     ('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin@ostrans.local', 'Administrator', 'Systemu', 1);
 

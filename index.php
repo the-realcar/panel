@@ -12,6 +12,11 @@
 // Rozpoczęcie sesji
 session_start();
 
+// Generowanie tokena CSRF jeśli nie istnieje
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 // Sprawdzenie czy użytkownik jest już zalogowany
 if (isset($_SESSION['user_id'])) {
     // Przekierowanie do odpowiedniego panelu w zależności od roli
@@ -121,12 +126,6 @@ if (isset($_SESSION['success_message'])) {
                 </div>
 
                 <!-- Token CSRF (zabezpieczenie) -->
-                <?php
-                    // Generowanie tokena CSRF
-                    if (empty($_SESSION['csrf_token'])) {
-                        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-                    }
-                ?>
                 <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
 
                 <!-- Przycisk logowania -->

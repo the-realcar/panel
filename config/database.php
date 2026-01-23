@@ -69,10 +69,12 @@ function getDatabaseConnection() {
 
 /**
  * Funkcja zamykająca połączenie z bazą danych
+ * Uwaga: Połączenie zostanie automatycznie zamknięte na końcu skryptu
  */
 function closeDatabaseConnection() {
-    global $pdo;
-    $pdo = null;
+    // PDO używa static variable w getDatabaseConnection()
+    // Połączenie zostanie automatycznie zamknięte przez PHP na końcu skryptu
+    // Ta funkcja jest dostępna dla kompatybilności, ale nie jest wymagana
 }
 
 /**
