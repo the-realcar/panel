@@ -1,0 +1,515 @@
+/**
+ * =============================================================================
+ * PANEL PRACOWNICZY PPUT OSTRANS - GŁÓWNY ARKUSZ STYLÓW
+ * =============================================================================
+ * Wersja: 1.0
+ * Data: 2026-01-23
+ * Styl: Industrial / Transport
+ * Podejście: Mobile First + Dark Mode Support
+ * =============================================================================
+ */
+
+/* =============================================================================
+   ZMIENNE CSS (Kolory i Wartości)
+   ============================================================================= */
+:root {
+    /* Kolory główne - Motyw Industrial/Transport */
+    --primary-color: #FF6B6B;          /* Czerwony transport */
+    --secondary-color: #4ECDC4;        /* Turkusowy akcent */
+    --accent-color: #FFE66D;           /* Żółty ostrzegawczy */
+    
+    /* Kolory tła - Tryb jasny */
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #F7F7F7;
+    --bg-tertiary: #E8E8E8;
+    
+    /* Kolory tekstu - Tryb jasny */
+    --text-primary: #2C3E50;
+    --text-secondary: #7F8C8D;
+    --text-inverse: #FFFFFF;
+    
+    /* Kolory funkcjonalne */
+    --success-color: #2ECC71;
+    --warning-color: #F39C12;
+    --error-color: #E74C3C;
+    --info-color: #3498DB;
+    
+    /* Cienie i obramowania */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
+    --border-radius: 8px;
+    --border-color: #DDD;
+    
+    /* Typografia */
+    --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    --font-mono: 'Courier New', Courier, monospace;
+    --font-size-base: 16px;
+    --font-size-sm: 14px;
+    --font-size-lg: 18px;
+    --font-size-xl: 24px;
+    
+    /* Odstępy (Mobile First) */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    
+    /* Minimalna wysokość przycisków (touch-friendly) */
+    --button-min-height: 44px;
+}
+
+/* =============================================================================
+   TRYB CIEMNY (Dark Mode) - zgodnie z wymaganiem 4.1
+   ============================================================================= */
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Kolory tła - Tryb ciemny */
+        --bg-primary: #1A1A1A;
+        --bg-secondary: #2C2C2C;
+        --bg-tertiary: #3A3A3A;
+        
+        /* Kolory tekstu - Tryb ciemny */
+        --text-primary: #E8E8E8;
+        --text-secondary: #B0B0B0;
+        --text-inverse: #1A1A1A;
+        
+        /* Obramowania w trybie ciemnym */
+        --border-color: #444;
+        
+        /* Dostosowanie cieni */
+        --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+        --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
+        --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.5);
+    }
+}
+
+/* Możliwość wymuszenia trybu ciemnego przez klasę */
+.dark-mode {
+    --bg-primary: #1A1A1A;
+    --bg-secondary: #2C2C2C;
+    --bg-tertiary: #3A3A3A;
+    --text-primary: #E8E8E8;
+    --text-secondary: #B0B0B0;
+    --text-inverse: #1A1A1A;
+    --border-color: #444;
+}
+
+/* =============================================================================
+   RESET I PODSTAWOWE STYLE
+   ============================================================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: var(--font-size-base);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: var(--font-primary);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* =============================================================================
+   TYPOGRAFIA
+   ============================================================================= */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: var(--spacing-md);
+    color: var(--text-primary);
+}
+
+h1 { font-size: var(--font-size-xl); }
+h2 { font-size: var(--font-size-lg); }
+h3, h4, h5, h6 { font-size: var(--font-size-base); }
+
+p {
+    margin-bottom: var(--spacing-md);
+}
+
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: var(--secondary-color);
+}
+
+/* =============================================================================
+   KONTENER GŁÓWNY (Mobile First)
+   ============================================================================= */
+.container {
+    width: 100%;
+    padding: var(--spacing-md);
+    margin: 0 auto;
+}
+
+/* Tablet i większe */
+@media (min-width: 768px) {
+    .container {
+        max-width: 720px;
+        padding: var(--spacing-lg);
+    }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+    .container {
+        max-width: 960px;
+    }
+}
+
+/* =============================================================================
+   FORMULARZ LOGOWANIA (wymaganie 3.1)
+   ============================================================================= */
+.login-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: var(--spacing-md);
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+}
+
+.login-container {
+    width: 100%;
+    max-width: 400px;
+    background-color: var(--bg-primary);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    padding: var(--spacing-xl);
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.login-header .logo {
+    font-size: var(--font-size-xl);
+    font-weight: 900;
+    color: var(--primary-color);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: var(--spacing-sm);
+}
+
+.login-header .subtitle {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* =============================================================================
+   FORMULARZE
+   ============================================================================= */
+.form-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+.form-label {
+    display: block;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-input {
+    width: 100%;
+    min-height: var(--button-min-height);
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-base);
+    font-family: var(--font-primary);
+    color: var(--text-primary);
+    background-color: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius);
+    transition: all 0.3s ease;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background-color: var(--bg-primary);
+    box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+}
+
+.form-input::placeholder {
+    color: var(--text-secondary);
+}
+
+/* Styl dla checkbox i radio */
+.form-checkbox,
+.form-radio {
+    width: 20px;
+    height: 20px;
+    margin-right: var(--spacing-sm);
+}
+
+/* =============================================================================
+   PRZYCISKI (Touch-Friendly - min 44px)
+   ============================================================================= */
+.btn {
+    display: inline-block;
+    min-height: var(--button-min-height);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-inverse);
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn:hover {
+    background-color: #E85555;
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.btn:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-block {
+    width: 100%;
+    display: block;
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+    color: var(--text-inverse);
+}
+
+.btn-secondary:hover {
+    background-color: #3DB5AD;
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+}
+
+.btn-outline:hover {
+    background-color: var(--primary-color);
+    color: var(--text-inverse);
+}
+
+/* =============================================================================
+   ALERTY I KOMUNIKATY
+   ============================================================================= */
+.alert {
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-sm);
+    border-left: 4px solid;
+}
+
+.alert-success {
+    background-color: rgba(46, 204, 113, 0.1);
+    border-color: var(--success-color);
+    color: var(--success-color);
+}
+
+.alert-error {
+    background-color: rgba(231, 76, 60, 0.1);
+    border-color: var(--error-color);
+    color: var(--error-color);
+}
+
+.alert-warning {
+    background-color: rgba(243, 156, 18, 0.1);
+    border-color: var(--warning-color);
+    color: var(--warning-color);
+}
+
+.alert-info {
+    background-color: rgba(52, 152, 219, 0.1);
+    border-color: var(--info-color);
+    color: var(--info-color);
+}
+
+/* =============================================================================
+   LINKI POMOCNICZE
+   ============================================================================= */
+.helper-links {
+    text-align: center;
+    margin-top: var(--spacing-lg);
+}
+
+.helper-link {
+    display: inline-block;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin: 0 var(--spacing-sm);
+    padding: var(--spacing-sm);
+    min-height: var(--button-min-height);
+    line-height: calc(var(--button-min-height) - 16px);
+}
+
+.helper-link:hover {
+    color: var(--primary-color);
+}
+
+/* =============================================================================
+   ELEMENTY TRANSPORTOWE (Industrial Design)
+   ============================================================================= */
+.transport-badge {
+    display: inline-block;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    background-color: var(--primary-color);
+    color: var(--text-inverse);
+    border-radius: 4px;
+    letter-spacing: 1px;
+}
+
+.line-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+    min-height: 50px;
+    font-size: var(--font-size-lg);
+    font-weight: 900;
+    font-family: var(--font-mono);
+    background-color: var(--primary-color);
+    color: var(--text-inverse);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+}
+
+/* =============================================================================
+   NAWIGACJA MOBILNA (dla przyszłych paneli)
+   ============================================================================= */
+.mobile-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-around;
+    padding: var(--spacing-sm);
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+}
+
+.mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--button-min-height);
+    padding: var(--spacing-xs);
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: var(--font-size-sm);
+    transition: color 0.3s ease;
+}
+
+.mobile-nav-item:hover,
+.mobile-nav-item.active {
+    color: var(--primary-color);
+}
+
+/* Desktop - ukryj mobilną nawigację */
+@media (min-width: 768px) {
+    .mobile-nav {
+        display: none;
+    }
+}
+
+/* =============================================================================
+   UTILITY CLASSES
+   ============================================================================= */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.mt-sm { margin-top: var(--spacing-sm); }
+.mt-md { margin-top: var(--spacing-md); }
+.mt-lg { margin-top: var(--spacing-lg); }
+
+.mb-sm { margin-bottom: var(--spacing-sm); }
+.mb-md { margin-bottom: var(--spacing-md); }
+.mb-lg { margin-bottom: var(--spacing-lg); }
+
+.hidden { display: none; }
+.visible { display: block; }
+
+/* =============================================================================
+   RESPONSYWNOŚĆ (Mobile First rozwinięte)
+   ============================================================================= */
+
+/* Małe telefony */
+@media (max-width: 374px) {
+    :root {
+        --font-size-base: 14px;
+    }
+    
+    .login-container {
+        padding: var(--spacing-md);
+    }
+}
+
+/* Tablet */
+@media (min-width: 768px) {
+    .login-container {
+        padding: var(--spacing-xl) calc(var(--spacing-xl) * 1.5);
+    }
+}
+
+/* =============================================================================
+   ANIMACJE I PRZEJŚCIA
+   ============================================================================= */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* =============================================================================
+   KONIEC STYLÓW
+   ============================================================================= */

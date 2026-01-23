@@ -1,0 +1,94 @@
+# =============================================================================
+# .gitignore dla Panel Ostrans (PHP + PostgreSQL)
+# =============================================================================
+
+# Pliki konfiguracyjne z wrażliwymi danymi
+config/database.local.php
+config/.env
+.env
+.env.local
+.env.production
+
+# Logi
+*.log
+logs/
+error_log
+
+# Pliki tymczasowe PHP
+*.tmp
+*.temp
+.cache/
+tmp/
+
+# Sesje PHP
+sessions/
+
+# Pliki cache'u
+cache/
+
+# Backupy bazy danych
+*.sql.backup
+*.dump
+database/backups/
+
+# Katalogi vendor (zależności Composer)
+vendor/
+composer.phar
+
+# IDE i edytory
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Node modules (jeśli używamy npm do frontendu)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Build i dist
+dist/
+build/
+
+# Pliki uploadowane przez użytkowników (jeśli będą)
+uploads/*
+!uploads/.gitkeep
+
+# Dokumentacja tymczasowa
+docs/temp/
+
+# System operacyjny
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# PHPUnit
+.phpunit.result.cache
+/phpunit.xml
+
+# Codeception
+tests/_output/*
+tests/_support/_generated
+
+# Symfony (jeśli używamy)
+/var/
+/public/bundles/
+
+# Laravel (jeśli używamy)
+/bootstrap/compiled.php
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+
+# Ignoruj pliki tymczasowe z edytorów tekstu
+*.bak
+*.old
+*.orig
