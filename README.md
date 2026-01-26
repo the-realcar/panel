@@ -1,5 +1,5 @@
 # Dokumentacja Wymagań Systemowych
-## System: Panel Pracowniczy PPUT Ostrans
+## System: Panel Pracowniczy Firma KOT
 
 **Wersja dokumentu:** 1.0
 **Data:** 2026-01-23
