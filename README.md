@@ -3,7 +3,7 @@
 
 **Wersja dokumentu:** 1.0
 **Data:** 2026-01-23
-**Klient:** Prywatne Przedsiębiorstwo Usług Transportowych Ostrans (Ostrans)
+**Klient:** Firma KOT
 
 ---
 
