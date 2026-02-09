@@ -1,0 +1,48 @@
+# Environment files
+.env
+.env.local
+.env.production
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+/tmp/
+temp/
+*.tmp
+
+# Uploads (if added in future)
+uploads/
+storage/
+
+# Composer (if used in future)
+/vendor/
+composer.lock
+
+# Node modules (if added in future)
+node_modules/
+package-lock.json
+
+# Build artifacts
+dist/
+build/
+
+# Database backups
+*.sql.backup
+*.dump
+
+# Cache
+cache/
+*.cache

@@ -1,0 +1,212 @@
+/**
+ * Dark Mode Styles
+ * Panel Pracowniczy Firma KOT
+ */
+
+/* ============================================
+   Dark Theme Variables
+   ============================================ */
+[data-theme="dark"] {
+    --primary: #3b82f6;
+    --primary-dark: #2563eb;
+    --secondary: #94a3b8;
+    
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface-alt: #334155;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================
+   Dark Mode Adjustments
+   ============================================ */
+[data-theme="dark"] body {
+    color-scheme: dark;
+}
+
+[data-theme="dark"] .form-control {
+    background: var(--surface-alt);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+[data-theme="dark"] .form-control:disabled {
+    opacity: 0.6;
+}
+
+[data-theme="dark"] select.form-control {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23f1f5f9' d='M10.293 3.293L6 7.586 1.707 3.293A1 1 0 00.293 4.707l5 5a1 1 0 001.414 0l5-5a1 1 0 10-1.414-1.414z'/%3E%3C/svg%3E");
+}
+
+[data-theme="dark"] .table tr:hover {
+    background: var(--surface-alt);
+}
+
+[data-theme="dark"] .badge-primary {
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+}
+
+[data-theme="dark"] .badge-success {
+    background: rgba(16, 185, 129, 0.2);
+    color: #6ee7b7;
+}
+
+[data-theme="dark"] .badge-danger {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+}
+
+[data-theme="dark"] .badge-warning {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fcd34d;
+}
+
+[data-theme="dark"] .badge-info {
+    background: rgba(14, 165, 233, 0.2);
+    color: #7dd3fc;
+}
+
+[data-theme="dark"] .badge-secondary {
+    background: rgba(148, 163, 184, 0.2);
+    color: #cbd5e1;
+}
+
+[data-theme="dark"] .alert-success {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: var(--success);
+    color: #6ee7b7;
+}
+
+[data-theme="dark"] .alert-error {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: var(--danger);
+    color: #fca5a5;
+}
+
+[data-theme="dark"] .alert-warning {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: var(--warning);
+    color: #fcd34d;
+}
+
+[data-theme="dark"] .alert-info {
+    background: rgba(14, 165, 233, 0.15);
+    border-color: var(--info);
+    color: #7dd3fc;
+}
+
+/* ============================================
+   Dark Mode Toggle Button
+   ============================================ */
+.theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.theme-toggle:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.theme-toggle svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Hide sun icon in light mode, moon in dark mode */
+[data-theme="light"] .theme-toggle .icon-moon {
+    display: block;
+}
+
+[data-theme="light"] .theme-toggle .icon-sun {
+    display: none;
+}
+
+[data-theme="dark"] .theme-toggle .icon-moon {
+    display: none;
+}
+
+[data-theme="dark"] .theme-toggle .icon-sun {
+    display: block;
+}
+
+/* ============================================
+   Smooth Transition
+   ============================================ */
+body,
+.card,
+.header,
+.nav,
+.footer,
+.form-control,
+.btn,
+.table {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* ============================================
+   System Preference Support
+   ============================================ */
+@media (prefers-color-scheme: dark) {
+    /* If no theme is set, and system prefers dark, apply dark mode */
+    :root:not([data-theme]) {
+        --primary: #3b82f6;
+        --primary-dark: #2563eb;
+        --secondary: #94a3b8;
+        
+        --bg: #0f172a;
+        --surface: #1e293b;
+        --surface-alt: #334155;
+        --text: #f1f5f9;
+        --text-muted: #94a3b8;
+        --border: #334155;
+    }
+}
+
+/* ============================================
+   Improved Readability in Dark Mode
+   ============================================ */
+[data-theme="dark"] code,
+[data-theme="dark"] pre {
+    background: var(--surface-alt);
+    color: #e879f9;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+}
+
+[data-theme="dark"] ::selection {
+    background: rgba(59, 130, 246, 0.3);
+    color: var(--text);
+}
+
+/* ============================================
+   Dark Mode for Images
+   ============================================ */
+[data-theme="dark"] img {
+    opacity: 0.9;
+}
+
+[data-theme="dark"] img:hover {
+    opacity: 1;
+}

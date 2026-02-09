@@ -1,0 +1,188 @@
+/**
+ * Mobile-Specific Styles
+ * Panel Pracowniczy Firma KOT
+ */
+
+/* ============================================
+   Mobile Touch Improvements
+   ============================================ */
+@media (max-width: 768px) {
+    /* Larger touch targets */
+    button, .btn, a.btn, input[type="submit"] {
+        min-height: 48px;
+        padding: 0.875rem 1.25rem;
+    }
+    
+    /* Larger form inputs */
+    .form-control {
+        min-height: 48px;
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+    
+    /* Better spacing */
+    .card {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .container {
+        padding: 0 0.75rem;
+    }
+    
+    /* Stack navigation */
+    .header-inner {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    /* Mobile menu */
+    .nav-toggle {
+        display: block;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: var(--text);
+        cursor: pointer;
+        padding: 0.5rem;
+    }
+    
+    .nav-list {
+        display: none;
+        flex-direction: column;
+    }
+    
+    .nav-list.active {
+        display: flex;
+    }
+    
+    /* Table improvements */
+    .table-responsive {
+        margin: 0 -0.75rem;
+    }
+    
+    .table {
+        font-size: 0.8125rem;
+    }
+    
+    .table thead {
+        display: none;
+    }
+    
+    .table tbody tr {
+        display: block;
+        margin-bottom: 1rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 0.75rem;
+    }
+    
+    .table tbody td {
+        display: block;
+        text-align: right;
+        padding: 0.5rem 0;
+        border: none;
+    }
+    
+    .table tbody td::before {
+        content: attr(data-label);
+        float: left;
+        font-weight: 600;
+        color: var(--text-muted);
+    }
+    
+    /* Dashboard grid */
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Button groups */
+    .btn-group,
+    .card-footer,
+    .table-actions {
+        flex-direction: column;
+    }
+    
+    .btn-group .btn,
+    .card-footer .btn {
+        width: 100%;
+    }
+    
+    /* Typography adjustments */
+    h1 { font-size: 1.5rem; }
+    h2 { font-size: 1.25rem; }
+    h3 { font-size: 1.125rem; }
+    
+    /* Hide on mobile */
+    .hide-mobile {
+        display: none !important;
+    }
+    
+    /* Show only on mobile */
+    .show-mobile {
+        display: block !important;
+    }
+}
+
+/* ============================================
+   Tablet (Portrait) Adjustments
+   ============================================ */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .container {
+        max-width: 720px;
+    }
+}
+
+/* ============================================
+   Landscape Phone
+   ============================================ */
+@media (max-width: 768px) and (orientation: landscape) {
+    .login-container {
+        padding: 0.5rem;
+    }
+    
+    .login-card {
+        padding: 1.5rem;
+    }
+}
+
+/* ============================================
+   Very Small Screens
+   ============================================ */
+@media (max-width: 375px) {
+    html {
+        font-size: 14px;
+    }
+    
+    .btn {
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+    }
+    
+    .card {
+        padding: 0.75rem;
+    }
+}
+
+/* ============================================
+   Touch Device Improvements
+   ============================================ */
+@media (hover: none) and (pointer: coarse) {
+    /* Remove hover effects on touch devices */
+    .btn:hover {
+        transform: none;
+    }
+    
+    /* Add active state for better feedback */
+    .btn:active {
+        transform: scale(0.98);
+    }
+    
+    /* Better tap targets */
+    a, button, input, select, textarea {
+        -webkit-tap-highlight-color: rgba(37, 99, 235, 0.1);
+    }
+}
