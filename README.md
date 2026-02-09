@@ -1,3 +1,358 @@
+# Panel Pracowniczy Firma KOT 🚌
+
+System zarządzania pracownikami dla firmy transportowej wykorzystujący PHP, HTML, CSS i PostgreSQL.
+
+## 🚀 Funkcjonalności
+
+### System logowania i autoryzacji
+- Logowanie z hashowaniem haseł (bcrypt)
+- System ról (RBAC): Administrator, Dyspozytor, Kierowca, Zarząd
+- Automatyczne wylogowanie po 30 minutach nieaktywności
+- Reset hasła przez email
+
+### Panel kierowcy
+- Dashboard z dzisiejszym grafikiem pracy
+- Pełny kalendarz grafików
+- Wypełnianie kart drogowych
+- Zgłaszanie awarii i incydentów
+
+### Panel administracyjny
+- Zarządzanie użytkownikami i rolami
+- CRUD pojazdów (autobusy, tramwaje, metro)
+- CRUD linii komunikacyjnych
+- Zarządzanie stanowiskami z kontrolą limitów
+- Przypisywanie stanowisk użytkownikom
+- Dashboard z statystykami
+
+### Funkcje zaawansowane
+- Mobile-first responsive design
+- Tryb ciemny (dark mode)
+- Kontrola limitów stanowisk (triggery PostgreSQL)
+- Logowanie aktywności użytkowników
+- Logi audytowe
+- Walidacja formularzy
+- Ochrona CSRF
+
+---
+
+## 📋 Wymagania
+
+- **PHP**: 8.0 lub wyższy
+- **PostgreSQL**: 14 lub wyższy
+- **Serwer WWW**: Apache/Nginx z włączonym mod_rewrite (dla Apache)
+- **Rozszerzenia PHP**: pdo_pgsql, pgsql, session, mbstring
+
+---
+
+## 🔧 Instalacja
+
+### 1. Sklonuj repozytorium
+
+```bash
+git clone https://github.com/the-realcar/panel.git
+cd panel
+```
+
+### 2. Konfiguracja bazy danych
+
+#### Utwórz bazę danych PostgreSQL
+
+```bash
+sudo -u postgres psql
+```
+
+```sql
+CREATE DATABASE panel_firmakot;
+CREATE USER panel_user WITH PASSWORD 'your_secure_password';
+GRANT ALL PRIVILEGES ON DATABASE panel_firmakot TO panel_user;
+\q
+```
+
+#### Zaimportuj schemat bazy danych
+
+```bash
+psql -U panel_user -d panel_firmakot -f database/schema.sql
+```
+
+#### Zaimportuj dane testowe
+
+```bash
+psql -U panel_user -d panel_firmakot -f database/seeds.sql
+```
+
+### 3. Konfiguracja aplikacji
+
+Stwórz zmienne środowiskowe lub edytuj pliki w katalogu `config/`:
+
+**Opcja A: Zmienne środowiskowe (zalecane)**
+
+```bash
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_NAME=panel_firmakot
+export DB_USER=panel_user
+export DB_PASSWORD=your_secure_password
+export BASE_URL=http://localhost
+export APP_ENV=production
+```
+
+**Opcja B: Bezpośrednia edycja plików**
+
+Edytuj `config/database.php` i ustaw odpowiednie wartości dla połączenia z bazą danych.
+
+### 4. Konfiguracja serwera WWW
+
+#### Apache
+
+Przykładowa konfiguracja VirtualHost:
+
+```apache
+<VirtualHost *:80>
+    ServerName panel.firmakot.local
+    DocumentRoot /var/www/panel
+    
+    <Directory /var/www/panel>
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+    
+    ErrorLog ${APACHE_LOG_DIR}/panel-error.log
+    CustomLog ${APACHE_LOG_DIR}/panel-access.log combined
+</VirtualHost>
+```
+
+Włącz mod_rewrite:
+```bash
+sudo a2enmod rewrite
+sudo systemctl restart apache2
+```
+
+#### Nginx
+
+Przykładowa konfiguracja:
+
+```nginx
+server {
+    listen 80;
+    server_name panel.firmakot.local;
+    root /var/www/panel;
+    index index.php;
+    
+    location / {
+        try_files $uri $uri/ /public/index.php?$query_string;
+    }
+    
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    }
+    
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+}
+```
+
+### 5. Uprawnienia plików
+
+```bash
+sudo chown -R www-data:www-data /var/www/panel
+sudo chmod -R 755 /var/www/panel
+```
+
+### 6. Testowanie instalacji
+
+Przejdź do: `http://localhost/public/login.php`
+
+---
+
+## 👤 Dane testowe
+
+System zawiera 3 predefiniowanych użytkowników testowych:
+
+| Użytkownik | Hasło | Rola |
+|------------|-------|------|
+| `admin` | `password123` | Administrator |
+| `kierowca1` | `password123` | Kierowca |
+| `dyspozytor1` | `password123` | Dyspozytor |
+
+**⚠️ WAŻNE**: Zmień te hasła przed wdrożeniem produkcyjnym!
+
+---
+
+## 📁 Struktura projektu
+
+```
+panel/
+├── admin/                      # Panel administracyjny
+│   ├── dashboard.php
+│   ├── vehicles/              # Zarządzanie pojazdami
+│   ├── lines/                 # Zarządzanie liniami
+│   ├── positions/             # Zarządzanie stanowiskami
+│   └── users/                 # Zarządzanie użytkownikami
+├── config/                     # Pliki konfiguracyjne
+│   ├── config.php
+│   ├── database.php
+│   └── session.php
+├── core/                       # Klasy podstawowe
+│   ├── Auth.php               # Autentykacja
+│   ├── Database.php           # Wrapper PDO
+│   ├── RBAC.php               # Kontrola dostępu
+│   └── Validator.php          # Walidacja formularzy
+├── database/                   # Skrypty bazy danych
+│   ├── schema.sql             # Schemat tabel
+│   └── seeds.sql              # Dane testowe
+├── includes/                   # Wspólne pliki
+│   ├── functions.php          # Funkcje pomocnicze
+│   ├── header.php             # Nagłówek
+│   ├── footer.php             # Stopka
+│   └── navigation.php         # Nawigacja
+└── public/                     # Pliki publiczne
+    ├── assets/                # Zasoby statyczne
+    │   ├── css/
+    │   └── js/
+    ├── driver/                # Panel kierowcy
+    ├── index.php
+    ├── login.php
+    └── logout.php
+```
+
+---
+
+## 🎨 Interfejs użytkownika
+
+### Mobile-First Design
+- Responsywny design dostosowany do urządzeń mobilnych
+- Minimalna szerokość przycisków: 44px (touch-friendly)
+- Responsywne tabele z data-label dla mobile
+- Flexbox i Grid Layout
+
+### Dark Mode
+- Automatyczne wykrywanie preferencji systemowych
+- Przełącznik w nagłówku
+- Zapisywanie preferencji w localStorage
+- Płynne przejścia między motywami
+
+---
+
+## 🔐 Bezpieczeństwo
+
+- **Hashowanie haseł**: bcrypt z kosztami 10
+- **Ochrona CSRF**: tokeny w formularzach
+- **SQL Injection**: parametryzowane zapytania PDO
+- **XSS**: htmlspecialchars() na wszystkich wyjściach
+- **Sesje**: bezpieczne ustawienia cookies (httpOnly, sameSite)
+- **Timeout sesji**: 30 minut nieaktywności
+- **Logi logowania**: śledzenie prób logowania
+- **Logi audytowe**: rejestracja ważnych operacji
+
+---
+
+## 🛠️ Rozwój
+
+### Tryb deweloperski
+
+W `config/config.php` ustaw:
+
+```php
+define('APP_ENV', 'development');
+```
+
+To włączy:
+- Wyświetlanie błędów PHP
+- Szczegółowe komunikaty błędów
+- Logowanie debugowania
+
+### Struktura bazy danych
+
+System używa 15 tabel PostgreSQL:
+- `users` - użytkownicy
+- `roles` - role (RBAC)
+- `departments` - departamenty/działy
+- `positions` - stanowiska z limitami
+- `user_roles` - przypisania ról
+- `user_positions` - przypisania stanowisk
+- `vehicles` - pojazdy
+- `lines` - linie komunikacyjne
+- `schedules` - grafiki pracy
+- `route_cards` - karty drogowe
+- `incidents` - awarie i incydenty
+- `login_logs` - logi logowania
+- `audit_logs` - logi audytowe
+- `password_resets` - tokeny resetowania haseł
+- `sessions` - sesje użytkowników
+
+### Triggery
+- `update_updated_at()` - automatyczna aktualizacja timestamp
+- `check_position_limit()` - kontrola limitów stanowisk
+
+---
+
+## 📝 API i rozszerzenia
+
+System jest zaprojektowany modułowo i może być rozszerzony o:
+- API REST (JSON responses)
+- Integrację z zewnętrznymi systemami
+- System powiadomień email
+- Eksport raportów (PDF, Excel)
+- Kalendarz Google
+- System czatu
+- Moduł płatności
+
+---
+
+## 🐛 Rozwiązywanie problemów
+
+### Błąd połączenia z bazą danych
+```
+Nie można połączyć się z bazą danych
+```
+**Rozwiązanie**: Sprawdź dane w `config/database.php` i upewnij się, że PostgreSQL działa.
+
+### Błąd uprawnień do plików
+```
+Permission denied
+```
+**Rozwiązanie**: Ustaw właściciela plików na www-data i uprawnienia 755.
+
+### Sesja wygasła zbyt szybko
+**Rozwiązanie**: Sprawdź ustawienie `SESSION_TIMEOUT` w `config/config.php` (domyślnie 1800s = 30 min).
+
+### Dark mode nie działa
+**Rozwiązanie**: Sprawdź czy `dark-mode.js` jest załadowany i czy localStorage jest dostępny w przeglądarce.
+
+---
+
+## 📄 Licencja
+
+Ten projekt jest własnością Firmy KOT. Wszystkie prawa zastrzeżone.
+
+---
+
+## 👥 Autorzy
+
+- Zespół deweloperski Firma KOT
+- GitHub: [@the-realcar](https://github.com/the-realcar)
+
+---
+
+## 📞 Kontakt
+
+W razie pytań lub problemów:
+- Email: admin@firmakot.pl
+- GitHub Issues: [https://github.com/the-realcar/panel/issues](https://github.com/the-realcar/panel/issues)
+
+---
+
+---
+
+# Poniżej znajduje się oryginalna dokumentacja wymagań systemowych
+
+---
+
 # Dokumentacja Wymagań Systemowych
 ## System: Panel Pracowniczy Firma KOT
 
