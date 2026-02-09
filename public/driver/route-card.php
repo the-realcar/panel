@@ -61,6 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($_POST['end_km'] < $_POST['start_km']) {
             setFlashMessage('error', 'Końcowy stan licznika nie może być mniejszy niż początkowy.');
         } elseif (!empty($_POST['fuel_start']) && !empty($_POST['fuel_end']) && $_POST['fuel_end'] > $_POST['fuel_start']) {
+            // Fuel end should be less than start (fuel is consumed during trip)
             setFlashMessage('error', 'Końcowy stan paliwa nie może być większy niż początkowy.');
         } else {
             // Insert route card
