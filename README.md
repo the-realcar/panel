@@ -17,13 +17,91 @@ System nie będzie zintegrowany technicznie (API) z zewnętrznym Systemem Inform
 
 ### 2. Aktorzy Systemu (Użytkownicy)
 
-Każda grupa użytkowników posiada odrębny poziom uprawnień:
+Szczegółowa hierarchia stanowisk w Firmie KOT oraz Spółkach:
 
-1.  **Kierowca:** Użytkownik realizujący kursy w grze. Główny odbiorca wersji mobilnej.
-2.  **Dyspozytor:** Osoba zarządzająca bieżącym ruchem, przydziałami pojazdów i nagłymi zdarzeniami.
-3.  **Pracownik Administracyjny / Kadry:** Obsługa wniosków, ewidencja czasu, dokumentacja.
-4.  **Zarząd (Management):** Pełna kontrola nad strukturą transportową (linie, tabor, infrastruktura).
-5.  **Administrator IT:** Zarządzanie technicznym aspektem systemu i kontami użytkowników.
+#### A. Firma KOT
+
+##### I. Zarząd
+1. **Zarząd KOT** (limit: 3 osoby)
+2. **Główny Inspektor** (limit: 1 osoba)
+3. **Dyspozytor Główny** (limit: 1 osoba)
+
+##### II. Administracja (KOT)
+1. **Główny Administrator** (limit: 1 osoba)
+2. **Zastępca Głównego Administratora** (limit: 2 osoby)
+3. **Starszy Administrator** (limit: 5 osób)
+
+##### III. Nadzór Ruchu
+1. **Koordynator rozkładów jazdy** (limit: 3 osoby)
+2. **Planer rozkładów jazdy** (limit: 8 osób)
+3. **Planer tras linii** (limit: 7 osób)
+4. **Kierownik Ruchu** (limit: 1 osoba)
+5. **Zastępca Kierownika Ruchu** (limit: 2 osoby)
+6. **Doświadczony Nadzorca Ruchu** (limit: 5 osób)
+7. **Nadzorca Ruchu** (bez limitu)
+8. **Młodszy Nadzorca Ruchu** (limit: 10 osób)
+
+#### B. Spółki
+
+##### I. Zarząd Spółki
+1. **Dyrektor Spółki** (limit: 1 osoba)
+2. **Zastępca Dyrektora Spółki** (limit: 2 osoby)
+
+##### II. Administracja (Spółki)
+1. **Główny Administrator** (limit: 1 osoba)
+2. **Zastępca Głównego Administratora** (limit: 2 osoby)
+3. **Starszy Administrator** (limit: 5 osób)
+4. **Doświadczony Administrator** (limit: 10 osób)
+5. **Administrator** (bez limitu)
+6. **Moderator** (limit: 15 osób)
+7. **Młodszy Moderator** (limit: 10 osób)
+
+##### III. Kontrole
+1. **Główny Inspektor** (limit: 1 osoba)
+2. **Specjalista ds. Kontroli** (limit: 1 osoba)
+3. **Zastępca Specjalisty ds. Kontroli** (limit: 2 osoby)
+
+##### IV. Dyspozytornia
+1. **Dyspozytor Główny** (limit: 1 osoba)
+2. **Zastępca Dyspozytora Głównego** (limit: 3 osoby)
+3. **Starszy Dyspozytor** (limit: 5 osób)
+4. **Dyspozytor** (limit: 10 osób)
+5. **Młodszy Dyspozytor** (limit: 5 osób)
+
+##### V. Transport
+1. **Koordynator Przewozów** (limit: 1 osoba)
+2. **Zastępca Koordynatora Przewozów** (limit: 2 osoby)
+3. **Egzaminator** (limit: 5 osób)
+4. **Kontroler biletów** (bez limitu)
+5. **Starszy Kierowca/Motorniczy** (limit: 10 osób)
+6. **Kierowca/Motorniczy** (bez limitu)
+7. **Młodszy Kierowca/Motorniczy** (limit: 15 osób)
+
+##### VI. Zajezdnia
+1. **Kierownik Zajezdni** (limit: 1 osoba)
+2. **Zastępca Kierownika Zajezdni** (limit: 1 osoba)
+3. **Mechanik** (bez limitu)
+4. **Elektromechanik** (bez limitu)
+5. **Lakiernik** (bez limitu)
+6. **Blacharz** (bez limitu)
+7. **Pracownik obsługi technicznej** (bez limitu)
+
+#### Uprawnienia i Mapowanie Ról w Systemie
+
+Grupowanie stanowisk w role systemowe (RBAC):
+1. **Zarząd** – Zarząd KOT, Główny Inspektor, Dyspozytor Główny, Dyrektor Spółki, itp.
+2. **Administrator IT** – wszyscy administratorzy i moderatorzy
+3. **Nadzór Ruchu** – wszyscy planiści i nadzorcy
+4. **Dyspozytor** – wszyscy dyspozytorzy
+5. **Kontrole** – inspektorzy i kontrolerzy
+6. **Kadry** – (do zdefiniowania)
+7. **Transport** – kierowcy, motorniczowie, egzaminatorzy
+8. **Zajezdnia** – personel techniczny
+
+**Uwagi techniczne:**
+- W PostgreSQL: tabele `positions` (stanowiska), `roles` (role systemowe), `role_position_mapping` (mapowanie)
+- Użytkownicy przypisani do **stanowisk**, stanowiska mapowane do **ról** (RBAC)
+- Limity egzekwowane w PHP podczas dodawania użytkowników
 
 ---
 
@@ -52,7 +130,17 @@ Każda grupa użytkowników posiada odrębny poziom uprawnień:
 *   **Raporty:** Generowanie zestawień miesięcznych (ilość kilometrów, spalanie – symulacyjne).
 
 #### 3.5. Panel Zarządu – Zarządzanie Strukturą Transportową (CRUD)
-Moduł ten jest kluczowy dla odwzorowania struktury przewozowej. Umożliwia Dodawanie, Edycję, Usuwanie i Podgląd następujących obiektów:
+
+Moduł kluczowy dla odwzorowania struktury przewozowej. Dostęp do poszczególnych funkcji jest uzależniony od stanowiska:
+
+**Uprawnienia według stanowisk:**
+- **Zarząd KOT, Dyrektor Spółki:** Pełny dostęp do wszystkich funkcji CRUD.
+- **Koordynator rozkładów jazdy:** Dostęp do zarządzania liniami, brygadami, rozkładami jazdy.
+- **Planer tras linii:** Dostęp TYLKO do definiowania tras i wariantów (sekcje F, G). Brak dostępu do pojazdów, brygad.
+- **Planer rozkładów jazdy:** Dostęp do rozkładów jazdy i powiązania ich z brygadami. Brak dostępu do pojazdów.
+- **Kierownik Zajezdni:** Dostęp do zarządzania pojazdami (CRUD) w przydzielonej zajezdni.
+
+**Funkcje modułu:**
 
 **A. Pojazdy (Tabor)**
 *   Numer taborowy (unikalny).
@@ -89,6 +177,16 @@ Moduł ten jest kluczowy dla odwzorowania struktury przewozowej. Umożliwia Doda
 *   Lista uporządkowana przystanków dla danego wariantu trasy.
 *   Przypisywanie konkretnego stanowiska (słupka) do przystanku na trasie.
 *   Czas przelotu między przystankami (dla celów rozkładowych).
+
+#### 3.6. Zarządzanie Stanowiskami i Limitami
+
+Panel dla Zarządu i Administratorów IT umożliwiający:
+
+*   **Definiowanie Stanowisk:** Dodawanie nowych stanowisk z przypisaniem do wydziału/departamentu.
+*   **Limity Stanowisk:** Określenie maksymalnej liczby osób na danym stanowisku (lub brak limitu).
+*   **Kontrola Limitów:** Automatyczna walidacja przy dodawaniu użytkowników – system uniemożliwia przekroczenie limitu.
+*   **Mapowanie na Role:** Przypisywanie stanowisk do ról systemowych (RBAC) w celu kontroli dostępu.
+*   **Audyt:** Historia zmian w strukturze stanowisk (kto, kiedy, co zmienił).
 
 ---
 
@@ -409,6 +507,59 @@ Moduł ten jest kluczowy dla odwzorowania struktury przewozowej. Umożliwia Doda
 
 ---
 
+#### 7.8. Zarządzanie Stanowiskami i Limitami
+
+**US-029: Zarządzanie stanowiskami (CRUD)**
+> Jako **Administrator IT lub Członek Zarządu**,  
+> chcę **dodawać, edytować i usuwać stanowiska w systemie**,  
+> aby **odzwierciedlić strukturę organizacyjną Firmy KOT i Spółek**.
+>
+> **Kryteria akceptacji:**
+> - Formularz dodawania stanowiska: nazwa, wydział/departament, maksymalna liczba osób (lub checkbox "bez limitu"), opis
+> - Lista stanowisk z możliwością filtrowania po wydziale
+> - Tabela `positions` w PostgreSQL: `id`, `name`, `department`, `max_count` (NULL = bez limitu), `description`
+> - Walidacja: nie można usunąć stanowiska, do którego są przypisani użytkownicy (lub wyświetlenie ostrzeżenia)
+> - Responsywny interfejs (HTML, CSS, PHP)
+
+**US-030: Kontrola limitów stanowisk**
+> Jako **Administrator IT**,  
+> chcę **aby system automatycznie blokował przypisanie użytkownika do stanowiska, jeśli przekroczono limit**,  
+> aby **utrzymać zgodność ze strukturą organizacyjną**.
+>
+> **Kryteria akceptacji:**
+> - Podczas przypisywania użytkownika do stanowiska, system sprawdza liczbę już przypisanych osób
+> - Jeśli `COUNT(user_positions WHERE position_id = X) >= positions.max_count`, wyświetlany jest błąd
+> - Komunikat błędu: "Limit stanowisk został wyczerpany. Maksymalna liczba osób: [max_count]"
+> - Walidacja w PHP przed zapisem do PostgreSQL
+> - Walidacja po stronie bazy danych (trigger lub constraint)
+
+**US-031: Przypisywanie użytkowników do stanowisk**
+> Jako **Administrator IT lub Pracownik Kadr**,  
+> chcę **przypisać użytkownika do konkretnego stanowiska**,  
+> aby **określić jego rolę i uprawnienia w systemie**.
+>
+> **Kryteria akceptacji:**
+> - Formularz edycji użytkownika zawiera pole "Stanowisko" (dropdown z listą dostępnych stanowisk)
+> - System sprawdza limit przed zapisem (integracja z US-030)
+> - Tabela `user_positions`: `user_id`, `position_id`, `assigned_date`, `assigned_by`
+> - Po zapisie, system automatycznie przypisuje rolę systemową (RBAC) na podstawie `role_position_mapping`
+> - Możliwość zmiany stanowiska (z logiem w tabeli `audit_logs`)
+
+**US-032: Podgląd struktury organizacyjnej**
+> Jako **Członek Zarządu**,  
+> chcę **zobaczyć pełną strukturę organizacyjną z liczbą osób na każdym stanowisku**,  
+> aby **monitorować wykorzystanie zasobów ludzkich**.
+>
+> **Kryteria akceptacji:**
+> - Widok drzewa organizacyjnego (hierarchia wydziałów i stanowisk)
+> - Dla każdego stanowiska: nazwa, liczba przypisanych osób / limit (np. "3 / 5" lub "15 / ∞")
+> - Kolory: zielony (poniżej limitu), żółty (80-99% limitu), czerwony (limit osiągnięty)
+> - Możliwość kliknięcia stanowiska, aby zobaczyć listę przypisanych użytkowników
+> - Export do PDF
+> - Responsywny interfejs (HTML, CSS)
+
+---
+
 #### 7.7. Wymagania Niefunkcjonalne
 
 **US-024: Responsywność (Mobile First)**
@@ -482,6 +633,146 @@ Moduł ten jest kluczowy dla odwzorowania struktury przewozowej. Umożliwia Doda
 - US-021, US-022, US-023 (panel admina IT)
 - US-025, US-026 (dark mode, spójność wizualna)
 - US-027, US-028 (optymalizacja wydajności i dostępność)
+
+**Iteracja 4 (Zarządzanie stanowiskami):**
+- US-029, US-030, US-031, US-032 (zarządzanie stanowiskami i limitami)
+- Implementacja tabel PostgreSQL: `positions`, `user_positions`, `role_position_mapping`
+- Implementacja walidacji limitów w PHP i PostgreSQL (trigger)
+- Panel administracyjny do zarządzania strukturą organizacyjną
+
+---
+
+### 9. Schemat Bazy Danych
+
+#### 9.1. Tabele związane ze stanowiskami i rolami
+
+**Tabela: `positions` (Stanowiska)**
+```sql
+CREATE TABLE positions (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    department VARCHAR(100) NOT NULL, -- np. "Zarząd KOT", "Transport - Spółka A"
+    max_count INT DEFAULT NULL, -- NULL = bez limitu
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indeks dla szybkiego wyszukiwania po wydziale
+CREATE INDEX idx_positions_department ON positions(department);
+```
+
+**Tabela: `user_positions` (Przypisanie użytkowników do stanowisk)**
+```sql
+CREATE TABLE user_positions (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    position_id INT NOT NULL REFERENCES positions(id) ON DELETE RESTRICT,
+    assigned_date DATE DEFAULT CURRENT_DATE,
+    assigned_by INT REFERENCES users(id), -- kto przypisał
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, position_id) -- jeden użytkownik może mieć wiele stanowisk, ale nie duplikatów
+);
+
+-- Indeksy
+CREATE INDEX idx_user_positions_user ON user_positions(user_id);
+CREATE INDEX idx_user_positions_position ON user_positions(position_id);
+```
+
+**Tabela: `roles` (Role systemowe - RBAC)**
+```sql
+CREATE TABLE roles (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE, -- np. "Zarząd", "Dyspozytor", "Kierowca"
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Wstawienie domyślnych ról
+INSERT INTO roles (name, description) VALUES
+('Zarząd', 'Pełny dostęp do zarządzania strukturą transportową'),
+('Administrator IT', 'Zarządzanie systemem i użytkownikami'),
+('Nadzór Ruchu', 'Planowanie tras i nadzór nad ruchem'),
+('Dyspozytor', 'Zarządzanie bieżącym ruchem i przydziałami'),
+('Kontrole', 'Inspekcja i kontrola jakości'),
+('Kadry', 'Zarządzanie personelem i ewidencją czasu'),
+('Transport', 'Realizacja kursów i obsługa linii'),
+('Zajezdnia', 'Obsługa techniczna i konserwacja pojazdów');
+```
+
+**Tabela: `role_position_mapping` (Mapowanie stanowisk na role)**
+```sql
+CREATE TABLE role_position_mapping (
+    id SERIAL PRIMARY KEY,
+    role_id INT NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
+    position_id INT NOT NULL REFERENCES positions(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(role_id, position_id)
+);
+
+-- Indeksy
+CREATE INDEX idx_rpm_role ON role_position_mapping(role_id);
+CREATE INDEX idx_rpm_position ON role_position_mapping(position_id);
+```
+
+#### 9.2. Funkcja PostgreSQL: Kontrola limitu stanowisk
+
+```sql
+-- Funkcja sprawdzająca limit stanowisk (trigger)
+CREATE OR REPLACE FUNCTION check_position_limit()
+RETURNS TRIGGER AS $$
+DECLARE
+    current_count INT;
+    max_allowed INT;
+BEGIN
+    -- Pobierz limit stanowiska
+    SELECT max_count INTO max_allowed
+    FROM positions
+    WHERE id = NEW.position_id;
+
+    -- Jeśli NULL, brak limitu
+    IF max_allowed IS NULL THEN
+        RETURN NEW;
+    END IF;
+
+    -- Policz aktualną liczbę przypisanych użytkowników
+    SELECT COUNT(*) INTO current_count
+    FROM user_positions
+    WHERE position_id = NEW.position_id;
+
+    -- Sprawdź, czy limit został przekroczony
+    IF current_count >= max_allowed THEN
+        RAISE EXCEPTION 'Limit stanowisk został wyczerpany. Maksymalna liczba osób: %', max_allowed;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger uruchamiający funkcję przed wstawieniem
+CREATE TRIGGER trigger_check_position_limit
+BEFORE INSERT ON user_positions
+FOR EACH ROW
+EXECUTE FUNCTION check_position_limit();
+```
+
+#### 9.3. Widok: Lista użytkowników z rolami
+
+```sql
+CREATE VIEW user_roles_view AS
+SELECT
+    u.id AS user_id,
+    u.username,
+    u.email,
+    p.name AS position_name,
+    p.department,
+    r.name AS role_name
+FROM users u
+LEFT JOIN user_positions up ON u.id = up.user_id
+LEFT JOIN positions p ON up.position_id = p.id
+LEFT JOIN role_position_mapping rpm ON p.id = rpm.position_id
+LEFT JOIN roles r ON rpm.role_id = r.id;
+```
 
 ---
 
