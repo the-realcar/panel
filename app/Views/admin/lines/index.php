@@ -56,9 +56,14 @@
                                            class="btn btn-sm btn-secondary">✏️ Edytuj</a>
                                     <?php endif; ?>
                                     <?php if ($rbac->hasPermission('lines', 'delete')): ?>
-                                        <a href="/admin/lines/delete.php?id=<?php echo $line['id']; ?>&csrf_token=<?php echo generateCsrfToken(); ?>" 
-                                           class="btn btn-sm btn-danger"
-                                           onclick="return confirm('Czy na pewno chcesz usunąć tę linię?');">🗑️ Usuń</a>
+                                        <form method="POST" action="/admin/lines/delete.php" style="display:inline;">
+                                            <?php echo csrfField(); ?>
+                                            <input type="hidden" name="id" value="<?php echo $line['id']; ?>">
+                                            <button type="submit" class="btn btn-sm btn-danger"
+                                                    onclick="return confirm('Czy na pewno chcesz usunąć tę linię?');">
+                                                🗑️ Usuń
+                                            </button>
+                                        </form>
                                     <?php endif; ?>
                                 </div>
                             </td>

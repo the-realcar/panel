@@ -209,12 +209,17 @@ class AdminVehiclesController extends Controller {
         $rbac = new RBAC();
         $rbac->requirePermission('vehicles', 'delete');
 
-        if (!verifyCsrfToken($_GET['csrf_token'] ?? '')) {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            setFlashMessage('error', 'Nieprawidlowe zadanie.');
+            $this->redirectTo('/admin/vehicles/index.php');
+        }
+
+        if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
             setFlashMessage('error', 'Nieprawidlowy token CSRF.');
             $this->redirectTo('/admin/vehicles/index.php');
         }
 
-        $vehicle_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        $vehicle_id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
         if (!$vehicle_id) {
             setFlashMessage('error', 'Nieprawidlowy ID pojazdu.');
             $this->redirectTo('/admin/vehicles/index.php');

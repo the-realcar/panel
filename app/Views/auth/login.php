@@ -49,6 +49,7 @@
             <?php endif; ?>
 
             <form method="POST" action="">
+                <?php echo csrfField(); ?>
                 <div class="form-group">
                     <label for="username" class="form-label">Nazwa użytkownika</label>
                     <input 

@@ -7,7 +7,17 @@
 // Session security settings
 ini_set('session.cookie_httponly', 1);
 ini_set('session.use_only_cookies', 1);
-ini_set('session.cookie_secure', 0); // Set to 1 if using HTTPS
+// Enable secure cookies automatically when running over HTTPS
+$is_https = false;
+if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+    $is_https = true;
+} elseif (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+    $is_https = true;
+} elseif (defined('BASE_URL') && parse_url(BASE_URL, PHP_URL_SCHEME) === 'https') {
+    $is_https = true;
+}
+
+ini_set('session.cookie_secure', $is_https ? 1 : 0);
 ini_set('session.cookie_samesite', 'Strict');
 
 // Session name

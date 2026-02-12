@@ -10,6 +10,11 @@ class AuthController extends Controller {
         $username = '';
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+                setFlashMessage('error', 'Nieprawidlowy token CSRF.');
+                $this->redirectTo('/login.php');
+            }
+
             $username = $_POST['username'] ?? '';
             $password = $_POST['password'] ?? '';
 
@@ -26,7 +31,14 @@ class AuthController extends Controller {
                     $redirect = $_GET['redirect'] ?? '/index.php';
                     $this->redirectTo($redirect);
                 } else {
-                    $errors['login'] = 'Nieprawidlowa nazwa uzytkownika lub haslo.';
+                    if ($auth->getLastError() === 'lockout') {
+                        $remaining = $auth->getLastErrorContext()['remaining_seconds'] ?? 0;
+                        $minutes = (int)ceil($remaining / 60);
+                        $suffix = $minutes > 0 ? ' Sprobuj ponownie za ' . $minutes . ' min.' : '';
+                        $errors['login'] = 'Zbyt wiele prob logowania.' . $suffix;
+                    } else {
+                        $errors['login'] = 'Nieprawidlowa nazwa uzytkownika lub haslo.';
+                    }
                 }
             } else {
                 $errors = $validator->getErrors();
@@ -57,6 +69,11 @@ class AuthController extends Controller {
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (isset($_POST['action']) && $_POST['action'] === 'request') {
+                if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+                    setFlashMessage('error', 'Nieprawidlowy token CSRF.');
+                    $this->redirectTo('/reset-password.php');
+                }
+
                 $email = $_POST['email'] ?? '';
 
                 $validator = new Validator($_POST);

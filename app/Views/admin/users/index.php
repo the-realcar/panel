@@ -84,16 +84,24 @@
                                     <?php endif; ?>
                                     <?php if ($rbac->hasPermission('users', 'update') && $user['id'] != getCurrentUserId()): ?>
                                         <?php if ($user['active']): ?>
-                                            <a href="/admin/users/toggle-status.php?id=<?php echo $user['id']; ?>&action=deactivate&csrf_token=<?php echo generateCsrfToken(); ?>" 
-                                               class="btn btn-sm btn-warning"
-                                               onclick="return confirm('Czy na pewno chcesz dezaktywować tego użytkownika?');">
-                                                🔒 Dezaktywuj
-                                            </a>
+                                            <form method="POST" action="/admin/users/toggle-status.php" style="display:inline;">
+                                                <?php echo csrfField(); ?>
+                                                <input type="hidden" name="id" value="<?php echo $user['id']; ?>">
+                                                <input type="hidden" name="action" value="deactivate">
+                                                <button type="submit" class="btn btn-sm btn-warning"
+                                                        onclick="return confirm('Czy na pewno chcesz dezaktywować tego użytkownika?');">
+                                                    🔒 Dezaktywuj
+                                                </button>
+                                            </form>
                                         <?php else: ?>
-                                            <a href="/admin/users/toggle-status.php?id=<?php echo $user['id']; ?>&action=activate&csrf_token=<?php echo generateCsrfToken(); ?>" 
-                                               class="btn btn-sm btn-success">
-                                                ✅ Aktywuj
-                                            </a>
+                                            <form method="POST" action="/admin/users/toggle-status.php" style="display:inline;">
+                                                <?php echo csrfField(); ?>
+                                                <input type="hidden" name="id" value="<?php echo $user['id']; ?>">
+                                                <input type="hidden" name="action" value="activate">
+                                                <button type="submit" class="btn btn-sm btn-success">
+                                                    ✅ Aktywuj
+                                                </button>
+                                            </form>
                                         <?php endif; ?>
                                     <?php endif; ?>
                                 </div>

@@ -53,6 +53,7 @@
                 <?php endif; ?>
 
                 <form method="POST" action="">
+                    <?php echo csrfField(); ?>
                     <input type="hidden" name="action" value="request">
 
                     <div class="form-group">

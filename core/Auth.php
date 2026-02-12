@@ -9,9 +9,29 @@ require_once __DIR__ . '/Database.php';
 
 class Auth {
     private $db;
+    private $lastError = null;
+    private $lastErrorContext = [];
     
     public function __construct() {
         $this->db = new Database();
+    }
+
+    /**
+     * Get last authentication error code
+     *
+     * @return string|null
+     */
+    public function getLastError() {
+        return $this->lastError;
+    }
+
+    /**
+     * Get last authentication error context
+     *
+     * @return array
+     */
+    public function getLastErrorContext() {
+        return $this->lastErrorContext;
     }
     
     /**
@@ -25,9 +45,17 @@ class Auth {
      */
     public function login($username, $password, $ip_address = null, $user_agent = null) {
         try {
+            $this->lastError = null;
+            $this->lastErrorContext = [];
+
             // Get user from database
             $sql = "SELECT * FROM users WHERE username = :username AND active = TRUE";
             $user = $this->db->queryOne($sql, [':username' => $username]);
+
+            if ($this->isLockedOut($user['id'] ?? null, $ip_address)) {
+                $this->logLoginAttempt($user['id'] ?? null, $ip_address, $user_agent, false);
+                return false;
+            }
             
             $success = false;
             
@@ -62,6 +90,88 @@ class Auth {
             error_log('Login error: ' . $e->getMessage());
             return false;
         }
+    }
+
+    /**
+     * Check if login is locked out for user or IP
+     *
+     * @param int|null $user_id
+     * @param string|null $ip_address
+     * @return bool
+     */
+    private function isLockedOut($user_id, $ip_address) {
+        $since = date('Y-m-d H:i:s', time() - LOGIN_LOCKOUT_TIME);
+
+        if ($user_id) {
+            $info = $this->getFailedAttemptsByUser($user_id, $since);
+        } else {
+            $info = $this->getFailedAttemptsByIp($ip_address, $since);
+        }
+
+        if ($info['count'] >= MAX_LOGIN_ATTEMPTS) {
+            $last_failed_ts = $info['last_failed'] ? strtotime($info['last_failed']) : null;
+            $remaining = 0;
+            if ($last_failed_ts) {
+                $remaining = max(0, LOGIN_LOCKOUT_TIME - (time() - $last_failed_ts));
+            }
+
+            $this->lastError = 'lockout';
+            $this->lastErrorContext = [
+                'remaining_seconds' => $remaining
+            ];
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Get failed login attempts for user within window
+     *
+     * @param int $user_id
+     * @param string $since
+     * @return array
+     */
+    private function getFailedAttemptsByUser($user_id, $since) {
+        $sql = "SELECT COUNT(*) AS count, MAX(login_time) AS last_failed
+                FROM login_logs
+                WHERE success = FALSE
+                  AND user_id = :user_id
+                  AND login_time >= :since";
+
+        $row = $this->db->queryOne($sql, [':user_id' => $user_id, ':since' => $since]);
+
+        return [
+            'count' => (int)($row['count'] ?? 0),
+            'last_failed' => $row['last_failed'] ?? null
+        ];
+    }
+
+    /**
+     * Get failed login attempts for IP within window
+     *
+     * @param string|null $ip_address
+     * @param string $since
+     * @return array
+     */
+    private function getFailedAttemptsByIp($ip_address, $since) {
+        if (!$ip_address) {
+            return ['count' => 0, 'last_failed' => null];
+        }
+
+        $sql = "SELECT COUNT(*) AS count, MAX(login_time) AS last_failed
+                FROM login_logs
+                WHERE success = FALSE
+                  AND ip_address = :ip_address
+                  AND login_time >= :since";
+
+        $row = $this->db->queryOne($sql, [':ip_address' => $ip_address, ':since' => $since]);
+
+        return [
+            'count' => (int)($row['count'] ?? 0),
+            'last_failed' => $row['last_failed'] ?? null
+        ];
     }
 
     /**

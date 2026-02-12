@@ -68,11 +68,15 @@
                                 <strong><?php echo e($position['name']); ?></strong>
                             </td>
                             <td data-label="Akcje">
-                                <a href="/admin/users/assign-position.php?user_id=<?php echo $user_id; ?>&action=remove&assignment_id=<?php echo $position['assignment_id']; ?>&csrf_token=<?php echo generateCsrfToken(); ?>" 
-                                   class="btn btn-sm btn-danger"
-                                   onclick="return confirm('Czy na pewno chcesz usunąć to stanowisko?');">
-                                    🗑️ Usuń
-                                </a>
+                                <form method="POST" action="/admin/users/assign-position.php?user_id=<?php echo $user_id; ?>" style="display:inline;">
+                                    <?php echo csrfField(); ?>
+                                    <input type="hidden" name="action" value="remove">
+                                    <input type="hidden" name="assignment_id" value="<?php echo $position['assignment_id']; ?>">
+                                    <button type="submit" class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Czy na pewno chcesz usunąć to stanowisko?');">
+                                        🗑️ Usuń
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                         <?php endforeach; ?>

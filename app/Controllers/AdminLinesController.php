@@ -159,12 +159,17 @@ class AdminLinesController extends Controller {
         $rbac = new RBAC();
         $rbac->requirePermission('lines', 'delete');
 
-        if (!verifyCsrfToken($_GET['csrf_token'] ?? '')) {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            setFlashMessage('error', 'Nieprawidlowe zadanie.');
+            $this->redirectTo('/admin/lines/index.php');
+        }
+
+        if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
             setFlashMessage('error', 'Nieprawidlowy token CSRF.');
             $this->redirectTo('/admin/lines/index.php');
         }
 
-        $line_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        $line_id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
         if (!$line_id) {
             setFlashMessage('error', 'Nieprawidlowy ID linii.');
             $this->redirectTo('/admin/lines/index.php');
