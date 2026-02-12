@@ -31,6 +31,16 @@ $is_dispatcher = $rbac->hasRole('Dyspozytor');
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="/admin/stops/index.php" class="<?php echo isActivePage('/admin/stops') ? 'active' : ''; ?>">
+                        Przystanki
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/brigades/index.php" class="<?php echo isActivePage('/admin/brigades') ? 'active' : ''; ?>">
+                        Brygady
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="/admin/positions/index.php" class="<?php echo isActivePage('/admin/positions') ? 'active' : ''; ?>">
                         Stanowiska
                     </a>
@@ -62,8 +72,18 @@ $is_dispatcher = $rbac->hasRole('Dyspozytor');
 
             <?php if ($is_dispatcher): ?>
                 <li class="nav-item">
-                    <a href="/admin/dashboard.php" class="<?php echo isActivePage('/admin/dashboard.php') ? 'active' : ''; ?>">
-                        Dashboard
+                    <a href="/dispatcher/dashboard.php" class="<?php echo isActivePage('/dispatcher/dashboard.php') ? 'active' : ''; ?>">
+                        Panel Dyspozytora
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/dispatcher/fleet.php" class="<?php echo isActivePage('/dispatcher/fleet.php') ? 'active' : ''; ?>">
+                        Status Floty
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/dispatcher/assign-schedule.php" class="<?php echo isActivePage('/dispatcher/assign-schedule.php') ? 'active' : ''; ?>">
+                        Przydziel Grafik
                     </a>
                 </li>
                 <li class="nav-item">
@@ -74,6 +94,11 @@ $is_dispatcher = $rbac->hasRole('Dyspozytor');
                 <li class="nav-item">
                     <a href="/admin/lines/index.php" class="<?php echo isActivePage('/admin/lines') ? 'active' : ''; ?>">
                         Linie
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/brigades/index.php" class="<?php echo isActivePage('/admin/brigades') ? 'active' : ''; ?>">
+                        Brygady
                     </a>
                 </li>
             <?php endif; ?>

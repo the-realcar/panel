@@ -20,6 +20,25 @@ define('CONFIG_PATH', BASE_PATH . '/config');
 define('BASE_URL', getenv('BASE_URL') ?: 'http://localhost');
 define('ASSETS_URL', BASE_URL . '/assets');
 
+// OAuth configuration
+define('OAUTH_REDIRECT_BASE', getenv('OAUTH_REDIRECT_BASE') ?: BASE_URL);
+
+define('DISCORD_CLIENT_ID', getenv('DISCORD_CLIENT_ID') ?: '');
+define('DISCORD_CLIENT_SECRET', getenv('DISCORD_CLIENT_SECRET') ?: '');
+define('DISCORD_SCOPE', getenv('DISCORD_SCOPE') ?: 'identify guilds');
+define('DISCORD_AUTHORIZE_URL', 'https://discord.com/oauth2/authorize');
+define('DISCORD_TOKEN_URL', 'https://discord.com/api/oauth2/token');
+define('DISCORD_USER_URL', 'https://discord.com/api/users/@me');
+define('DISCORD_REDIRECT_URI', OAUTH_REDIRECT_BASE . '/oauth/discord-callback.php');
+
+define('ROBLOX_CLIENT_ID', getenv('ROBLOX_CLIENT_ID') ?: '');
+define('ROBLOX_CLIENT_SECRET', getenv('ROBLOX_CLIENT_SECRET') ?: '');
+define('ROBLOX_SCOPE', getenv('ROBLOX_SCOPE') ?: 'openid profile');
+define('ROBLOX_AUTHORIZE_URL', 'https://apis.roblox.com/oauth/v1/authorize');
+define('ROBLOX_TOKEN_URL', 'https://apis.roblox.com/oauth/v1/token');
+define('ROBLOX_USER_URL', 'https://apis.roblox.com/oauth/v1/userinfo');
+define('ROBLOX_REDIRECT_URI', OAUTH_REDIRECT_BASE . '/oauth/roblox-callback.php');
+
 // Security
 define('SESSION_TIMEOUT', 1800); // 30 minutes in seconds
 define('PASSWORD_MIN_LENGTH', 8);

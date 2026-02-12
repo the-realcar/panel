@@ -2,6 +2,9 @@
 
 <div class="page-header">
     <h1>👥 Zarządzanie użytkownikami</h1>
+    <?php if ($rbac->hasPermission('users', 'create')): ?>
+        <a href="/admin/users/create.php" class="btn btn-primary">➕ Dodaj uzytkownika</a>
+    <?php endif; ?>
 </div>
 
 <div class="card">
@@ -74,6 +77,8 @@
                             <td data-label="Akcje">
                                 <div class="btn-group">
                                     <?php if ($rbac->hasPermission('users', 'update')): ?>
+                                        <a href="/admin/users/edit.php?id=<?php echo $user['id']; ?>" 
+                                           class="btn btn-sm btn-primary">✏️ Edytuj</a>
                                         <a href="/admin/users/assign-position.php?user_id=<?php echo $user['id']; ?>" 
                                            class="btn btn-sm btn-secondary">📋 Stanowiska</a>
                                     <?php endif; ?>

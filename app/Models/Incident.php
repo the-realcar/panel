@@ -53,4 +53,11 @@ class Incident {
 
         return $db->query($query, [':limit' => $limit]);
     }
+
+    public static function countByStatus($status) {
+        $db = new Database();
+        $query = "SELECT COUNT(*) as total FROM incidents WHERE status = :status";
+        $result = $db->queryOne($query, [':status' => $status]);
+        return (int)($result['total'] ?? 0);
+    }
 }

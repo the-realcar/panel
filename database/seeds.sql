@@ -4,6 +4,7 @@
 
 -- Wyczyść istniejące dane
 TRUNCATE TABLE password_resets, audit_logs, login_logs, incidents, route_cards, schedules, 
+    route_stops, route_variants, brigades, platforms, stops, role_position_mapping,
     user_positions, user_roles, vehicles, lines, positions, roles, departments, users, sessions CASCADE;
 
 -- Reset sekwencji
@@ -16,6 +17,11 @@ ALTER SEQUENCE vehicles_id_seq RESTART WITH 1;
 ALTER SEQUENCE schedules_id_seq RESTART WITH 1;
 ALTER SEQUENCE route_cards_id_seq RESTART WITH 1;
 ALTER SEQUENCE incidents_id_seq RESTART WITH 1;
+ALTER SEQUENCE stops_id_seq RESTART WITH 1;
+ALTER SEQUENCE platforms_id_seq RESTART WITH 1;
+ALTER SEQUENCE brigades_id_seq RESTART WITH 1;
+ALTER SEQUENCE route_variants_id_seq RESTART WITH 1;
+ALTER SEQUENCE route_stops_id_seq RESTART WITH 1;
 
 -- ============================================
 -- 1. DEPARTAMENTY
@@ -32,13 +38,13 @@ INSERT INTO departments (name, description, active) VALUES
 -- ============================================
 INSERT INTO roles (name, description, permissions) VALUES
 ('Administrator', 'Pełny dostęp do systemu', 
-    '{"users": ["read", "create", "update", "delete"], "vehicles": ["read", "create", "update", "delete"], "lines": ["read", "create", "update", "delete"], "positions": ["read", "create", "update", "delete"], "incidents": ["read", "create", "update", "delete", "resolve"], "schedules": ["read", "create", "update", "delete"], "reports": ["read", "create"]}'::jsonb),
+    '{"users": ["read", "create", "update", "delete"], "vehicles": ["read", "create", "update", "delete"], "lines": ["read", "create", "update", "delete"], "positions": ["read", "create", "update", "delete"], "stops": ["read", "create", "update", "delete"], "platforms": ["read", "create", "update", "delete"], "brigades": ["read", "create", "update", "delete"], "route_variants": ["read", "create", "update", "delete"], "incidents": ["read", "create", "update", "delete", "resolve"], "schedules": ["read", "create", "update", "delete"], "reports": ["read", "create"]}'::jsonb),
 ('Dyspozytor', 'Zarządzanie grafikami i kontrola ruchu',
-    '{"schedules": ["read", "create", "update", "delete"], "vehicles": ["read", "update"], "lines": ["read"], "route_cards": ["read"], "incidents": ["read", "update"]}'::jsonb),
+    '{"schedules": ["read", "create", "update", "delete"], "vehicles": ["read", "update"], "lines": ["read"], "brigades": ["read"], "stops": ["read"], "route_cards": ["read"], "incidents": ["read", "update"]}'::jsonb),
 ('Kierowca', 'Dostęp do własnego grafiku i kart drogowych',
-    '{"schedules": ["read"], "route_cards": ["read", "create", "update"], "incidents": ["read", "create"], "vehicles": ["read"]}'::jsonb),
+    '{"schedules": ["read"], "route_cards": ["read", "create", "update"], "incidents": ["read", "create"], "vehicles": ["read"], "lines": ["read"], "stops": ["read"]}'::jsonb),
 ('Zarząd', 'Dostęp do raportów i zarządzania',
-    '{"users": ["read"], "vehicles": ["read"], "lines": ["read"], "positions": ["read"], "incidents": ["read"], "schedules": ["read"], "reports": ["read", "create"]}'::jsonb);
+    '{"users": ["read"], "vehicles": ["read"], "lines": ["read"], "positions": ["read"], "stops": ["read"], "brigades": ["read"], "route_variants": ["read"], "incidents": ["read"], "schedules": ["read"], "reports": ["read", "create"]}'::jsonb);
 
 -- ============================================
 -- 3. UŻYTKOWNICY
@@ -112,17 +118,17 @@ INSERT INTO vehicles (vehicle_number, registration_plate, vehicle_type, model, m
 -- ============================================
 -- 9. GRAFIKI (SCHEDULES)
 -- ============================================
-INSERT INTO schedules (user_id, vehicle_id, line_id, schedule_date, start_time, end_time, status, notes) VALUES
+INSERT INTO schedules (user_id, vehicle_id, line_id, brigade_id, schedule_date, start_time, end_time, status, notes) VALUES
 -- Dzisiejsze grafiki dla kierowcy1
-(2, 1, 1, CURRENT_DATE, '06:00:00', '14:00:00', 'scheduled', 'Poranna zmiana na linii 1'),
-(2, 2, 2, CURRENT_DATE, '14:30:00', '22:30:00', 'scheduled', 'Popołudniowa zmiana na linii 5'),
+(2, 1, 1, 1, CURRENT_DATE, '06:00:00', '14:00:00', 'scheduled', 'Poranna zmiana na linii 1, brygada 1/1'),
+(2, 2, 2, 3, CURRENT_DATE, '14:30:00', '22:30:00', 'scheduled', 'Popołudniowa zmiana na linii 5, brygada 5/1'),
 
 -- Przyszłe grafiki
-(2, 1, 1, CURRENT_DATE + 1, '06:00:00', '14:00:00', 'scheduled', 'Poranna zmiana'),
-(2, 3, 3, CURRENT_DATE + 2, '07:00:00', '15:00:00', 'scheduled', 'Zmiana tramwajowa'),
+(2, 1, 1, 2, CURRENT_DATE + 1, '06:00:00', '14:00:00', 'scheduled', 'Poranna zmiana, brygada 1/2'),
+(2, 3, 3, 5, CURRENT_DATE + 2, '07:00:00', '15:00:00', 'scheduled', 'Zmiana tramwajowa, brygada 7/1'),
 
 -- Wczorajsze wykonane
-(2, 1, 1, CURRENT_DATE - 1, '06:00:00', '14:00:00', 'completed', 'Wykonano zgodnie z planem');
+(2, 1, 1, 1, CURRENT_DATE - 1, '06:00:00', '14:00:00', 'completed', 'Wykonano zgodnie z planem');
 
 -- ============================================
 -- 10. KARTY DROGOWE (przykładowe)
@@ -140,7 +146,55 @@ INSERT INTO incidents (reported_by, vehicle_id, incident_type, severity, title, 
 (2, 2, 'other', 'medium', 'Brak paliwa na stacji', 'Stacja paliwa była chwilowo niedostępna, tankowanie z opóźnieniem', CURRENT_TIMESTAMP - INTERVAL '3 hours', 'open');
 
 -- ============================================
--- 12. LOGI LOGOWANIA (przykładowe)
+-- 12. PRZYSTANKI
+-- ============================================
+INSERT INTO stops (stop_id, name, location_description, latitude, longitude, active) VALUES
+('DG01', 'Dworzec Główny', 'Przy dworcu kolejowym PKP', 52.229676, 21.012229, TRUE),
+('PW01', 'Plac Wolności', 'Centrum miasta, rondo', 52.233198, 21.013456, TRUE),
+('ON01', 'Osiedle Północne', 'Przy blokach mieszkalnych', 52.245678, 21.015789, TRUE),
+('DP01', 'Dworzec PKS', 'Dworzec autobusowy', 52.227890, 21.008901, TRUE),
+('LO01', 'Lotnisko', 'Terminal pasażerski', 52.165738, 20.967123, TRUE),
+('NS01', 'Nowy Świat', 'Ulica handlowa', 52.231234, 21.017890, TRUE),
+('SM01', 'Stare Miasto', 'Rynek staromiejski', 52.248765, 21.012345, TRUE),
+('PO01', 'Politechnika', 'Kampus uniwersytecki', 52.220123, 21.011111, TRUE);
+
+-- ============================================
+-- 13. STANOWISKA (SŁUPKI)
+-- ============================================
+INSERT INTO platforms (stop_id, platform_number, platform_type, description, active) VALUES
+-- Dworzec Główny
+(1, '01', 'regular', 'Perón 1 - linie miejskie', TRUE),
+(1, '02', 'regular', 'Perón 2 - linie podmiejskie', TRUE),
+-- Plac Wolności
+(2, 'A', 'loop', 'Pętla autobusowa', TRUE),
+-- Osiedle Północne
+(3, '01', 'regular', 'Przystanek przystankowy', TRUE),
+-- Dworzec PKS
+(4, '01', 'regular', 'Przy wejściu głównym', TRUE),
+(4, '02', 'regular', 'Zatoka autobusowa', TRUE),
+-- Lotnisko
+(5, 'T1', 'regular', 'Terminal 1', TRUE),
+-- Nowy Świat
+(6, '01', 'regular', 'Kierunek północ', TRUE),
+(6, '02', 'regular', 'Kierunek południe', TRUE),
+-- Stare Miasto
+(7, '01', 'regular', 'Przy rynku', TRUE),
+-- Politechnika
+(8, '01', 'loop', 'Pętla tramwajowa', TRUE);
+
+-- ============================================
+-- 14. BRYGADY
+-- ============================================
+INSERT INTO brigades (line_id, brigade_number, default_vehicle_type, description, active) VALUES
+(1, '1/1', 'bus', 'Pierwsza brygada linii 1 - poranna zmiana', TRUE),
+(1, '1/2', 'bus', 'Druga brygada linii 1 - popołudniowa zmiana', TRUE),
+(2, '5/1', 'bus', 'Pierwsza brygada linii 5', TRUE),
+(2, '5/2', 'articulated_bus', 'Druga brygada linii 5 - autobus przegubowy', TRUE),
+(3, '7/1', 'tram', 'Pierwsza brygada tramwajowa linii 7', TRUE),
+(3, '7/2', 'tram', 'Druga brygada tramwajowa linii 7', TRUE);
+
+-- ============================================
+-- 15. LOGI LOGOWANIA (przykładowe)
 -- ============================================
 INSERT INTO login_logs (user_id, login_time, ip_address, user_agent, success) VALUES
 (1, CURRENT_TIMESTAMP - INTERVAL '1 hour', '192.168.1.100', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)', TRUE),

@@ -89,4 +89,57 @@ class Schedule {
 
         return $db->query($query, $params);
     }
+
+    public static function listForDate($date, $limit = 100, $offset = 0) {
+        $db = new Database();
+        $query = "
+            SELECT s.*,
+                   u.first_name, u.last_name, u.employee_id,
+                   v.vehicle_number, v.model, v.registration_plate,
+                   l.line_number, l.name as line_name,
+                   b.brigade_number
+            FROM schedules s
+            LEFT JOIN users u ON s.user_id = u.id
+            LEFT JOIN vehicles v ON s.vehicle_id = v.id
+            LEFT JOIN lines l ON s.line_id = l.id
+            LEFT JOIN brigades b ON s.brigade_id = b.id
+            WHERE s.schedule_date = :date
+            ORDER BY s.start_time ASC
+            LIMIT :limit OFFSET :offset
+        ";
+
+        $params = [
+            ':date' => $date,
+            ':limit' => $limit,
+            ':offset' => $offset
+        ];
+
+        return $db->query($query, $params);
+    }
+
+    public static function create($data) {
+        $db = new Database();
+        $query = "
+            INSERT INTO schedules (user_id, vehicle_id, line_id, brigade_id, schedule_date, 
+                                   start_time, end_time, status, notes)
+            VALUES (:user_id, :vehicle_id, :line_id, :brigade_id, :schedule_date,
+                    :start_time, :end_time, :status, :notes)
+            RETURNING id
+        ";
+
+        $params = [
+            ':user_id' => $data['user_id'],
+            ':vehicle_id' => $data['vehicle_id'],
+            ':line_id' => $data['line_id'],
+            ':brigade_id' => $data['brigade_id'] ?? null,
+            ':schedule_date' => $data['schedule_date'],
+            ':start_time' => $data['start_time'],
+            ':end_time' => $data['end_time'],
+            ':status' => $data['status'] ?? 'scheduled',
+            ':notes' => $data['notes'] ?? null
+        ];
+
+        $result = $db->queryOne($query, $params);
+        return $result ? $result['id'] : null;
+    }
 }

@@ -63,6 +63,95 @@ class Auth {
             return false;
         }
     }
+
+    /**
+     * Find active user by username
+     *
+     * @param string $username
+     * @return array|false
+     */
+    public function findActiveUserByUsername($username) {
+        try {
+            $sql = "SELECT * FROM users WHERE username = :username AND active = TRUE";
+            $user = $this->db->queryOne($sql, [':username' => $username]);
+            return $user ?: false;
+        } catch (Exception $e) {
+            error_log('User lookup error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Find active user by OAuth provider ID
+     *
+     * @param string $provider
+     * @param string $provider_id
+     * @return array|false
+     */
+    public function findActiveUserByProviderId($provider, $provider_id) {
+        $column = null;
+        if ($provider === 'discord') {
+            $column = 'discord_id';
+        } elseif ($provider === 'roblox') {
+            $column = 'roblox_id';
+        }
+
+        if (!$column) {
+            return false;
+        }
+
+        try {
+            $sql = "SELECT * FROM users WHERE {$column} = :provider_id AND active = TRUE";
+            $user = $this->db->queryOne($sql, [':provider_id' => $provider_id]);
+            return $user ?: false;
+        } catch (Exception $e) {
+            error_log('User lookup error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Log in without password (OAuth/SAML)
+     *
+     * @param array $user
+     * @param string|null $ip_address
+     * @param string|null $user_agent
+     * @return bool
+     */
+    public function loginWithUser(array $user, $ip_address = null, $user_agent = null) {
+        try {
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['email'] = $user['email'];
+            $_SESSION['first_name'] = $user['first_name'];
+            $_SESSION['last_name'] = $user['last_name'];
+            $_SESSION['last_activity'] = time();
+
+            $updateSql = "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = :id";
+            $this->db->execute($updateSql, [':id' => $user['id']]);
+
+            $this->loadUserRoles($user['id']);
+            regenerateSession();
+
+            $this->logLoginAttempt($user['id'], $ip_address, $user_agent, true);
+            return true;
+        } catch (Exception $e) {
+            error_log('OAuth login error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Log an authentication attempt
+     *
+     * @param int|null $user_id
+     * @param string|null $ip_address
+     * @param string|null $user_agent
+     * @param bool $success
+     */
+    public function recordLoginAttempt($user_id, $ip_address, $user_agent, $success) {
+        $this->logLoginAttempt($user_id, $ip_address, $user_agent, $success);
+    }
     
     /**
      * Logout user

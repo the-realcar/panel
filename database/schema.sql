@@ -10,6 +10,12 @@ DROP TABLE IF EXISTS login_logs CASCADE;
 DROP TABLE IF EXISTS incidents CASCADE;
 DROP TABLE IF EXISTS route_cards CASCADE;
 DROP TABLE IF EXISTS schedules CASCADE;
+DROP TABLE IF EXISTS route_stops CASCADE;
+DROP TABLE IF EXISTS route_variants CASCADE;
+DROP TABLE IF EXISTS brigades CASCADE;
+DROP TABLE IF EXISTS platforms CASCADE;
+DROP TABLE IF EXISTS stops CASCADE;
+DROP TABLE IF EXISTS role_position_mapping CASCADE;
 DROP TABLE IF EXISTS user_positions CASCADE;
 DROP TABLE IF EXISTS user_roles CASCADE;
 DROP TABLE IF EXISTS vehicles CASCADE;
@@ -35,6 +41,8 @@ CREATE TABLE users (
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
+    discord_id VARCHAR(32) UNIQUE,
+    roblox_id VARCHAR(64) UNIQUE,
     first_name VARCHAR(50),
     last_name VARCHAR(50),
     active BOOLEAN DEFAULT TRUE,
@@ -93,6 +101,15 @@ CREATE TABLE user_positions (
     UNIQUE(user_id, position_id)
 );
 
+-- Mapowanie stanowisk do ról RBAC
+CREATE TABLE role_position_mapping (
+    id SERIAL PRIMARY KEY,
+    role_id INT NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
+    position_id INT NOT NULL REFERENCES positions(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(role_id, position_id)
+);
+
 -- ============================================
 -- 2. TABELE TRANSPORTOWE
 -- ============================================
@@ -124,12 +141,77 @@ CREATE TABLE vehicles (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Tabela przystanków (fizycznych lokalizacji)
+CREATE TABLE stops (
+    id SERIAL PRIMARY KEY,
+    stop_id VARCHAR(20) UNIQUE NOT NULL, -- Unikalny identyfikator (zgodny z SIL)
+    name VARCHAR(100) NOT NULL,
+    location_description TEXT,
+    latitude DECIMAL(10, 8),
+    longitude DECIMAL(11, 8),
+    active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabela stanowisk/słupków (konkretne miejsca postoju na przystanku)
+CREATE TABLE platforms (
+    id SERIAL PRIMARY KEY,
+    stop_id INT NOT NULL REFERENCES stops(id) ON DELETE CASCADE,
+    platform_number VARCHAR(10) NOT NULL, -- np. "01", "02", "A", "B"
+    platform_type VARCHAR(20) DEFAULT 'regular', -- regular, loop, technical, on_demand
+    description TEXT,
+    active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(stop_id, platform_number)
+);
+
+-- Tabela brygad (konkretne kursy dla linii)
+CREATE TABLE brigades (
+    id SERIAL PRIMARY KEY,
+    line_id INT NOT NULL REFERENCES lines(id) ON DELETE CASCADE,
+    brigade_number VARCHAR(20) NOT NULL, -- np. "105/1", "105/02"
+    default_vehicle_type VARCHAR(50), -- preferowany typ pojazdu
+    description TEXT,
+    active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(line_id, brigade_number)
+);
+
+-- Tabela wariantów tras (kierunki i odmiany tras dla linii)
+CREATE TABLE route_variants (
+    id SERIAL PRIMARY KEY,
+    line_id INT NOT NULL REFERENCES lines(id) ON DELETE CASCADE,
+    variant_name VARCHAR(100) NOT NULL, -- np. "Kierunek A->B", "Zjazd do zajezdni"
+    variant_type VARCHAR(20) DEFAULT 'normal', -- normal, short, depot_entry, depot_exit
+    direction VARCHAR(50), -- A->B, B->A
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabela sekwencji przystanków na trasie (uporządkowana lista stanowisk dla wariantu)
+CREATE TABLE route_stops (
+    id SERIAL PRIMARY KEY,
+    route_variant_id INT NOT NULL REFERENCES route_variants(id) ON DELETE CASCADE,
+    platform_id INT NOT NULL REFERENCES platforms(id) ON DELETE CASCADE,
+    stop_sequence INT NOT NULL, -- kolejność przystanku na trasie (1, 2, 3...)
+    travel_time_minutes INT, -- czas przejazdu do tego przystanku od poprzedniego
+    is_timing_point BOOLEAN DEFAULT FALSE, -- czy to punkt czasowy
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(route_variant_id, stop_sequence),
+    UNIQUE(route_variant_id, platform_id) -- jeden słupek nie może występować dwa razy na tej samej trasie
+);
+
 -- Tabela grafików/rozkładów
 CREATE TABLE schedules (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
     vehicle_id INT REFERENCES vehicles(id) ON DELETE SET NULL,
     line_id INT REFERENCES lines(id) ON DELETE SET NULL,
+    brigade_id INT REFERENCES brigades(id) ON DELETE SET NULL,
     schedule_date DATE NOT NULL,
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
@@ -308,6 +390,26 @@ CREATE TRIGGER trigger_update_incidents_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at();
 
+CREATE TRIGGER trigger_update_stops_updated_at
+    BEFORE UPDATE ON stops
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER trigger_update_platforms_updated_at
+    BEFORE UPDATE ON platforms
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER trigger_update_brigades_updated_at
+    BEFORE UPDATE ON brigades
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER trigger_update_route_variants_updated_at
+    BEFORE UPDATE ON route_variants
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at();
+
 -- Trigger kontroli limitu stanowisk
 CREATE TRIGGER trigger_check_position_limit
     BEFORE INSERT ON user_positions
@@ -422,6 +524,31 @@ CREATE INDEX idx_login_logs_login_time ON login_logs(login_time);
 CREATE INDEX idx_audit_logs_user_id ON audit_logs(user_id);
 CREATE INDEX idx_audit_logs_table_name ON audit_logs(table_name);
 CREATE INDEX idx_audit_logs_created_at ON audit_logs(created_at);
+
+-- Indeksy dla role_position_mapping
+CREATE INDEX idx_rpm_role_id ON role_position_mapping(role_id);
+CREATE INDEX idx_rpm_position_id ON role_position_mapping(position_id);
+
+-- Indeksy dla stops
+CREATE INDEX idx_stops_stop_id ON stops(stop_id);
+CREATE INDEX idx_stops_active ON stops(active);
+
+-- Indeksy dla platforms
+CREATE INDEX idx_platforms_stop_id ON platforms(stop_id);
+CREATE INDEX idx_platforms_active ON platforms(active);
+
+-- Indeksy dla brigades
+CREATE INDEX idx_brigades_line_id ON brigades(line_id);
+CREATE INDEX idx_brigades_active ON brigades(active);
+
+-- Indeksy dla route_variants
+CREATE INDEX idx_route_variants_line_id ON route_variants(line_id);
+CREATE INDEX idx_route_variants_active ON route_variants(is_active);
+
+-- Indeksy dla route_stops
+CREATE INDEX idx_route_stops_variant_id ON route_stops(route_variant_id);
+CREATE INDEX idx_route_stops_platform_id ON route_stops(platform_id);
+CREATE INDEX idx_route_stops_sequence ON route_stops(route_variant_id, stop_sequence);
 
 -- ============================================
 -- KONIEC SCHEMATU

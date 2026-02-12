@@ -26,6 +26,22 @@
                 </div>
             </div>
 
+            <?php
+            $flash = getFlashMessage();
+            $flash_class = 'alert-info';
+            if (!empty($flash['type'])) {
+                if ($flash['type'] === 'success') $flash_class = 'alert-success';
+                if ($flash['type'] === 'error') $flash_class = 'alert-error';
+                if ($flash['type'] === 'warning') $flash_class = 'alert-warning';
+                if ($flash['type'] === 'info') $flash_class = 'alert-info';
+            }
+            ?>
+            <?php if (!empty($flash['message'])): ?>
+                <div class="alert <?php echo e($flash_class); ?>">
+                    <?php echo e($flash['message']); ?>
+                </div>
+            <?php endif; ?>
+
             <?php if (!empty($errors['login'])): ?>
                 <div class="alert alert-error">
                     <?php echo e($errors['login']); ?>
@@ -69,6 +85,23 @@
                     Zaloguj się
                 </button>
             </form>
+
+            <?php $oauth_enabled = !empty($oauth['discord']) || !empty($oauth['roblox']); ?>
+            <?php if ($oauth_enabled): ?>
+                <div style="margin-top: 1.5rem; text-align: center;">
+                    <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 0.75rem;">
+                        Lub zaloguj sie przez
+                    </p>
+                    <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+                        <?php if (!empty($oauth['discord'])): ?>
+                            <a class="btn btn-outline" href="/oauth/discord.php">Discord</a>
+                        <?php endif; ?>
+                        <?php if (!empty($oauth['roblox'])): ?>
+                            <a class="btn btn-outline" href="/oauth/roblox.php">Roblox</a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
 
             <div style="margin-top: 1.5rem; text-align: center;">
                 <a href="/reset-password.php" style="color: var(--text-muted); font-size: 0.875rem;">

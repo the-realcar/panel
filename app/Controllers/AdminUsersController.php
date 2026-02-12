@@ -26,6 +26,191 @@ class AdminUsersController extends Controller {
         ]);
     }
 
+    public function create() {
+        requireLogin();
+
+        $rbac = new RBAC();
+        $rbac->requirePermission('users', 'create');
+
+        $errors = [];
+        $form = [
+            'username' => '',
+            'email' => '',
+            'first_name' => '',
+            'last_name' => '',
+            'active' => true,
+            'discord_id' => '',
+            'roblox_id' => ''
+        ];
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+                setFlashMessage('error', 'Nieprawidlowy token CSRF.');
+                $this->redirectTo('/admin/users/create.php');
+            }
+
+            $form['username'] = trim($_POST['username'] ?? '');
+            $form['email'] = trim($_POST['email'] ?? '');
+            $form['first_name'] = trim($_POST['first_name'] ?? '');
+            $form['last_name'] = trim($_POST['last_name'] ?? '');
+            $form['active'] = isset($_POST['active']);
+            $form['discord_id'] = trim($_POST['discord_id'] ?? '');
+            $form['roblox_id'] = trim($_POST['roblox_id'] ?? '');
+            $password = $_POST['password'] ?? '';
+
+            $validator = new Validator($_POST);
+            $validator->required('username', 'Nazwa uzytkownika jest wymagana')
+                      ->required('email', 'Email jest wymagany')
+                      ->email('email', 'Podaj poprawny adres email')
+                      ->required('password', 'Haslo jest wymagane')
+                      ->minLength('password', PASSWORD_MIN_LENGTH, 'Haslo jest za krotkie');
+
+            if ($validator->passes()) {
+                if (User::findByUsername($form['username'])) {
+                    $errors['username'] = 'Taki login juz istnieje.';
+                }
+
+                if (User::findByEmail($form['email'])) {
+                    $errors['email'] = 'Taki email juz istnieje.';
+                }
+
+                if ($form['discord_id'] !== '' && User::findByProviderId('discord', $form['discord_id'])) {
+                    $errors['discord_id'] = 'Ten Discord ID jest juz przypisany.';
+                }
+
+                if ($form['roblox_id'] !== '' && User::findByProviderId('roblox', $form['roblox_id'])) {
+                    $errors['roblox_id'] = 'Ten Roblox ID jest juz przypisany.';
+                }
+            } else {
+                $errors = $validator->getErrors();
+            }
+
+            if (empty($errors)) {
+                $password_hash = password_hash($password, PASSWORD_BCRYPT);
+                $data = $form;
+                $data['password_hash'] = $password_hash;
+                $data['discord_id'] = $form['discord_id'] !== '' ? $form['discord_id'] : null;
+                $data['roblox_id'] = $form['roblox_id'] !== '' ? $form['roblox_id'] : null;
+
+                User::create($data);
+                setFlashMessage('success', 'Uzytkownik zostal utworzony.');
+                $this->redirectTo('/admin/users/index.php');
+            }
+        }
+
+        $this->render('admin/users/create', [
+            'page_title' => 'Dodaj uzytkownika',
+            'errors' => $errors,
+            'form' => $form
+        ]);
+    }
+
+    public function edit() {
+        requireLogin();
+
+        $rbac = new RBAC();
+        $rbac->requirePermission('users', 'update');
+
+        $user_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        if (!$user_id) {
+            setFlashMessage('error', 'Nieprawidlowy ID uzytkownika.');
+            $this->redirectTo('/admin/users/index.php');
+        }
+
+        $user = User::find($user_id);
+        if (!$user) {
+            setFlashMessage('error', 'Uzytkownik nie zostal znaleziony.');
+            $this->redirectTo('/admin/users/index.php');
+        }
+
+        $errors = [];
+        $form = [
+            'username' => $user['username'],
+            'email' => $user['email'],
+            'first_name' => $user['first_name'] ?? '',
+            'last_name' => $user['last_name'] ?? '',
+            'active' => (bool)$user['active'],
+            'discord_id' => $user['discord_id'] ?? '',
+            'roblox_id' => $user['roblox_id'] ?? ''
+        ];
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+                setFlashMessage('error', 'Nieprawidlowy token CSRF.');
+                $this->redirectTo('/admin/users/edit.php?id=' . $user_id);
+            }
+
+            $form['username'] = trim($_POST['username'] ?? '');
+            $form['email'] = trim($_POST['email'] ?? '');
+            $form['first_name'] = trim($_POST['first_name'] ?? '');
+            $form['last_name'] = trim($_POST['last_name'] ?? '');
+            $form['active'] = isset($_POST['active']);
+            $form['discord_id'] = trim($_POST['discord_id'] ?? '');
+            $form['roblox_id'] = trim($_POST['roblox_id'] ?? '');
+            $password = $_POST['password'] ?? '';
+
+            $validator = new Validator($_POST);
+            $validator->required('username', 'Nazwa uzytkownika jest wymagana')
+                      ->required('email', 'Email jest wymagany')
+                      ->email('email', 'Podaj poprawny adres email');
+
+            if ($password !== '') {
+                $validator->minLength('password', PASSWORD_MIN_LENGTH, 'Haslo jest za krotkie');
+            }
+
+            if ($validator->passes()) {
+                $existing = User::findByUsername($form['username']);
+                if ($existing && (int)$existing['id'] !== $user_id) {
+                    $errors['username'] = 'Taki login juz istnieje.';
+                }
+
+                $existing = User::findByEmail($form['email']);
+                if ($existing && (int)$existing['id'] !== $user_id) {
+                    $errors['email'] = 'Taki email juz istnieje.';
+                }
+
+                if ($form['discord_id'] !== '') {
+                    $existing = User::findByProviderId('discord', $form['discord_id']);
+                    if ($existing && (int)$existing['id'] !== $user_id) {
+                        $errors['discord_id'] = 'Ten Discord ID jest juz przypisany.';
+                    }
+                }
+
+                if ($form['roblox_id'] !== '') {
+                    $existing = User::findByProviderId('roblox', $form['roblox_id']);
+                    if ($existing && (int)$existing['id'] !== $user_id) {
+                        $errors['roblox_id'] = 'Ten Roblox ID jest juz przypisany.';
+                    }
+                }
+            } else {
+                $errors = $validator->getErrors();
+            }
+
+            if (empty($errors)) {
+                $data = $form;
+                $data['discord_id'] = $form['discord_id'] !== '' ? $form['discord_id'] : null;
+                $data['roblox_id'] = $form['roblox_id'] !== '' ? $form['roblox_id'] : null;
+
+                User::update($user_id, $data);
+
+                if ($password !== '') {
+                    $password_hash = password_hash($password, PASSWORD_BCRYPT);
+                    User::updatePassword($user_id, $password_hash);
+                }
+
+                setFlashMessage('success', 'Uzytkownik zostal zaktualizowany.');
+                $this->redirectTo('/admin/users/index.php');
+            }
+        }
+
+        $this->render('admin/users/edit', [
+            'page_title' => 'Edytuj uzytkownika',
+            'errors' => $errors,
+            'form' => $form,
+            'user_id' => $user_id
+        ]);
+    }
+
     public function assignPosition() {
         requireLogin();
 
