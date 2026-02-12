@@ -100,7 +100,7 @@
                 <button type="submit" class="btn btn-primary">
                     Wyślij zgłoszenie
                 </button>
-                <a href="/public/driver/dashboard.php" class="btn btn-secondary">
+                <a href="/driver/dashboard.php" class="btn btn-secondary">
                     Anuluj
                 </a>
             </div>

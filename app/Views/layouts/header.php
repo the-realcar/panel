@@ -10,9 +10,9 @@ $current_user = getCurrentUsername();
     <meta name="description" content="Panel Pracowniczy Firma KOT - System zarzadzania">
     <title><?php echo e($page_title); ?> - <?php echo e(APP_NAME); ?></title>
 
-    <link rel="stylesheet" href="/public/assets/css/main.css">
-    <link rel="stylesheet" href="/public/assets/css/mobile.css">
-    <link rel="stylesheet" href="/public/assets/css/dark-mode.css">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/mobile.css">
+    <link rel="stylesheet" href="/assets/css/dark-mode.css">
 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>K</text></svg>">
 </head>
@@ -33,7 +33,7 @@ $current_user = getCurrentUsername();
                             <span class="hide-mobile">User</span>
                             <span><?php echo e($current_user); ?></span>
                         </div>
-                        <a href="/public/logout.php" class="btn btn-sm btn-outline">Wyloguj</a>
+                        <a href="/logout.php" class="btn btn-sm btn-outline">Wyloguj</a>
                     </div>
                     <?php endif; ?>
                 </div>

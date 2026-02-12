@@ -3,7 +3,7 @@
 class HomeController extends Controller {
     public function index() {
         if (!isLoggedIn()) {
-            $this->redirectTo('/public/login.php');
+            $this->redirectTo('/login.php');
         }
 
         $rbac = new RBAC();
@@ -13,13 +13,13 @@ class HomeController extends Controller {
         }
 
         if ($rbac->hasRole('Kierowca')) {
-            $this->redirectTo('/public/driver/dashboard.php');
+            $this->redirectTo('/driver/dashboard.php');
         }
 
         if ($rbac->hasRole('Dyspozytor')) {
             $this->redirectTo('/admin/dashboard.php');
         }
 
-        $this->redirectTo('/public/driver/dashboard.php');
+        $this->redirectTo('/driver/dashboard.php');
     }
 }

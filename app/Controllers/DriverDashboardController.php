@@ -7,7 +7,7 @@ class DriverDashboardController extends Controller {
         $rbac = new RBAC();
         if (!$rbac->hasRole('Kierowca') && !$rbac->isAdmin()) {
             setFlashMessage('error', 'Brak dostepu do panelu kierowcy.');
-            $this->redirectTo('/public/index.php');
+            $this->redirectTo('/index.php');
         }
 
         $user_id = getCurrentUserId();

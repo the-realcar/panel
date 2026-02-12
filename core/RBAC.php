@@ -171,7 +171,7 @@ class RBAC {
      * @param string $action
      * @param string $redirect_url URL to redirect to if not authorized
      */
-    public function requirePermission($resource, $action, $redirect_url = '/public/login.php') {
+    public function requirePermission($resource, $action, $redirect_url = '/login.php') {
         if (!$this->hasPermission($resource, $action)) {
             setFlashMessage('error', 'Nie masz uprawnień do wykonania tej operacji.');
             header('Location: ' . $redirect_url);
@@ -185,7 +185,7 @@ class RBAC {
      * @param string $role_name
      * @param string $redirect_url URL to redirect to if not authorized
      */
-    public function requireRole($role_name, $redirect_url = '/public/login.php') {
+    public function requireRole($role_name, $redirect_url = '/login.php') {
         if (!$this->hasRole($role_name)) {
             setFlashMessage('error', 'Nie masz uprawnień do dostępu do tej strony.');
             header('Location: ' . $redirect_url);

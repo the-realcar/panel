@@ -113,7 +113,7 @@
         <?php endif; ?>
     </div>
     <div class="card-footer">
-        <a href="/public/driver/report-incident.php" class="btn btn-primary">
+        <a href="/driver/report-incident.php" class="btn btn-primary">
             Zgłoś awarię
         </a>
     </div>
@@ -127,7 +127,7 @@
             </div>
             <div class="card-body">
                 <p>Wypełnij kartę drogową po każdej zmianie.</p>
-                <a href="/public/driver/route-card.php" class="btn btn-primary btn-block">
+                <a href="/driver/route-card.php" class="btn btn-primary btn-block">
                     Wypełnij kartę
                 </a>
             </div>
@@ -141,7 +141,7 @@
             </div>
             <div class="card-body">
                 <p>Zobacz swój pełny grafik pracy na najbliższe dni.</p>
-                <a href="/public/driver/schedule.php" class="btn btn-secondary btn-block">
+                <a href="/driver/schedule.php" class="btn btn-secondary btn-block">
                     Zobacz grafik
                 </a>
             </div>

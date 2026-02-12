@@ -121,7 +121,7 @@
 
 <div class="card">
     <div class="card-body">
-        <a href="/public/driver/dashboard.php" class="btn btn-secondary">
+        <a href="/driver/dashboard.php" class="btn btn-secondary">
             &larr; Powrót do panelu
         </a>
     </div>

@@ -39,22 +39,22 @@ $is_dispatcher = $rbac->hasRole('Dyspozytor');
 
             <?php if ($is_driver): ?>
                 <li class="nav-item">
-                    <a href="/public/driver/dashboard.php" class="<?php echo isActivePage('/public/driver/dashboard.php') ? 'active' : ''; ?>">
+                    <a href="/driver/dashboard.php" class="<?php echo isActivePage('/driver/dashboard.php') ? 'active' : ''; ?>">
                         Moj Panel
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="/public/driver/schedule.php" class="<?php echo isActivePage('/public/driver/schedule.php') ? 'active' : ''; ?>">
+                    <a href="/driver/schedule.php" class="<?php echo isActivePage('/driver/schedule.php') ? 'active' : ''; ?>">
                         Grafik
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="/public/driver/route-card.php" class="<?php echo isActivePage('/public/driver/route-card.php') ? 'active' : ''; ?>">
+                    <a href="/driver/route-card.php" class="<?php echo isActivePage('/driver/route-card.php') ? 'active' : ''; ?>">
                         Karta drogowa
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="/public/driver/report-incident.php" class="<?php echo isActivePage('/public/driver/report-incident.php') ? 'active' : ''; ?>">
+                    <a href="/driver/report-incident.php" class="<?php echo isActivePage('/driver/report-incident.php') ? 'active' : ''; ?>">
                         Zglos awarie
                     </a>
                 </li>

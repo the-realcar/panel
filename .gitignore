@@ -46,3 +46,6 @@ build/
 # Cache
 cache/
 *.cache
+
+# Web server config
+.htaccess

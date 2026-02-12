@@ -62,7 +62,7 @@ function checkSessionTimeout() {
  */
 function requireLogin($redirect_to = null) {
     if (!isLoggedIn() || !checkSessionTimeout()) {
-        $redirect_url = '/public/login.php';
+        $redirect_url = '/login.php';
         
         if ($redirect_to) {
             $redirect_url .= '?redirect=' . urlencode($redirect_to);

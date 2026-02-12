@@ -125,7 +125,7 @@
                 <button type="submit" class="btn btn-primary">
                     Zapisz kartę drogową
                 </button>
-                <a href="/public/driver/dashboard.php" class="btn btn-secondary">
+                <a href="/driver/dashboard.php" class="btn btn-secondary">
                     Anuluj
                 </a>
             </div>

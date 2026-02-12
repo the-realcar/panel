@@ -7,7 +7,7 @@ class DriverIncidentController extends Controller {
         $rbac = new RBAC();
         if (!$rbac->hasRole('Kierowca') && !$rbac->isAdmin()) {
             setFlashMessage('error', 'Brak dostepu do panelu kierowcy.');
-            $this->redirectTo('/public/index.php');
+            $this->redirectTo('/index.php');
         }
 
         $user_id = getCurrentUserId();
@@ -15,7 +15,7 @@ class DriverIncidentController extends Controller {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
                 setFlashMessage('error', 'Blad weryfikacji formularza. Sprobuj ponownie.');
-                $this->redirectTo('/public/driver/report-incident.php');
+                $this->redirectTo('/driver/report-incident.php');
             }
 
             $validator = new Validator($_POST);
@@ -51,7 +51,7 @@ class DriverIncidentController extends Controller {
                         ]);
 
                         setFlashMessage('success', 'Zgloszenie zostalo zapisane pomyslnie. Dziekujemy za zgloszenie.');
-                        $this->redirectTo('/public/driver/report-incident.php');
+                        $this->redirectTo('/driver/report-incident.php');
                     } catch (Exception $e) {
                         setFlashMessage('error', 'Blad podczas zapisywania zgloszenia: ' . $e->getMessage());
                     }

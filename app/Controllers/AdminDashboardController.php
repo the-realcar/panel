@@ -7,7 +7,7 @@ class AdminDashboardController extends Controller {
         $rbac = new RBAC();
         if (!$rbac->hasAnyRole(['Administrator', 'Dyspozytor'])) {
             setFlashMessage('error', 'Brak dostepu do panelu administracyjnego.');
-            $this->redirectTo('/public/index.php');
+            $this->redirectTo('/index.php');
         }
 
         $stats = AdminStats::getStats();

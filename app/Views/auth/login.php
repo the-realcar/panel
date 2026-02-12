@@ -8,9 +8,9 @@
     <meta name="description" content="Panel Pracowniczy Firma KOT - Logowanie">
     <title>Logowanie - <?php echo e(APP_NAME); ?></title>
 
-    <link rel="stylesheet" href="/public/assets/css/main.css">
-    <link rel="stylesheet" href="/public/assets/css/mobile.css">
-    <link rel="stylesheet" href="/public/assets/css/dark-mode.css">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/mobile.css">
+    <link rel="stylesheet" href="/assets/css/dark-mode.css">
 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚌</text></svg>">
 </head>
@@ -71,7 +71,7 @@
             </form>
 
             <div style="margin-top: 1.5rem; text-align: center;">
-                <a href="/public/reset-password.php" style="color: var(--text-muted); font-size: 0.875rem;">
+                <a href="/reset-password.php" style="color: var(--text-muted); font-size: 0.875rem;">
                     Zapomniałeś hasła?
                 </a>
             </div>
@@ -87,6 +87,6 @@
         </div>
     </div>
 
-    <script src="/public/assets/js/dark-mode.js"></script>
+    <script src="/assets/js/dark-mode.js"></script>
 </body>
 </html>

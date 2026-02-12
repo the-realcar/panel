@@ -13,10 +13,10 @@
         </footer>
     </div>
 
-    <script src="/public/assets/js/main.js"></script>
-    <script src="/public/assets/js/dark-mode.js"></script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/dark-mode.js"></script>
     <?php if (isLoggedIn()): ?>
-    <script src="/public/assets/js/session.js"></script>
+    <script src="/assets/js/session.js"></script>
     <?php endif; ?>
 </body>
 </html>

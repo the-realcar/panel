@@ -7,7 +7,7 @@ class DriverRouteCardController extends Controller {
         $rbac = new RBAC();
         if (!$rbac->hasRole('Kierowca') && !$rbac->isAdmin()) {
             setFlashMessage('error', 'Brak dostepu do panelu kierowcy.');
-            $this->redirectTo('/public/index.php');
+            $this->redirectTo('/index.php');
         }
 
         $user_id = getCurrentUserId();
@@ -15,7 +15,7 @@ class DriverRouteCardController extends Controller {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
                 setFlashMessage('error', 'Blad weryfikacji formularza. Sprobuj ponownie.');
-                $this->redirectTo('/public/driver/route-card.php');
+                $this->redirectTo('/driver/route-card.php');
             }
 
             $validator = new Validator($_POST);
@@ -63,7 +63,7 @@ class DriverRouteCardController extends Controller {
                         ]);
 
                         setFlashMessage('success', 'Karta drogowa zostala zapisana pomyslnie.');
-                        $this->redirectTo('/public/driver/route-card.php');
+                        $this->redirectTo('/driver/route-card.php');
                     } catch (Exception $e) {
                         setFlashMessage('error', 'Blad podczas zapisywania karty drogowej: ' . $e->getMessage());
                     }

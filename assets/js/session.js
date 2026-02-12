@@ -150,7 +150,7 @@
         
         // Redirect to logout page
         setTimeout(function() {
-            window.location.href = '/public/logout.php';
+            window.location.href = '/logout.php';
         }, 2000);
     }
     
@@ -158,7 +158,7 @@
      * Check session validity
      */
     function checkSession() {
-        fetch('/public/check-session.php', {
+        fetch('/check-session.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -187,7 +187,7 @@
         
         updateLastActivity.timeout = setTimeout(function() {
             // Ping server to update session
-            fetch('/public/ping.php', {
+            fetch('/ping.php', {
                 method: 'POST',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'

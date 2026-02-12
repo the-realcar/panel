@@ -3,7 +3,7 @@
 class AuthController extends Controller {
     public function login() {
         if (isLoggedIn()) {
-            $this->redirectTo('/public/index.php');
+            $this->redirectTo('/index.php');
         }
 
         $errors = [];
@@ -23,7 +23,7 @@ class AuthController extends Controller {
                 $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? null;
 
                 if ($auth->login($username, $password, $ip_address, $user_agent)) {
-                    $redirect = $_GET['redirect'] ?? '/public/index.php';
+                    $redirect = $_GET['redirect'] ?? '/index.php';
                     $this->redirectTo($redirect);
                 } else {
                     $errors['login'] = 'Nieprawidlowa nazwa uzytkownika lub haslo.';
@@ -42,7 +42,7 @@ class AuthController extends Controller {
     public function logout() {
         $auth = new Auth();
         $auth->logout();
-        $this->redirectTo('/public/login.php');
+        $this->redirectTo('/login.php');
     }
 
     public function resetPassword() {
