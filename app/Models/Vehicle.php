@@ -171,7 +171,7 @@ class Vehicle {
         $query = "
             SELECT id, nr_poj, model, reg_plate
             FROM vehicles
-            WHERE status = 'sprawny'
+            WHERE status != 'odstawiony'
             ORDER BY nr_poj
         ";
 
