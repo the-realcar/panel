@@ -148,7 +148,7 @@
                                 <?php echo formatDateTime($incident['incident_date'], 'd.m.Y H:i'); ?>
                             </td>
                             <td data-label="Pojazd">
-                                <?php echo e($incident['vehicle_number'] ?? 'Brak'); ?>
+                                <?php echo e($incident['nr_poj'] ?? 'Brak'); ?>
                             </td>
                             <td data-label="Typ">
                                 <?php echo e($incident['incident_type']); ?>

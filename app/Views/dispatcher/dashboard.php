@@ -108,10 +108,10 @@
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <strong><?php echo htmlspecialchars($schedule['vehicle_number']); ?></strong>
+                                    <strong><?php echo htmlspecialchars($schedule['nr_poj']); ?></strong>
                                     <br><small><?php echo htmlspecialchars($schedule['model']); ?></small>
-                                    <?php if ($schedule['registration_plate']): ?>
-                                        <br><small class="text-muted"><?php echo htmlspecialchars($schedule['registration_plate']); ?></small>
+                                    <?php if ($schedule['reg_plate']): ?>
+                                        <br><small class="text-muted"><?php echo htmlspecialchars($schedule['reg_plate']); ?></small>
                                     <?php endif; ?>
                                 </td>
                                 <td>

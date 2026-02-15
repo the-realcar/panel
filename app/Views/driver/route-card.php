@@ -20,8 +20,8 @@
                             <?php foreach ($vehicles as $vehicle): ?>
                                 <option value="<?php echo $vehicle['id']; ?>">
                                     <?php echo e($vehicle['nr_poj']); ?> 
-                                    <?php if ($vehicle['registration_plate']): ?>
-                                        (<?php echo e($vehicle['registration_plate']); ?>)
+                                    <?php if ($vehicle['reg_plate']): ?>
+                                        (<?php echo e($vehicle['reg_plate']); ?>)
                                     <?php endif; ?>
                                     <?php if ($vehicle['model']): ?>
                                         - <?php echo e($vehicle['model']); ?>
