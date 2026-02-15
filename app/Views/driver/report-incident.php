@@ -19,9 +19,9 @@
                             <option value="">Nie dotyczy pojazdu</option>
                             <?php foreach ($vehicles as $vehicle): ?>
                                 <option value="<?php echo $vehicle['id']; ?>">
-                                    <?php echo e($vehicle['vehicle_number']); ?> 
-                                    <?php if ($vehicle['registration_plate']): ?>
-                                        (<?php echo e($vehicle['registration_plate']); ?>)
+                                    <?php echo e($vehicle['nr_poj']); ?> 
+                                    <?php if ($vehicle['reg_plate']): ?>
+                                        (<?php echo e($vehicle['reg_plate']); ?>)
                                     <?php endif; ?>
                                     <?php if ($vehicle['model']): ?>
                                         - <?php echo e($vehicle['model']); ?>
@@ -135,8 +135,8 @@
                                 <?php echo formatDateTime($incident['incident_date'], 'd.m.Y H:i'); ?>
                             </td>
                             <td data-label="Pojazd">
-                                <?php if ($incident['vehicle_number']): ?>
-                                    <?php echo e($incident['vehicle_number']); ?>
+                                <?php if ($incident['nr_poj']): ?>
+                                    <?php echo e($incident['nr_poj']); ?>
                                     <?php if ($incident['model']): ?>
                                         <br><small class="text-muted"><?php echo e($incident['model']); ?></small>
                                     <?php endif; ?>

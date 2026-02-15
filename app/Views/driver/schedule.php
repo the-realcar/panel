@@ -60,8 +60,8 @@
                                 <?php echo formatTime($schedule['end_time']); ?>
                             </td>
                             <td data-label="Pojazd">
-                                <?php if ($schedule['vehicle_number']): ?>
-                                    <strong><?php echo e($schedule['vehicle_number']); ?></strong>
+                                <?php if ($schedule['nr_poj']): ?>
+                                    <strong><?php echo e($schedule['nr_poj']); ?></strong>
                                     <?php if ($schedule['registration_plate']): ?>
                                         <br><small class="text-muted"><?php echo e($schedule['registration_plate']); ?></small>
                                     <?php endif; ?>

@@ -44,50 +44,52 @@ class AdminVehiclesController extends Controller {
             $form_data = $_POST;
 
             $validator = new Validator($form_data);
-            $validator->required('vehicle_number', 'Numer pojazdu jest wymagany.')
+            $validator->required('nr_poj', 'Numer pojazdu jest wymagany.')
                       ->required('vehicle_type', 'Typ pojazdu jest wymagany.')
                       ->required('status', 'Status jest wymagany.');
 
-            if (!empty($form_data['manufacture_year'])) {
-                $validator->integer('manufacture_year', 'Rok produkcji musi byc liczba calkowita.')
-                          ->min('manufacture_year', 1900, 'Rok produkcji musi byc wiekszy niz 1900.')
-                          ->max('manufacture_year', date('Y') + 1, 'Rok produkcji nie moze byc w przyszlosci.');
-            }
-
-            if (!empty($form_data['capacity'])) {
-                $validator->integer('capacity', 'Pojemnosc musi byc liczba calkowita.')
-                          ->min('capacity', 1, 'Pojemnosc musi byc wieksza niz 0.');
-            }
-
-            if (!empty($form_data['last_inspection'])) {
-                $validator->date('last_inspection', 'Y-m-d', 'Data ostatniego przegladu jest nieprawidlowa.');
+            if (!empty($form_data['rok_prod'])) {
+                $validator->integer('rok_prod', 'Rok produkcji musi byc liczba calkowita.')
+                          ->min('rok_prod', 1900, 'Rok produkcji musi byc wiekszy niz 1900.')
+                          ->max('rok_prod', date('Y') + 1, 'Rok produkcji nie moze byc w przyszlosci.');
             }
 
             if ($validator->fails()) {
                 $errors = $validator->getErrors();
             }
 
-            if (empty($errors['vehicle_number']) && Vehicle::existsByNumber($form_data['vehicle_number'])) {
-                $errors['vehicle_number'] = 'Pojazd o tym numerze juz istnieje.';
+            if (empty($errors['nr_poj']) && Vehicle::existsByNumber($form_data['nr_poj'])) {
+                $errors['nr_poj'] = 'Pojazd o tym numerze juz istnieje.';
             }
 
-            if (!empty($form_data['registration_plate']) && empty($errors['registration_plate'])) {
-                if (Vehicle::existsByPlate($form_data['registration_plate'])) {
-                    $errors['registration_plate'] = 'Pojazd o tej rejestracji juz istnieje.';
+            if (!empty($form_data['reg_plate']) && empty($errors['reg_plate'])) {
+                if (Vehicle::existsByPlate($form_data['reg_plate'])) {
+                    $errors['reg_plate'] = 'Pojazd o tej rejestracji juz istnieje.';
                 }
             }
 
             if (empty($errors)) {
                 try {
                     Vehicle::create([
-                        'vehicle_number' => $form_data['vehicle_number'],
-                        'registration_plate' => !empty($form_data['registration_plate']) ? $form_data['registration_plate'] : null,
+                        'nr_poj' => $form_data['nr_poj'],
+                        'reg_plate' => !empty($form_data['reg_plate']) ? $form_data['reg_plate'] : null,
                         'vehicle_type' => $form_data['vehicle_type'],
                         'model' => !empty($form_data['model']) ? $form_data['model'] : null,
-                        'manufacture_year' => !empty($form_data['manufacture_year']) ? (int)$form_data['manufacture_year'] : null,
-                        'capacity' => !empty($form_data['capacity']) ? (int)$form_data['capacity'] : null,
+                        'rok_prod' => !empty($form_data['rok_prod']) ? (int)$form_data['rok_prod'] : null,
+                        'pojemnosc' => !empty($form_data['pojemnosc']) ? $form_data['pojemnosc'] : null,
                         'status' => $form_data['status'],
-                        'last_inspection' => !empty($form_data['last_inspection']) ? $form_data['last_inspection'] : null
+                        'marka' => !empty($form_data['marka']) ? $form_data['marka'] : null,
+                        'pulpit' => !empty($form_data['pulpit']) ? $form_data['pulpit'] : null,
+                        'engine' => !empty($form_data['engine']) ? $form_data['engine'] : null,
+                        'gearbox' => !empty($form_data['gearbox']) ? $form_data['gearbox'] : null,
+                        'typ_napedu' => !empty($form_data['typ_napedu']) ? $form_data['typ_napedu'] : null,
+                        'norma_spalania' => !empty($form_data['norma_spalania']) ? $form_data['norma_spalania'] : null,
+                        'klimatyzacja' => isset($form_data['klimatyzacja']) ? true : false,
+                        'zajezdnia' => !empty($form_data['zajezdnia']) ? $form_data['zajezdnia'] : null,
+                        'przewoznik' => !empty($form_data['przewoznik']) ? $form_data['przewoznik'] : null,
+                        'opiekun_1' => !empty($form_data['opiekun_1']) ? $form_data['opiekun_1'] : null,
+                        'opiekun_2' => !empty($form_data['opiekun_2']) ? $form_data['opiekun_2'] : null,
+                        'dodatkowe_informacje' => !empty($form_data['dodatkowe_informacje']) ? $form_data['dodatkowe_informacje'] : null
                     ]);
 
                     setFlashMessage('success', 'Pojazd zostal dodany pomyslnie.');
@@ -136,39 +138,30 @@ class AdminVehiclesController extends Controller {
             $form_data = array_merge($vehicle, $_POST);
 
             $validator = new Validator($form_data);
-            $validator->required('vehicle_number', 'Numer pojazdu jest wymagany.')
+            $validator->required('nr_poj', 'Numer pojazdu jest wymagany.')
                       ->required('vehicle_type', 'Typ pojazdu jest wymagany.')
                       ->required('status', 'Status jest wymagany.');
 
-            if (!empty($form_data['manufacture_year'])) {
-                $validator->integer('manufacture_year', 'Rok produkcji musi byc liczba calkowita.')
-                          ->min('manufacture_year', 1900, 'Rok produkcji musi byc wiekszy niz 1900.')
-                          ->max('manufacture_year', date('Y') + 1, 'Rok produkcji nie moze byc w przyszlosci.');
-            }
-
-            if (!empty($form_data['capacity'])) {
-                $validator->integer('capacity', 'Pojemnosc musi byc liczba calkowita.')
-                          ->min('capacity', 1, 'Pojemnosc musi byc wieksza niz 0.');
-            }
-
-            if (!empty($form_data['last_inspection'])) {
-                $validator->date('last_inspection', 'Y-m-d', 'Data ostatniego przegladu jest nieprawidlowa.');
+            if (!empty($form_data['rok_prod'])) {
+                $validator->integer('rok_prod', 'Rok produkcji musi byc liczba calkowita.')
+                          ->min('rok_prod', 1900, 'Rok produkcji musi byc wiekszy niz 1900.')
+                          ->max('rok_prod', date('Y') + 1, 'Rok produkcji nie moze byc w przyszlosci.');
             }
 
             if ($validator->fails()) {
                 $errors = $validator->getErrors();
             }
 
-            if (empty($errors['vehicle_number']) && $form_data['vehicle_number'] !== $vehicle['vehicle_number']) {
-                if (Vehicle::existsByNumber($form_data['vehicle_number'], $vehicle_id)) {
-                    $errors['vehicle_number'] = 'Pojazd o tym numerze juz istnieje.';
+            if (empty($errors['nr_poj']) && $form_data['nr_poj'] !== $vehicle['nr_poj']) {
+                if (Vehicle::existsByNumber($form_data['nr_poj'], $vehicle_id)) {
+                    $errors['nr_poj'] = 'Pojazd o tym numerze juz istnieje.';
                 }
             }
 
-            if (!empty($form_data['registration_plate']) && empty($errors['registration_plate'])) {
-                if ($form_data['registration_plate'] !== $vehicle['registration_plate']) {
-                    if (Vehicle::existsByPlate($form_data['registration_plate'], $vehicle_id)) {
-                        $errors['registration_plate'] = 'Pojazd o tej rejestracji juz istnieje.';
+            if (!empty($form_data['reg_plate']) && empty($errors['reg_plate'])) {
+                if ($form_data['reg_plate'] !== $vehicle['reg_plate']) {
+                    if (Vehicle::existsByPlate($form_data['reg_plate'], $vehicle_id)) {
+                        $errors['reg_plate'] = 'Pojazd o tej rejestracji juz istnieje.';
                     }
                 }
             }
@@ -176,14 +169,25 @@ class AdminVehiclesController extends Controller {
             if (empty($errors)) {
                 try {
                     Vehicle::update($vehicle_id, [
-                        'vehicle_number' => $form_data['vehicle_number'],
-                        'registration_plate' => !empty($form_data['registration_plate']) ? $form_data['registration_plate'] : null,
+                        'nr_poj' => $form_data['nr_poj'],
+                        'reg_plate' => !empty($form_data['reg_plate']) ? $form_data['reg_plate'] : null,
                         'vehicle_type' => $form_data['vehicle_type'],
                         'model' => !empty($form_data['model']) ? $form_data['model'] : null,
-                        'manufacture_year' => !empty($form_data['manufacture_year']) ? (int)$form_data['manufacture_year'] : null,
-                        'capacity' => !empty($form_data['capacity']) ? (int)$form_data['capacity'] : null,
+                        'rok_prod' => !empty($form_data['rok_prod']) ? (int)$form_data['rok_prod'] : null,
+                        'pojemnosc' => !empty($form_data['pojemnosc']) ? $form_data['pojemnosc'] : null,
                         'status' => $form_data['status'],
-                        'last_inspection' => !empty($form_data['last_inspection']) ? $form_data['last_inspection'] : null
+                        'marka' => !empty($form_data['marka']) ? $form_data['marka'] : null,
+                        'pulpit' => !empty($form_data['pulpit']) ? $form_data['pulpit'] : null,
+                        'engine' => !empty($form_data['engine']) ? $form_data['engine'] : null,
+                        'gearbox' => !empty($form_data['gearbox']) ? $form_data['gearbox'] : null,
+                        'typ_napedu' => !empty($form_data['typ_napedu']) ? $form_data['typ_napedu'] : null,
+                        'norma_spalania' => !empty($form_data['norma_spalania']) ? $form_data['norma_spalania'] : null,
+                        'klimatyzacja' => isset($form_data['klimatyzacja']) ? true : false,
+                        'zajezdnia' => !empty($form_data['zajezdnia']) ? $form_data['zajezdnia'] : null,
+                        'przewoznik' => !empty($form_data['przewoznik']) ? $form_data['przewoznik'] : null,
+                        'opiekun_1' => !empty($form_data['opiekun_1']) ? $form_data['opiekun_1'] : null,
+                        'opiekun_2' => !empty($form_data['opiekun_2']) ? $form_data['opiekun_2'] : null,
+                        'dodatkowe_informacje' => !empty($form_data['dodatkowe_informacje']) ? $form_data['dodatkowe_informacje'] : null
                     ]);
 
                     setFlashMessage('success', 'Pojazd zostal zaktualizowany pomyslnie.');

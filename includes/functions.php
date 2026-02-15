@@ -59,6 +59,11 @@ function formatTime($time, $format = 'H:i') {
  */
 function getStatusBadge($status, $status_map = null) {
     $default_map = [
+        'sprawny' => ['label' => 'Sprawny', 'class' => 'success'],
+        'w naprawie' => ['label' => 'W naprawie', 'class' => 'warning'],
+        'odstawiony' => ['label' => 'Odstawiony', 'class' => 'danger'],
+        'zawieszony' => ['label' => 'Zawieszony', 'class' => 'secondary'],
+        // Legacy statuses for backward compatibility
         'available' => ['label' => 'Dostępny', 'class' => 'success'],
         'in_use' => ['label' => 'W użyciu', 'class' => 'primary'],
         'maintenance' => ['label' => 'Serwis', 'class' => 'warning'],

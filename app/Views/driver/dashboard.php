@@ -46,7 +46,7 @@
                                 <?php echo formatTime($schedule['end_time']); ?>
                             </td>
                             <td data-label="Pojazd">
-                                <?php echo e($schedule['vehicle_number'] ?? 'Brak'); ?><br>
+                                <?php echo e($schedule['nr_poj'] ?? 'Brak'); ?><br>
                                 <small class="text-muted"><?php echo e($schedule['model'] ?? ''); ?></small>
                             </td>
                             <td data-label="Linia">
@@ -94,7 +94,7 @@
                                 <?php echo formatDateTime($incident['incident_date'], 'd.m.Y H:i'); ?>
                             </td>
                             <td data-label="Pojazd">
-                                <?php echo e($incident['vehicle_number'] ?? 'Brak'); ?>
+                                <?php echo e($incident['nr_poj'] ?? 'Brak'); ?>
                             </td>
                             <td data-label="Typ">
                                 <?php echo e($incident['incident_type']); ?>

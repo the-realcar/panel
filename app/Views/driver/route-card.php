@@ -19,7 +19,7 @@
                             <option value="">Wybierz pojazd</option>
                             <?php foreach ($vehicles as $vehicle): ?>
                                 <option value="<?php echo $vehicle['id']; ?>">
-                                    <?php echo e($vehicle['vehicle_number']); ?> 
+                                    <?php echo e($vehicle['nr_poj']); ?> 
                                     <?php if ($vehicle['registration_plate']): ?>
                                         (<?php echo e($vehicle['registration_plate']); ?>)
                                     <?php endif; ?>
@@ -161,7 +161,7 @@
                                 <?php echo formatDate($card['route_date'], 'd.m.Y'); ?>
                             </td>
                             <td data-label="Pojazd">
-                                <?php echo e($card['vehicle_number'] ?? 'Brak'); ?>
+                                <?php echo e($card['nr_poj'] ?? 'Brak'); ?>
                                 <?php if ($card['model']): ?>
                                     <br><small class="text-muted"><?php echo e($card['model']); ?></small>
                                 <?php endif; ?>

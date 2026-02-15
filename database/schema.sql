@@ -129,14 +129,25 @@ CREATE TABLE lines (
 -- Tabela pojazdów
 CREATE TABLE vehicles (
     id SERIAL PRIMARY KEY,
-    vehicle_number VARCHAR(20) UNIQUE NOT NULL,
-    registration_plate VARCHAR(20) UNIQUE,
-    vehicle_type VARCHAR(50) NOT NULL, -- bus, tram, metro
+    nr_poj VARCHAR(20) UNIQUE NOT NULL,
+    reg_plate VARCHAR(20) UNIQUE,
+    vehicle_type VARCHAR(50) NOT NULL CHECK (vehicle_type IN ('bus', 'tram', 'metro', 'tbus')),
     model VARCHAR(100),
-    manufacture_year INT,
-    capacity INT,
-    status VARCHAR(20) DEFAULT 'available', -- available, in_use, maintenance, broken
-    last_inspection DATE,
+    rok_prod INT,
+    pojemnosc VARCHAR(10) CHECK (pojemnosc IN ('MINI', 'MIDI', 'MAXI', 'MAXI+', 'MEGA', 'MEGA+', 'GIGA')),
+    status VARCHAR(20) DEFAULT 'sprawny' CHECK (status IN ('sprawny', 'w naprawie', 'odstawiony', 'zawieszony')),
+    marka VARCHAR(25),
+    pulpit VARCHAR(25),
+    engine VARCHAR(50),
+    gearbox VARCHAR(50),
+    typ_napedu VARCHAR(20) CHECK (typ_napedu IN ('Diesel', 'CNG', 'Hybrydowy', 'Elektryczny', 'Wodorowy')),
+    norma_spalania VARCHAR(10),
+    klimatyzacja BOOLEAN DEFAULT FALSE,
+    zajezdnia VARCHAR(10) CHECK (zajezdnia IN ('KM', 'KW', 'MC')),
+    przewoznik VARCHAR(20) CHECK (przewoznik IN ('Ostrans', 'KujaTrans', 'Ostromunikacja')),
+    opiekun_1 VARCHAR(20),
+    opiekun_2 VARCHAR(20),
+    dodatkowe_informacje VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
