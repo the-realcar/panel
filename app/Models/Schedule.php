@@ -5,7 +5,7 @@ class Schedule {
         $db = new Database();
         $query = "
             SELECT s.*, 
-                   v.vehicle_number, v.model, 
+                   v.nr_poj, v.model, 
                    l.line_number, l.name as line_name
             FROM schedules s
             LEFT JOIN vehicles v ON s.vehicle_id = v.id
@@ -74,7 +74,7 @@ class Schedule {
         $where_sql = implode(' AND ', $where);
         $query = "
             SELECT s.*, 
-                   v.vehicle_number, v.model, v.registration_plate,
+                   v.nr_poj, v.model, v.reg_plate,
                    l.line_number, l.name as line_name
             FROM schedules s
             LEFT JOIN vehicles v ON s.vehicle_id = v.id
@@ -95,7 +95,7 @@ class Schedule {
         $query = "
             SELECT s.*,
                    u.first_name, u.last_name, u.employee_id,
-                   v.vehicle_number, v.model, v.registration_plate,
+                   v.nr_poj, v.model, v.reg_plate,
                    l.line_number, l.name as line_name,
                    b.brigade_number
             FROM schedules s

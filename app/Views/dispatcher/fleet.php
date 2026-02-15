@@ -13,17 +13,17 @@
                 <label for="status">Status pojazdu:</label>
                 <select name="status" id="status" class="form-control" onchange="this.form.submit()">
                     <option value="">Wszystkie</option>
-                    <option value="available" <?php echo $status_filter === 'available' ? 'selected' : ''; ?>>
-                        Dostępne
+                    <option value="sprawny" <?php echo $status_filter === 'sprawny' ? 'selected' : ''; ?>>
+                        Sprawny
                     </option>
-                    <option value="in_use" <?php echo $status_filter === 'in_use' ? 'selected' : ''; ?>>
-                        W trasie
+                    <option value="w naprawie" <?php echo $status_filter === 'w naprawie' ? 'selected' : ''; ?>>
+                        W naprawie
                     </option>
-                    <option value="maintenance" <?php echo $status_filter === 'maintenance' ? 'selected' : ''; ?>>
-                        Konserwacja
+                    <option value="odstawiony" <?php echo $status_filter === 'odstawiony' ? 'selected' : ''; ?>>
+                        Odstawiony
                     </option>
-                    <option value="broken" <?php echo $status_filter === 'broken' ? 'selected' : ''; ?>>
-                        Niesprawny
+                    <option value="zawieszony" <?php echo $status_filter === 'zawieszony' ? 'selected' : ''; ?>>
+                        Zawieszony
                     </option>
                 </select>
             </div>
@@ -46,18 +46,17 @@
                         <th>Typ</th>
                         <th>Pojemność</th>
                         <th>Status</th>
-                        <th>Ostatni przegląd</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($vehicles as $vehicle): ?>
                         <tr>
-                            <td><strong><?php echo htmlspecialchars($vehicle['vehicle_number']); ?></strong></td>
+                            <td><strong><?php echo htmlspecialchars($vehicle['nr_poj']); ?></strong></td>
                             <td><?php echo htmlspecialchars($vehicle['model']); ?></td>
                             <td>
-                                <?php if ($vehicle['registration_plate']): ?>
+                                <?php if ($vehicle['reg_plate']): ?>
                                     <span class="badge badge-secondary">
-                                        <?php echo htmlspecialchars($vehicle['registration_plate']); ?>
+                                        <?php echo htmlspecialchars($vehicle['reg_plate']); ?>
                                     </span>
                                 <?php else: ?>
                                     <span class="text-muted">—</span>
@@ -67,6 +66,7 @@
                                 <?php
                                 $type_labels = [
                                     'bus' => 'Autobus',
+                                    'tbus' => 'Trolejbus',
                                     'articulated_bus' => 'Autobus przegubowy',
                                     'tram' => 'Tramwaj',
                                     'metro' => 'Metro'
@@ -74,14 +74,14 @@
                                 echo htmlspecialchars($type_labels[$vehicle['vehicle_type']] ?? $vehicle['vehicle_type']);
                                 ?>
                             </td>
-                            <td><?php echo (int)$vehicle['capacity']; ?> osób</td>
+                            <td><?php echo htmlspecialchars($vehicle['pojemnosc'] ?? '-'); ?></td>
                             <td>
                                 <?php
                                 $status_info = [
-                                    'available' => ['label' => 'Dostępny', 'class' => 'badge-success'],
-                                    'in_use' => ['label' => 'W trasie', 'class' => 'badge-primary'],
-                                    'maintenance' => ['label' => 'Konserwacja', 'class' => 'badge-warning'],
-                                    'broken' => ['label' => 'Niesprawny', 'class' => 'badge-danger']
+                                    'sprawny' => ['label' => 'Sprawny', 'class' => 'badge-success'],
+                                    'w naprawie' => ['label' => 'W naprawie', 'class' => 'badge-warning'],
+                                    'odstawiony' => ['label' => 'Odstawiony', 'class' => 'badge-danger'],
+                                    'zawieszony' => ['label' => 'Zawieszony', 'class' => 'badge-secondary']
                                 ];
                                 $status = $vehicle['status'];
                                 $info = $status_info[$status] ?? ['label' => $status, 'class' => 'badge-secondary'];
@@ -89,13 +89,6 @@
                                 <span class="badge <?php echo $info['class']; ?>">
                                     <?php echo htmlspecialchars($info['label']); ?>
                                 </span>
-                            </td>
-                            <td>
-                                <?php if ($vehicle['last_inspection']): ?>
-                                    <?php echo date('d.m.Y', strtotime($vehicle['last_inspection'])); ?>
-                                <?php else: ?>
-                                    <span class="text-muted">—</span>
-                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

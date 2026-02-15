@@ -73,10 +73,10 @@
                 <?php foreach ($vehicles as $vehicle): ?>
                     <option value="<?php echo (int)$vehicle['id']; ?>"
                             <?php echo (isset($form_data['vehicle_id']) && $form_data['vehicle_id'] == $vehicle['id']) ? 'selected' : ''; ?>>
-                        <?php echo htmlspecialchars($vehicle['vehicle_number']); ?> — 
+                        <?php echo htmlspecialchars($vehicle['nr_poj']); ?> — 
                         <?php echo htmlspecialchars($vehicle['model']); ?>
-                        <?php if ($vehicle['registration_plate']): ?>
-                            (<?php echo htmlspecialchars($vehicle['registration_plate']); ?>)
+                        <?php if ($vehicle['reg_plate']): ?>
+                            (<?php echo htmlspecialchars($vehicle['reg_plate']); ?>)
                         <?php endif; ?>
                     </option>
                 <?php endforeach; ?>

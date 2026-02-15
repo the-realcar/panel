@@ -109,11 +109,11 @@ INSERT INTO lines (line_number, name, route_description, line_type, active) VALU
 -- ============================================
 -- 8. POJAZDY
 -- ============================================
-INSERT INTO vehicles (vehicle_number, registration_plate, vehicle_type, model, manufacture_year, capacity, status, last_inspection) VALUES
-('BUS-001', 'KR 12345', 'bus', 'Solaris Urbino 12', 2020, 90, 'available', '2025-12-01'),
-('BUS-002', 'KR 23456', 'bus', 'MAN Lion''s City', 2019, 85, 'available', '2025-11-15'),
-('TRAM-001', 'KR 98765', 'tram', 'Pesa Swing', 2021, 180, 'available', '2025-12-10'),
-('BUS-003', 'KR 34567', 'bus', 'Mercedes-Benz Citaro', 2018, 80, 'maintenance', '2025-10-20');
+INSERT INTO vehicles (nr_poj, reg_plate, vehicle_type, model, rok_prod, pojemnosc, status, marka, engine, gearbox, typ_napedu, klimatyzacja, zajezdnia, przewoznik) VALUES
+('BUS-001', 'KR 12345', 'bus', 'Urbino 12', 2020, 'MAXI', 'sprawny', 'Solaris', 'Cummins ISB6.7', 'ZF Ecolife', 'Diesel', true, 'KM', 'Ostrans'),
+('BUS-002', 'KR 23456', 'bus', 'Lion''s City', 2019, 'MAXI', 'sprawny', 'MAN', 'MAN D2066', 'Voith DIWA', 'Diesel', true, 'KW', 'KujaTrans'),
+('TRAM-001', 'KR 98765', 'tram', 'Swing', 2021, 'MEGA', 'sprawny', 'Pesa', NULL, NULL, 'Elektryczny', true, 'MC', 'Ostromunikacja'),
+('BUS-003', 'KR 34567', 'bus', 'Citaro', 2018, 'MIDI', 'w naprawie', 'Mercedes-Benz', 'Mercedes OM936', 'Mercedes GO190', 'Diesel', true, 'KM', 'Ostrans');
 
 -- ============================================
 -- 9. GRAFIKI (SCHEDULES)

@@ -13,10 +13,10 @@
             <label for="status">Filtruj po statusie:</label>
             <select name="status" id="status" class="form-control" onchange="this.form.submit()">
                 <option value="">Wszystkie</option>
-                <option value="available" <?php echo $status_filter === 'available' ? 'selected' : ''; ?>>Dostępny</option>
-                <option value="in_use" <?php echo $status_filter === 'in_use' ? 'selected' : ''; ?>>W użyciu</option>
-                <option value="maintenance" <?php echo $status_filter === 'maintenance' ? 'selected' : ''; ?>>Serwis</option>
-                <option value="broken" <?php echo $status_filter === 'broken' ? 'selected' : ''; ?>>Awaria</option>
+                <option value="sprawny" <?php echo $status_filter === 'sprawny' ? 'selected' : ''; ?>>Sprawny</option>
+                <option value="w naprawie" <?php echo $status_filter === 'w naprawie' ? 'selected' : ''; ?>>W naprawie</option>
+                <option value="odstawiony" <?php echo $status_filter === 'odstawiony' ? 'selected' : ''; ?>>Odstawiony</option>
+                <option value="zawieszony" <?php echo $status_filter === 'zawieszony' ? 'selected' : ''; ?>>Zawieszony</option>
             </select>
         </form>
     </div>
@@ -41,8 +41,8 @@
                         <?php foreach ($vehicles as $vehicle): ?>
                         <tr>
                             <td data-label="ID"><?php echo $vehicle['id']; ?></td>
-                            <td data-label="Numer pojazdu"><strong><?php echo e($vehicle['vehicle_number']); ?></strong></td>
-                            <td data-label="Rejestracja"><?php echo e($vehicle['registration_plate'] ?? '-'); ?></td>
+                            <td data-label="Numer pojazdu"><strong><?php echo e($vehicle['nr_poj']); ?></strong></td>
+                            <td data-label="Rejestracja"><?php echo e($vehicle['reg_plate'] ?? '-'); ?></td>
                             <td data-label="Typ"><?php echo e($vehicle['vehicle_type']); ?></td>
                             <td data-label="Model"><?php echo e($vehicle['model'] ?? '-'); ?></td>
                             <td data-label="Status"><?php echo getStatusBadge($vehicle['status']); ?></td>

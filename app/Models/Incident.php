@@ -24,7 +24,7 @@ class Incident {
     public static function getRecentByUser($user_id, $limit = 10) {
         $db = new Database();
         $query = "
-            SELECT i.*, v.vehicle_number, v.model
+            SELECT i.*, v.nr_poj, v.model
             FROM incidents i
             LEFT JOIN vehicles v ON i.vehicle_id = v.id
             WHERE i.reported_by = :user_id
@@ -42,7 +42,7 @@ class Incident {
         $db = new Database();
         $query = "
             SELECT i.*, 
-                   v.vehicle_number,
+                   v.nr_poj,
                    u.username as reporter_name
             FROM incidents i
             LEFT JOIN vehicles v ON i.vehicle_id = v.id

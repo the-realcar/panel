@@ -29,7 +29,7 @@ class Vehicle {
         $query = "
             SELECT * FROM vehicles
             $where
-            ORDER BY vehicle_number ASC
+            ORDER BY nr_poj ASC
             LIMIT :limit OFFSET :offset
         ";
         $params[':limit'] = $limit;
@@ -44,10 +44,10 @@ class Vehicle {
         return $db->queryOne($query, [':id' => $id]);
     }
 
-    public static function existsByNumber($vehicle_number, $exclude_id = null) {
+    public static function existsByNumber($nr_poj, $exclude_id = null) {
         $db = new Database();
-        $query = "SELECT COUNT(*) as count FROM vehicles WHERE vehicle_number = :vehicle_number";
-        $params = [':vehicle_number' => $vehicle_number];
+        $query = "SELECT COUNT(*) as count FROM vehicles WHERE nr_poj = :nr_poj";
+        $params = [':nr_poj' => $nr_poj];
 
         if ($exclude_id) {
             $query .= " AND id != :id";
@@ -58,10 +58,10 @@ class Vehicle {
         return (int)($result['count'] ?? 0) > 0;
     }
 
-    public static function existsByPlate($registration_plate, $exclude_id = null) {
+    public static function existsByPlate($reg_plate, $exclude_id = null) {
         $db = new Database();
-        $query = "SELECT COUNT(*) as count FROM vehicles WHERE registration_plate = :registration_plate";
-        $params = [':registration_plate' => $registration_plate];
+        $query = "SELECT COUNT(*) as count FROM vehicles WHERE reg_plate = :reg_plate";
+        $params = [':reg_plate' => $reg_plate];
 
         if ($exclude_id) {
             $query .= " AND id != :id";
@@ -76,23 +76,36 @@ class Vehicle {
         $db = new Database();
         $query = "
             INSERT INTO vehicles (
-                vehicle_number, registration_plate, vehicle_type, model, 
-                manufacture_year, capacity, status, last_inspection
+                nr_poj, reg_plate, vehicle_type, model, rok_prod, pojemnosc, status,
+                marka, pulpit, engine, gearbox, typ_napedu, norma_spalania, klimatyzacja,
+                zajezdnia, przewoznik, opiekun_1, opiekun_2, dodatkowe_informacje
             ) VALUES (
-                :vehicle_number, :registration_plate, :vehicle_type, :model,
-                :manufacture_year, :capacity, :status, :last_inspection
+                :nr_poj, :reg_plate, :vehicle_type, :model, :rok_prod, :pojemnosc, :status,
+                :marka, :pulpit, :engine, :gearbox, :typ_napedu, :norma_spalania, :klimatyzacja,
+                :zajezdnia, :przewoznik, :opiekun_1, :opiekun_2, :dodatkowe_informacje
             )
         ";
 
         return $db->execute($query, [
-            ':vehicle_number' => $data['vehicle_number'],
-            ':registration_plate' => $data['registration_plate'],
+            ':nr_poj' => $data['nr_poj'],
+            ':reg_plate' => $data['reg_plate'],
             ':vehicle_type' => $data['vehicle_type'],
             ':model' => $data['model'],
-            ':manufacture_year' => $data['manufacture_year'],
-            ':capacity' => $data['capacity'],
+            ':rok_prod' => $data['rok_prod'],
+            ':pojemnosc' => $data['pojemnosc'],
             ':status' => $data['status'],
-            ':last_inspection' => $data['last_inspection']
+            ':marka' => $data['marka'] ?? null,
+            ':pulpit' => $data['pulpit'] ?? null,
+            ':engine' => $data['engine'] ?? null,
+            ':gearbox' => $data['gearbox'] ?? null,
+            ':typ_napedu' => $data['typ_napedu'] ?? null,
+            ':norma_spalania' => $data['norma_spalania'] ?? null,
+            ':klimatyzacja' => $data['klimatyzacja'] ?? false,
+            ':zajezdnia' => $data['zajezdnia'] ?? null,
+            ':przewoznik' => $data['przewoznik'] ?? null,
+            ':opiekun_1' => $data['opiekun_1'] ?? null,
+            ':opiekun_2' => $data['opiekun_2'] ?? null,
+            ':dodatkowe_informacje' => $data['dodatkowe_informacje'] ?? null
         ]);
     }
 
@@ -100,27 +113,49 @@ class Vehicle {
         $db = new Database();
         $query = "
             UPDATE vehicles SET
-                vehicle_number = :vehicle_number,
-                registration_plate = :registration_plate,
+                nr_poj = :nr_poj,
+                reg_plate = :reg_plate,
                 vehicle_type = :vehicle_type,
                 model = :model,
-                manufacture_year = :manufacture_year,
-                capacity = :capacity,
+                rok_prod = :rok_prod,
+                pojemnosc = :pojemnosc,
                 status = :status,
-                last_inspection = :last_inspection,
+                marka = :marka,
+                pulpit = :pulpit,
+                engine = :engine,
+                gearbox = :gearbox,
+                typ_napedu = :typ_napedu,
+                norma_spalania = :norma_spalania,
+                klimatyzacja = :klimatyzacja,
+                zajezdnia = :zajezdnia,
+                przewoznik = :przewoznik,
+                opiekun_1 = :opiekun_1,
+                opiekun_2 = :opiekun_2,
+                dodatkowe_informacje = :dodatkowe_informacje,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = :id
         ";
 
         return $db->execute($query, [
-            ':vehicle_number' => $data['vehicle_number'],
-            ':registration_plate' => $data['registration_plate'],
+            ':nr_poj' => $data['nr_poj'],
+            ':reg_plate' => $data['reg_plate'],
             ':vehicle_type' => $data['vehicle_type'],
             ':model' => $data['model'],
-            ':manufacture_year' => $data['manufacture_year'],
-            ':capacity' => $data['capacity'],
+            ':rok_prod' => $data['rok_prod'],
+            ':pojemnosc' => $data['pojemnosc'],
             ':status' => $data['status'],
-            ':last_inspection' => $data['last_inspection'],
+            ':marka' => $data['marka'] ?? null,
+            ':pulpit' => $data['pulpit'] ?? null,
+            ':engine' => $data['engine'] ?? null,
+            ':gearbox' => $data['gearbox'] ?? null,
+            ':typ_napedu' => $data['typ_napedu'] ?? null,
+            ':norma_spalania' => $data['norma_spalania'] ?? null,
+            ':klimatyzacja' => $data['klimatyzacja'] ?? false,
+            ':zajezdnia' => $data['zajezdnia'] ?? null,
+            ':przewoznik' => $data['przewoznik'] ?? null,
+            ':opiekun_1' => $data['opiekun_1'] ?? null,
+            ':opiekun_2' => $data['opiekun_2'] ?? null,
+            ':dodatkowe_informacje' => $data['dodatkowe_informacje'] ?? null,
             ':id' => $id
         ]);
     }
@@ -134,10 +169,10 @@ class Vehicle {
     public static function listNotBroken() {
         $db = new Database();
         $query = "
-            SELECT id, vehicle_number, model, registration_plate
+            SELECT id, nr_poj, model, reg_plate
             FROM vehicles
-            WHERE status != 'broken'
-            ORDER BY vehicle_number
+            WHERE status != 'odstawiony'
+            ORDER BY nr_poj
         ";
 
         return $db->query($query);
@@ -145,7 +180,7 @@ class Vehicle {
 
     public static function listAll() {
         $db = new Database();
-        $query = "SELECT id, vehicle_number, model, registration_plate FROM vehicles ORDER BY vehicle_number";
+        $query = "SELECT id, nr_poj, model, reg_plate FROM vehicles ORDER BY nr_poj";
         return $db->query($query);
     }
 }

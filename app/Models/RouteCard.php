@@ -32,7 +32,7 @@ class RouteCard {
         $db = new Database();
         $query = "
             SELECT rc.*, 
-                   v.vehicle_number, v.model,
+                   v.nr_poj, v.model,
                    l.line_number, l.name as line_name
             FROM route_cards rc
             LEFT JOIN vehicles v ON rc.vehicle_id = v.id
