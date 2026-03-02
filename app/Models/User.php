@@ -144,4 +144,75 @@ class User {
             ':id' => $id
         ]);
     }
+
+    public static function syncRolesFromPositions($user_id) {
+        $db = new Database();
+
+        try {
+            $db->beginTransaction();
+
+            $deleteQuery = "DELETE FROM user_roles WHERE user_id = :user_id";
+            $db->execute($deleteQuery, [':user_id' => $user_id]);
+
+            $insertQuery = "
+                INSERT INTO user_roles (user_id, role_id, assigned_date)
+                SELECT DISTINCT :user_id, rpm.role_id, CURRENT_TIMESTAMP
+                FROM user_positions up
+                INNER JOIN role_position_mapping rpm ON rpm.position_id = up.position_id
+                WHERE up.user_id = :user_id
+                  AND (up.active = TRUE OR up.active IS NULL)
+            ";
+            $db->execute($insertQuery, [':user_id' => $user_id]);
+
+            $db->commit();
+
+            self::refreshSessionAuthorization($user_id);
+            return true;
+        } catch (Exception $e) {
+            if ($db->inTransaction()) {
+                $db->rollback();
+            }
+
+            throw $e;
+        }
+    }
+
+    private static function refreshSessionAuthorization($user_id) {
+        if (!function_exists('getCurrentUserId') || (int)getCurrentUserId() !== (int)$user_id) {
+            return;
+        }
+
+        $db = new Database();
+        $query = "
+            SELECT r.name, r.permissions
+            FROM user_roles ur
+            INNER JOIN roles r ON ur.role_id = r.id
+            WHERE ur.user_id = :user_id
+        ";
+
+        $roles = $db->query($query, [':user_id' => $user_id]);
+
+        $_SESSION['roles'] = [];
+        $_SESSION['permissions'] = [];
+
+        foreach ($roles as $role) {
+            $_SESSION['roles'][] = $role['name'];
+
+            if (!empty($role['permissions'])) {
+                $permissions = json_decode($role['permissions'], true);
+                if (is_array($permissions)) {
+                    foreach ($permissions as $resource => $actions) {
+                        if (!isset($_SESSION['permissions'][$resource])) {
+                            $_SESSION['permissions'][$resource] = [];
+                        }
+
+                        $_SESSION['permissions'][$resource] = array_values(array_unique(array_merge(
+                            $_SESSION['permissions'][$resource],
+                            $actions
+                        )));
+                    }
+                }
+            }
+        }
+    }
 }
