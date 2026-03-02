@@ -199,6 +199,6 @@ class RBAC {
      * @return bool
      */
     public function isAdmin() {
-        return $this->hasRole('Administrator');
+        return $this->hasAnyRole(['Administrator', 'Administrator IT', 'Admin IT']);
     }
 }
