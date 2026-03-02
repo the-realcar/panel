@@ -251,6 +251,7 @@ class AdminUsersController extends Controller {
                             setFlashMessage('warning', 'Uzytkownik jest juz przypisany do tego stanowiska.');
                         } else {
                             Position::assignToUser($user_id, $position_id);
+                            User::syncRolesFromPositions($user_id);
                             setFlashMessage('success', 'Stanowisko zostalo przypisane pomyslnie.');
                         }
 
@@ -276,6 +277,7 @@ class AdminUsersController extends Controller {
 
                 try {
                     Position::removeFromUser($assignment_id, $user_id);
+                    User::syncRolesFromPositions($user_id);
                     setFlashMessage('success', 'Stanowisko zostalo usuniete pomyslnie.');
                     $this->redirectTo('/admin/users/assign-position.php?user_id=' . $user_id);
                 } catch (Exception $e) {
