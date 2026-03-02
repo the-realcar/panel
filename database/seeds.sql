@@ -39,12 +39,24 @@ INSERT INTO departments (name, description, active) VALUES
 INSERT INTO roles (name, description, permissions) VALUES
 ('Administrator', 'Pełny dostęp do systemu', 
     '{"users": ["read", "create", "update", "delete"], "vehicles": ["read", "create", "update", "delete"], "lines": ["read", "create", "update", "delete"], "positions": ["read", "create", "update", "delete"], "stops": ["read", "create", "update", "delete"], "platforms": ["read", "create", "update", "delete"], "brigades": ["read", "create", "update", "delete"], "route_variants": ["read", "create", "update", "delete"], "incidents": ["read", "create", "update", "delete", "resolve"], "schedules": ["read", "create", "update", "delete"], "reports": ["read", "create"]}'::jsonb),
+('Administrator IT', 'Pełny dostęp do systemu (docelowa rola wg wymagań)', 
+    '{"users": ["read", "create", "update", "delete"], "vehicles": ["read", "create", "update", "delete"], "lines": ["read", "create", "update", "delete"], "positions": ["read", "create", "update", "delete"], "stops": ["read", "create", "update", "delete"], "platforms": ["read", "create", "update", "delete"], "brigades": ["read", "create", "update", "delete"], "route_variants": ["read", "create", "update", "delete"], "incidents": ["read", "create", "update", "delete", "resolve"], "schedules": ["read", "create", "update", "delete"], "reports": ["read", "create"]}'::jsonb),
 ('Dyspozytor', 'Zarządzanie grafikami i kontrola ruchu',
     '{"schedules": ["read", "create", "update", "delete"], "vehicles": ["read", "update"], "lines": ["read"], "brigades": ["read"], "stops": ["read"], "route_cards": ["read"], "incidents": ["read", "update"]}'::jsonb),
 ('Kierowca', 'Dostęp do własnego grafiku i kart drogowych',
     '{"schedules": ["read"], "route_cards": ["read", "create", "update"], "incidents": ["read", "create"], "vehicles": ["read"], "lines": ["read"], "stops": ["read"]}'::jsonb),
 ('Zarząd', 'Dostęp do raportów i zarządzania',
-    '{"users": ["read"], "vehicles": ["read"], "lines": ["read"], "positions": ["read"], "stops": ["read"], "brigades": ["read"], "route_variants": ["read"], "incidents": ["read"], "schedules": ["read"], "reports": ["read", "create"]}'::jsonb);
+    '{"users": ["read"], "vehicles": ["read", "create", "update", "delete"], "lines": ["read", "create", "update", "delete"], "positions": ["read", "create", "update", "delete"], "stops": ["read", "create", "update", "delete"], "platforms": ["read", "create", "update", "delete"], "brigades": ["read", "create", "update", "delete"], "route_variants": ["read", "create", "update", "delete"], "incidents": ["read"], "schedules": ["read"], "reports": ["read", "create"]}'::jsonb),
+('Nadzór Ruchu', 'Planowanie tras i rozkładów',
+    '{"lines": ["read", "create", "update"], "stops": ["read", "create", "update"], "platforms": ["read", "create", "update"], "brigades": ["read", "create", "update"], "route_variants": ["read", "create", "update", "delete"], "schedules": ["read", "create", "update"], "reports": ["read"]}'::jsonb),
+('Kontrole', 'Nadzór zgłoszeń i kontroli',
+    '{"incidents": ["read", "update"], "vehicles": ["read"], "reports": ["read"]}'::jsonb),
+('Kadry', 'Obsługa personelu',
+    '{"users": ["read", "update"], "positions": ["read"], "reports": ["read"]}'::jsonb),
+('Transport', 'Realizacja kursów przez kierowców',
+    '{"schedules": ["read"], "route_cards": ["read", "create", "update"], "incidents": ["read", "create"], "vehicles": ["read"], "lines": ["read"], "stops": ["read"]}'::jsonb),
+('Zajezdnia', 'Obsługa techniczna taboru',
+    '{"vehicles": ["read", "update"], "incidents": ["read", "create", "update"], "reports": ["read"]}'::jsonb);
 
 -- ============================================
 -- 3. UŻYTKOWNICY
@@ -59,47 +71,142 @@ INSERT INTO users (username, email, password_hash, first_name, last_name, active
 -- ============================================
 -- 4. PRZYPISANIE RÓL DO UŻYTKOWNIKÓW
 -- ============================================
-INSERT INTO user_roles (user_id, role_id) VALUES
-(1, 1), -- admin -> Administrator
-(2, 3), -- kierowca1 -> Kierowca
-(3, 2); -- dyspozytor1 -> Dyspozytor
+-- Ręczne przypisanie zostanie wygenerowane automatycznie na podstawie stanowisk i mapowania.
 
 -- ============================================
--- 5. STANOWISKA
+-- 5. STANOWISKA - FIRMA KOT I SPÓŁKI
 -- ============================================
 INSERT INTO positions (name, department_id, max_count, description, active) VALUES
--- Zarząd
-('Zarząd KOT', 1, 3, 'Członek Zarządu Firmy KOT', TRUE),
-('Główny Inspektor', 1, 1, 'Główny Inspektor nadzorujący całość operacji', TRUE),
+-- FIRMA KOT - Zarząd
+('Zarząd KOT', 1, 3, 'Członek Zarządu Firmy KOT - nadzoruje prace każdego wydziału', TRUE),
+('Dyspozytor Główny', 1, 1, 'Powołany przez Zarząd KOT, podlega tylko Zarządowi. Nadzoruje pracę dyspozytorów i organizuje rekrutacje', TRUE),
 
--- Administracja
-('Główny Administrator', 2, 1, 'Główny Administrator Systemu', TRUE),
-('Starszy Administrator', 2, 5, 'Starszy Administrator', TRUE),
+-- FIRMA KOT - Administracja
+('Główny Administrator', 2, 1, 'Najwyższy administrator Firmy KOT, kontroluje pracę administracji', TRUE),
+('Zastępca Głównego Administratora', 2, 2, 'Zastępuje Głównego Administratora, uprawnienia identyczne', TRUE),
+('Starszy Administrator', 2, 5, 'Doświadczony Administrator z możliwością moderacji serwera KOT', TRUE),
 
--- Transport
-('Starszy Kierowca', 3, 10, 'Doświadczony kierowca z uprawnieniami', TRUE),
-('Kierowca', 3, NULL, 'Kierowca autobusów', TRUE),
-('Motorniczy', 3, NULL, 'Motorniczy tramwajów', TRUE),
+-- FIRMA KOT - Nadzór Ruchu
+('Koordynator rozkładów jazdy', 2, 3, 'Zarządza częstotliwościami odjazdów linii, rozpatruje nowe rozkłady z zarządem', TRUE),
+('Planer rozkładów jazdy', 2, 8, 'Planuje i układa rozkład jazdy dla tras zatwierdzonych przez zarząd', TRUE),
+('Planer tras linii', 2, 7, 'Planuje i układa trasę linii, podlega Koordynatorowi rozkładów jazdy', TRUE),
+('Nadzorca ruchu', 2, NULL, 'Nadzoruje pracowników wydziału transportu, stanowisko bez limitu', TRUE),
 
--- Dyspozytornia
-('Dyspozytor Główny', 4, 1, 'Główny Dyspozytor', TRUE),
-('Starszy Dyspozytor', 4, 5, 'Starszy Dyspozytor', TRUE),
-('Dyspozytor', 4, 10, 'Dyspozytor', TRUE),
+-- SPÓŁKI - Zarząd
+('Dyrektor Spółki', 1, 1, 'Nadzoruje każdego pracownika w spółce, jest częścią zarządu KOT', TRUE),
+('Zastępca Dyrektora Spółki', 1, 2, 'Zastępuje Dyrektora Spółki, uprawnienia identyczne, brak członkowstwa w zarządzie KOT', TRUE),
 
--- Zajezdnia
-('Kierownik Zajezdni', 5, 1, 'Kierownik Zajezdni', TRUE),
-('Mechanik', 5, NULL, 'Mechanik samochodowy', TRUE);
+-- SPÓŁKI - Administracja
+('Główny Administrator (Spółka)', 2, 1, 'Główny Administrator spółki, kontroluje pracę administracji spółki', TRUE),
+('Zastępca Głównego Administratora (Spółka)', 2, 2, 'Zastępuje Głównego Administratora spółki', TRUE),
+('Starszy Administrator (Spółka)', 2, 5, 'Doświadczony Administrator spółki', TRUE),
+('Doświadczony Administrator (Spółka)', 2, 10, 'Doświadczony administrator spółki z uprawnieniami do banowania', TRUE),
+('Administrator (Spółka)', 2, NULL, 'Administrator spółki z uprawnieniami do wyrzucania członków, bez limitu', TRUE),
+('Moderator (Spółka)', 2, 15, 'Początkujący administrator spółki z uprawnieniami do przerw', TRUE),
+('Młodszy Moderator (Spółka)', 2, 10, 'Najmłodszy członek administracji spółki, uprawnienia do usuwania wiadomości', TRUE),
+
+-- SPÓŁKI - Dyspozytornia
+('Dyspozytor Główny (Spółka)', 4, 1, 'Powołany przez Zarząd Spółki, podlega Zarządowi. Nadzoruje pracę dyspozytorów spółki', TRUE),
+('Zastępca Dyspozytora Głównego (Spółka)', 4, 3, 'Zastępuje Dyspozytora Głównego, opiekuje się przydzieloną spółką', TRUE),
+('Starszy Dyspozytor (Spółka)', 4, 5, 'Doświadczony dyspozytor, uprawnienia do egzaminów praktycznych', TRUE),
+('Dyspozytor (Spółka)', 4, 10, 'Pełnoprawny dyspozytor, zdał egzamin praktyczny', TRUE),
+('Młodszy Dyspozytor (Spółka)', 4, 5, 'Najmłodszy członek dyspozytorni, uczy się od wyższych stanowisk', TRUE),
+
+-- SPÓŁKI - Transport
+('Koordynator Przewozów', 3, 1, 'Nadzoruje pracowników wydziału transportu, wydaje rozporządzenia', TRUE),
+('Zastępca Koordynatora Przewozów', 3, 2, 'Zastępuje Koordynatora, wspiera nadzór nad transportem', TRUE),
+('Egzaminator', 3, 5, 'Przeprowadza egzaminy praktyczne dla kierowców i motorniczych', TRUE),
+('Kontroler biletów', 3, NULL, 'Inspekcja biletów pasażerów w pojazdach spółek, bez limitu', TRUE),
+('Starszy Kierowca/Motorniczy', 3, 10, 'Doświadczony kierowca/motorniczy, nadzoruje młodszych', TRUE),
+('Kierowca/Motorniczy', 3, NULL, 'Pełnoprawny pracownik transportu, zdał egzamin praktyczny, bez limitu', TRUE),
+('Młodszy Kierowca/Motorniczy', 3, 15, 'Początkujący pracownik transportu, uczy się pod opieką starszych', TRUE),
+
+-- SPÓŁKI - Zajezdnia
+('Kierownik Zajezdni', 5, 1, 'Głowa zajezdni, odpowiada za stan pojazdów', TRUE),
+('Zastępca Kierownika Zajezdni', 5, 1, 'Zastępuje Kierownika Zajezdni, wspomaga nadzór', TRUE),
+('Lakiernik', 5, NULL, 'Odpowiada za prace lakiernicze, utrzymanie estetyki pojazdów, bez limitu', TRUE);
 
 -- ============================================
--- 6. PRZYPISANIE STANOWISK DO UŻYTKOWNIKÓW
+-- 6. MAPOWANIE STANOWISK -> RÓL
 -- ============================================
-INSERT INTO user_positions (user_id, position_id, active) VALUES
-(1, 3, TRUE), -- admin -> Główny Administrator
-(2, 6, TRUE), -- kierowca1 -> Kierowca
-(3, 9, TRUE); -- dyspozytor1 -> Starszy Dyspozytor
+INSERT INTO role_position_mapping (role_id, position_id)
+SELECT r.id, p.id
+FROM roles r
+INNER JOIN positions p ON p.name IN (
+    'Zarząd KOT', 'Dyspozytor Główny',
+    'Dyrektor Spółki', 'Zastępca Dyrektora Spółki'
+)
+WHERE r.name = 'Zarząd';
+
+INSERT INTO role_position_mapping (role_id, position_id)
+SELECT r.id, p.id
+FROM roles r
+INNER JOIN positions p ON p.name IN (
+    'Główny Administrator', 'Zastępca Głównego Administratora', 'Starszy Administrator',
+    'Główny Administrator (Spółka)', 'Zastępca Głównego Administratora (Spółka)',
+    'Starszy Administrator (Spółka)', 'Doświadczony Administrator (Spółka)',
+    'Administrator (Spółka)', 'Moderator (Spółka)', 'Młodszy Moderator (Spółka)'
+)
+WHERE r.name IN ('Administrator', 'Administrator IT');
+
+INSERT INTO role_position_mapping (role_id, position_id)
+SELECT r.id, p.id
+FROM roles r
+INNER JOIN positions p ON p.name IN (
+    'Koordynator rozkładów jazdy', 'Planer rozkładów jazdy', 'Planer tras linii', 'Nadzorca ruchu'
+)
+WHERE r.name = 'Nadzór Ruchu';
+
+INSERT INTO role_position_mapping (role_id, position_id)
+SELECT r.id, p.id
+FROM roles r
+INNER JOIN positions p ON p.name IN (
+    'Dyspozytor Główny (Spółka)', 'Zastępca Dyspozytora Głównego (Spółka)',
+    'Starszy Dyspozytor (Spółka)', 'Dyspozytor (Spółka)', 'Młodszy Dyspozytor (Spółka)'
+)
+WHERE r.name = 'Dyspozytor';
+
+INSERT INTO role_position_mapping (role_id, position_id)
+SELECT r.id, p.id
+FROM roles r
+INNER JOIN positions p ON p.name IN (
+    'Koordynator Przewozów', 'Zastępca Koordynatora Przewozów', 'Egzaminator',
+    'Starszy Kierowca/Motorniczy', 'Kierowca/Motorniczy', 'Młodszy Kierowca/Motorniczy'
+)
+WHERE r.name IN ('Transport', 'Kierowca');
+
+INSERT INTO role_position_mapping (role_id, position_id)
+SELECT r.id, p.id
+FROM roles r
+INNER JOIN positions p ON p.name = 'Kontroler biletów'
+WHERE r.name = 'Kontrole';
+
+INSERT INTO role_position_mapping (role_id, position_id)
+SELECT r.id, p.id
+FROM roles r
+INNER JOIN positions p ON p.name IN ('Kierownik Zajezdni', 'Zastępca Kierownika Zajezdni', 'Lakiernik')
+WHERE r.name = 'Zajezdnia';
 
 -- ============================================
--- 7. LINIE KOMUNIKACYJNE
+-- 7. PRZYPISANIE STANOWISK DO UŻYTKOWNIKÓW
+-- ============================================
+INSERT INTO user_positions (user_id, position_id, active)
+SELECT 1, id, TRUE FROM positions WHERE name = 'Główny Administrator';
+
+INSERT INTO user_positions (user_id, position_id, active)
+SELECT 2, id, TRUE FROM positions WHERE name = 'Kierowca/Motorniczy';
+
+INSERT INTO user_positions (user_id, position_id, active)
+SELECT 3, id, TRUE FROM positions WHERE name = 'Dyspozytor (Spółka)';
+
+-- Synchronizacja ról użytkowników na podstawie przypisanych stanowisk
+INSERT INTO user_roles (user_id, role_id, assigned_date)
+SELECT DISTINCT up.user_id, rpm.role_id, CURRENT_TIMESTAMP
+FROM user_positions up
+INNER JOIN role_position_mapping rpm ON rpm.position_id = up.position_id;
+
+-- ============================================
+-- 8. LINIE KOMUNIKACYJNE
 -- ============================================
 INSERT INTO lines (line_number, name, route_description, line_type, active) VALUES
 ('1', 'Linia 1 - Centrum', 'Dworzec Główny - Plac Wolności - Osiedle Północne', 'bus', TRUE),
