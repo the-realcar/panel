@@ -232,8 +232,11 @@ a:hover {
 .nav-item a {
     display: block;
     padding: 0.75rem 1rem;
-    color: var(--text);
+    color: #7fb3ff;
     border-radius: var(--radius-sm);
+    border: 1px solid #4f78b7;
+    background: transparent;
+    text-decoration: none !important;
     transition: var(--transition);
     min-height: 44px; /* Touch-friendly */
     display: flex;
@@ -242,8 +245,9 @@ a:hover {
 
 .nav-item a:hover,
 .nav-item a.active {
-    background: var(--surface-alt);
-    color: var(--primary);
+    background: rgba(127, 179, 255, 0.15);
+    border-color: #7fb3ff;
+    color: #cfe3ff;
 }
 
 @media (max-width: 768px) {

@@ -24,9 +24,9 @@ class Platform {
 
     public static function listByStop($stop_id, $active_only = false) {
         $db = new Database();
-        $where = 'WHERE stop_id = :stop_id';
+        $where = 'WHERE p.stop_id = :stop_id';
         if ($active_only) {
-            $where .= ' AND active = TRUE';
+            $where .= ' AND p.active = TRUE';
         }
         
         $query = "
