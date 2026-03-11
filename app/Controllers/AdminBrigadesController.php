@@ -14,7 +14,7 @@ class AdminBrigadesController extends Controller {
 
         $total_items = Brigade::countByLine($line_filter);
         $total_pages = (int)ceil($total_items / $per_page);
-        $brigades = Brigade::listAll($per_page, $offset);
+        $brigades = Brigade::listAll($per_page, $offset, false, $line_filter);
 
         $lines = Line::listActive();
 
@@ -36,7 +36,7 @@ class AdminBrigadesController extends Controller {
         $rbac->requirePermission('brigades', 'create');
 
         $errors = [];
-        $form_data = ['active' => 'on'];
+        $form_data = ['active' => 'on', 'is_peak' => '', 'peak_type' => ''];
         $lines = Line::listActive();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -55,9 +55,20 @@ class AdminBrigadesController extends Controller {
                 $errors = $validator->getErrors();
             }
 
+            $form_data['brigade_number'] = Brigade::normalizeBrigadeNumber($form_data['brigade_number'] ?? '');
+
             if (empty($errors['line_id']) && empty($errors['brigade_number'])) {
                 if (Brigade::exists($form_data['line_id'], $form_data['brigade_number'])) {
                     $errors['brigade_number'] = 'Brygada o tym numerze juz istnieje dla tej linii.';
+                }
+            }
+
+            if (!empty($form_data['is_peak'])) {
+                $allowed_peak_types = ['peak', 'single_shift'];
+                if (empty($form_data['peak_type'])) {
+                    $errors['peak_type'] = 'Wybierz typ brygady szczytowej.';
+                } elseif (!in_array($form_data['peak_type'], $allowed_peak_types, true)) {
+                    $errors['peak_type'] = 'Wybrano nieprawidlowy typ brygady szczytowej.';
                 }
             }
 
@@ -66,6 +77,10 @@ class AdminBrigadesController extends Controller {
                     Brigade::create([
                         'line_id' => $form_data['line_id'],
                         'brigade_number' => $form_data['brigade_number'],
+                        'is_peak' => !empty($form_data['is_peak']) ? 'true' : 'false',
+                        'peak_type' => !empty($form_data['is_peak']) ? ($form_data['peak_type'] ?? null) : null,
+                        'shift_start' => !empty($form_data['shift_start']) ? $form_data['shift_start'] : null,
+                        'shift_end' => !empty($form_data['shift_end']) ? $form_data['shift_end'] : null,
                         'default_vehicle_type' => !empty($form_data['default_vehicle_type']) ? $form_data['default_vehicle_type'] : null,
                         'description' => !empty($form_data['description']) ? $form_data['description'] : null,
                         'active' => isset($form_data['active']) ? 'true' : 'false'
@@ -126,6 +141,8 @@ class AdminBrigadesController extends Controller {
                 $errors = $validator->getErrors();
             }
 
+            $form_data['brigade_number'] = Brigade::normalizeBrigadeNumber($form_data['brigade_number'] ?? '');
+
             if (empty($errors['line_id']) && empty($errors['brigade_number'])) {
                 if ($form_data['line_id'] != $brigade['line_id'] || $form_data['brigade_number'] != $brigade['brigade_number']) {
                     if (Brigade::exists($form_data['line_id'], $form_data['brigade_number'], $brigade_id)) {
@@ -134,11 +151,24 @@ class AdminBrigadesController extends Controller {
                 }
             }
 
+            if (!empty($form_data['is_peak'])) {
+                $allowed_peak_types = ['peak', 'single_shift'];
+                if (empty($form_data['peak_type'])) {
+                    $errors['peak_type'] = 'Wybierz typ brygady szczytowej.';
+                } elseif (!in_array($form_data['peak_type'], $allowed_peak_types, true)) {
+                    $errors['peak_type'] = 'Wybrano nieprawidlowy typ brygady szczytowej.';
+                }
+            }
+
             if (empty($errors)) {
                 try {
                     Brigade::update($brigade_id, [
                         'line_id' => $form_data['line_id'],
                         'brigade_number' => $form_data['brigade_number'],
+                        'is_peak' => !empty($form_data['is_peak']) ? 'true' : 'false',
+                        'peak_type' => !empty($form_data['is_peak']) ? ($form_data['peak_type'] ?? null) : null,
+                        'shift_start' => !empty($form_data['shift_start']) ? $form_data['shift_start'] : null,
+                        'shift_end' => !empty($form_data['shift_end']) ? $form_data['shift_end'] : null,
                         'default_vehicle_type' => !empty($form_data['default_vehicle_type']) ? $form_data['default_vehicle_type'] : null,
                         'description' => !empty($form_data['description']) ? $form_data['description'] : null,
                         'active' => isset($form_data['active']) ? 'true' : 'false'

@@ -54,6 +54,52 @@ class Incident {
         return $db->query($query, [':limit' => $limit]);
     }
 
+    public static function countAll($status_filter = '') {
+        $db = new Database();
+        $where = '';
+        $params = [];
+
+        if ($status_filter !== '') {
+            $where = 'WHERE i.status = :status';
+            $params[':status'] = $status_filter;
+        }
+
+        $query = "SELECT COUNT(*) as total FROM incidents i $where";
+        $result = $db->queryOne($query, $params);
+        return (int)($result['total'] ?? 0);
+    }
+
+    public static function listForAdmin($status_filter = '', $limit = 20, $offset = 0) {
+        $db = new Database();
+        $where = '';
+        $params = [
+            ':limit' => $limit,
+            ':offset' => $offset
+        ];
+
+        if ($status_filter !== '') {
+            $where = 'WHERE i.status = :status';
+            $params[':status'] = $status_filter;
+        }
+
+        $query = "
+            SELECT i.*,
+                   v.nr_poj,
+                   v.model,
+                   u.username as reporter_name,
+                   ru.username as resolver_name
+            FROM incidents i
+            LEFT JOIN vehicles v ON i.vehicle_id = v.id
+            LEFT JOIN users u ON i.reported_by = u.id
+            LEFT JOIN users ru ON i.resolved_by = ru.id
+            $where
+            ORDER BY i.incident_date DESC, i.created_at DESC
+            LIMIT :limit OFFSET :offset
+        ";
+
+        return $db->query($query, $params);
+    }
+
     public static function countByStatus($status) {
         $db = new Database();
         $query = "SELECT COUNT(*) as total FROM incidents WHERE status = :status";

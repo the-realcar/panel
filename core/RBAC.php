@@ -13,6 +13,103 @@ class RBAC {
     public function __construct() {
         $this->db = new Database();
     }
+
+    private function getRoleHierarchy() {
+        return [
+            'Admin IT' => ['Administrator IT'],
+            'Administrator IT' => ['Administrator'],
+            'Administrator' => ['Zarząd', 'Nadzór Ruchu', 'Kontrole', 'Kadry', 'Transport', 'Zajezdnia'],
+            'Zarząd' => ['Dyspozytor'],
+            'Dyspozytor' => ['Kierowca'],
+            'Transport' => ['Kierowca']
+        ];
+    }
+
+    private function expandRoleNames(array $role_names) {
+        $hierarchy = $this->getRoleHierarchy();
+        $expanded = [];
+        $stack = array_values(array_filter($role_names));
+
+        while (!empty($stack)) {
+            $role = array_pop($stack);
+            if (isset($expanded[$role])) {
+                continue;
+            }
+
+            $expanded[$role] = true;
+
+            foreach ($hierarchy[$role] ?? [] as $inherited_role) {
+                if (!isset($expanded[$inherited_role])) {
+                    $stack[] = $inherited_role;
+                }
+            }
+        }
+
+        return array_keys($expanded);
+    }
+
+    private function getDirectRoleNames($user_id = null) {
+        if ($user_id === null) {
+            return $_SESSION['roles'] ?? [];
+        }
+
+        $sql = "SELECT r.name
+                FROM user_roles ur
+                INNER JOIN roles r ON ur.role_id = r.id
+                WHERE ur.user_id = :user_id";
+
+        $rows = $this->db->query($sql, [':user_id' => $user_id]);
+        return array_values(array_unique(array_map(function ($row) {
+            return $row['name'];
+        }, $rows)));
+    }
+
+    private function getEffectiveRoleNames($user_id = null) {
+        return $this->expandRoleNames($this->getDirectRoleNames($user_id));
+    }
+
+    private function getPermissionsForRoles(array $role_names) {
+        if (empty($role_names)) {
+            return [];
+        }
+
+        $placeholders = [];
+        $params = [];
+
+        foreach (array_values($role_names) as $index => $role_name) {
+            $placeholder = ':role_' . $index;
+            $placeholders[] = $placeholder;
+            $params[$placeholder] = $role_name;
+        }
+
+        $sql = 'SELECT permissions FROM roles WHERE name IN (' . implode(', ', $placeholders) . ')';
+        $roles = $this->db->query($sql, $params);
+
+        $all_permissions = [];
+        foreach ($roles as $role) {
+            if (empty($role['permissions'])) {
+                continue;
+            }
+
+            $permissions = json_decode($role['permissions'], true);
+            if (!is_array($permissions)) {
+                continue;
+            }
+
+            foreach ($permissions as $resource => $actions) {
+                if (!isset($all_permissions[$resource])) {
+                    $all_permissions[$resource] = [];
+                }
+
+                $all_permissions[$resource] = array_values(array_unique(array_merge(
+                    $all_permissions[$resource],
+                    is_array($actions) ? $actions : []
+                )));
+            }
+        }
+
+        return $all_permissions;
+    }
     
     /**
      * Check if user has role
@@ -22,22 +119,7 @@ class RBAC {
      * @return bool
      */
     public function hasRole($role_name, $user_id = null) {
-        if ($user_id === null) {
-            // Check session
-            return in_array($role_name, $_SESSION['roles'] ?? []);
-        }
-        
-        $sql = "SELECT COUNT(*) as count
-                FROM user_roles ur
-                INNER JOIN roles r ON ur.role_id = r.id
-                WHERE ur.user_id = :user_id AND r.name = :role_name";
-        
-        $result = $this->db->queryOne($sql, [
-            ':user_id' => $user_id,
-            ':role_name' => $role_name
-        ]);
-        
-        return $result && $result['count'] > 0;
+        return in_array($role_name, $this->getEffectiveRoleNames($user_id), true);
     }
     
     /**
@@ -49,30 +131,8 @@ class RBAC {
      * @return bool
      */
     public function hasPermission($resource, $action, $user_id = null) {
-        if ($user_id === null) {
-            // Check session
-            $permissions = $_SESSION['permissions'] ?? [];
-            return isset($permissions[$resource]) && in_array($action, $permissions[$resource]);
-        }
-        
-        // Check database
-        $sql = "SELECT r.permissions
-                FROM user_roles ur
-                INNER JOIN roles r ON ur.role_id = r.id
-                WHERE ur.user_id = :user_id";
-        
-        $roles = $this->db->query($sql, [':user_id' => $user_id]);
-        
-        foreach ($roles as $role) {
-            if (!empty($role['permissions'])) {
-                $permissions = json_decode($role['permissions'], true);
-                if (isset($permissions[$resource]) && in_array($action, $permissions[$resource])) {
-                    return true;
-                }
-            }
-        }
-        
-        return false;
+        $permissions = $this->getPermissionsForRoles($this->getEffectiveRoleNames($user_id));
+        return isset($permissions[$resource]) && in_array($action, $permissions[$resource], true);
     }
     
     /**
@@ -114,16 +174,7 @@ class RBAC {
      * @return array
      */
     public function getUserRoles($user_id = null) {
-        if ($user_id === null) {
-            return $_SESSION['roles'] ?? [];
-        }
-        
-        $sql = "SELECT r.id, r.name, r.description
-                FROM user_roles ur
-                INNER JOIN roles r ON ur.role_id = r.id
-                WHERE ur.user_id = :user_id";
-        
-        return $this->db->query($sql, [':user_id' => $user_id]);
+        return $this->getEffectiveRoleNames($user_id);
     }
     
     /**
@@ -133,35 +184,7 @@ class RBAC {
      * @return array
      */
     public function getUserPermissions($user_id = null) {
-        if ($user_id === null) {
-            return $_SESSION['permissions'] ?? [];
-        }
-        
-        $sql = "SELECT r.permissions
-                FROM user_roles ur
-                INNER JOIN roles r ON ur.role_id = r.id
-                WHERE ur.user_id = :user_id";
-        
-        $roles = $this->db->query($sql, [':user_id' => $user_id]);
-        
-        $all_permissions = [];
-        foreach ($roles as $role) {
-            if (!empty($role['permissions'])) {
-                $permissions = json_decode($role['permissions'], true);
-                if (is_array($permissions)) {
-                    foreach ($permissions as $resource => $actions) {
-                        if (!isset($all_permissions[$resource])) {
-                            $all_permissions[$resource] = [];
-                        }
-                        $all_permissions[$resource] = array_unique(
-                            array_merge($all_permissions[$resource], $actions)
-                        );
-                    }
-                }
-            }
-        }
-        
-        return $all_permissions;
+        return $this->getPermissionsForRoles($this->getEffectiveRoleNames($user_id));
     }
     
     /**

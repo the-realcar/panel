@@ -1,4 +1,4 @@
-<?php include __DIR__ . '/../../layouts/header.php'; ?>
+<?php View::partial('layouts/header', ['page_title' => $page_title]); ?>
 
 <div class="content-container">
     <div class="page-header">
@@ -14,8 +14,8 @@
     <div class="info-card">
         <h3>Przystanek: <?php echo htmlspecialchars($stop['name']); ?></h3>
         <p><strong>Identyfikator:</strong> <?php echo htmlspecialchars($stop['stop_id']); ?></p>
-        <?php if ($stop['location_description']): ?>
-            <p><strong>Lokalizacja:</strong> <?php echo htmlspecialchars($stop['location_description']); ?></p>
+        <?php if (!empty($stop['opis'])): ?>
+            <p><strong>Opis:</strong> <?php echo htmlspecialchars($stop['opis']); ?></p>
         <?php endif; ?>
     </div>
 
@@ -77,4 +77,4 @@
     <?php endif; ?>
 </div>
 
-<?php include __DIR__ . '/../../layouts/footer.php'; ?>
+<?php View::partial('layouts/footer'); ?>

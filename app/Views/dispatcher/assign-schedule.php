@@ -23,7 +23,7 @@
                     <option value="<?php echo (int)$user['id']; ?>" 
                             <?php echo (isset($form_data['user_id']) && $form_data['user_id'] == $user['id']) ? 'selected' : ''; ?>>
                         <?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?>
-                        (<?php echo htmlspecialchars($user['employee_id']); ?>)
+                        (<?php echo htmlspecialchars($user['username']); ?>)
                     </option>
                 <?php endforeach; ?>
             </select>

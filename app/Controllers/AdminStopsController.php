@@ -45,14 +45,6 @@ class AdminStopsController extends Controller {
             $validator->required('stop_id', 'Identyfikator przystanku jest wymagany.')
                       ->required('name', 'Nazwa przystanku jest wymagana.');
 
-            if (!empty($form_data['latitude'])) {
-                $validator->numeric('latitude', 'Szerokosc geograficzna musi byc liczba.');
-            }
-
-            if (!empty($form_data['longitude'])) {
-                $validator->numeric('longitude', 'Dlugosc geograficzna musi byc liczba.');
-            }
-
             if ($validator->fails()) {
                 $errors = $validator->getErrors();
             }
@@ -66,9 +58,8 @@ class AdminStopsController extends Controller {
                     Stop::create([
                         'stop_id' => $form_data['stop_id'],
                         'name' => $form_data['name'],
-                        'location_description' => !empty($form_data['location_description']) ? $form_data['location_description'] : null,
-                        'latitude' => !empty($form_data['latitude']) ? $form_data['latitude'] : null,
-                        'longitude' => !empty($form_data['longitude']) ? $form_data['longitude'] : null,
+                        'opis' => !empty($form_data['opis']) ? $form_data['opis'] : null,
+                        'status_nz' => isset($form_data['status_nz']) ? 'true' : 'false',
                         'active' => isset($form_data['active']) ? 'true' : 'false'
                     ]);
 
@@ -121,14 +112,6 @@ class AdminStopsController extends Controller {
             $validator->required('stop_id', 'Identyfikator przystanku jest wymagany.')
                       ->required('name', 'Nazwa przystanku jest wymagana.');
 
-            if (!empty($form_data['latitude'])) {
-                $validator->numeric('latitude', 'Szerokosc geograficzna musi byc liczba.');
-            }
-
-            if (!empty($form_data['longitude'])) {
-                $validator->numeric('longitude', 'Dlugosc geograficzna musi byc liczba.');
-            }
-
             if ($validator->fails()) {
                 $errors = $validator->getErrors();
             }
@@ -144,9 +127,8 @@ class AdminStopsController extends Controller {
                     Stop::update($stop_id, [
                         'stop_id' => $form_data['stop_id'],
                         'name' => $form_data['name'],
-                        'location_description' => !empty($form_data['location_description']) ? $form_data['location_description'] : null,
-                        'latitude' => !empty($form_data['latitude']) ? $form_data['latitude'] : null,
-                        'longitude' => !empty($form_data['longitude']) ? $form_data['longitude'] : null,
+                        'opis' => !empty($form_data['opis']) ? $form_data['opis'] : null,
+                        'status_nz' => isset($form_data['status_nz']) ? 'true' : 'false',
                         'active' => isset($form_data['active']) ? 'true' : 'false'
                     ]);
 

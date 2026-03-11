@@ -94,7 +94,7 @@ class Schedule {
         $db = new Database();
         $query = "
             SELECT s.*,
-                   u.first_name, u.last_name, u.employee_id,
+                   u.first_name, u.last_name, u.username,
                    v.nr_poj, v.model, v.reg_plate,
                    l.line_number, l.name as line_name,
                    b.brigade_number

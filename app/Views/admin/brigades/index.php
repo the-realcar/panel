@@ -30,8 +30,9 @@
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Linia</th>
-                            <th>Numer brygady</th>
+                            <th>Brygada</th>
+                            <th>Typ brygady</th>
+                            <th>Godziny pracy</th>
                             <th>Domyślny typ taboru</th>
                             <th>Status</th>
                             <th>Akcje</th>
@@ -41,8 +42,25 @@
                         <?php foreach ($brigades as $brigade): ?>
                         <tr>
                             <td data-label="ID"><?php echo $brigade['id']; ?></td>
-                            <td data-label="Linia"><?php echo e($brigade['line_number'] . ' - ' . $brigade['line_name']); ?></td>
-                            <td data-label="Numer brygady"><strong><?php echo e($brigade['brigade_number']); ?></strong></td>
+                            <td data-label="Brygada"><strong><?php echo e($brigade['line_number'] . '/' . $brigade['brigade_number']); ?></strong></td>
+                            <td data-label="Typ brygady">
+                                <?php if (!empty($brigade['is_peak'])): ?>
+                                    <?php if (($brigade['peak_type'] ?? '') === 'single_shift'): ?>
+                                        <span class="badge badge-warning">Brygada jednozmianowa</span>
+                                    <?php else: ?>
+                                        <span class="badge badge-info">Brygada szczytowa</span>
+                                    <?php endif; ?>
+                                <?php else: ?>
+                                    <span class="text-muted">Standardowa</span>
+                                <?php endif; ?>
+                            </td>
+                            <td data-label="Godziny pracy">
+                                <?php if (!empty($brigade['shift_start']) && !empty($brigade['shift_end'])): ?>
+                                    <?php echo e(substr($brigade['shift_start'], 0, 5)); ?> – <?php echo e(substr($brigade['shift_end'], 0, 5)); ?>
+                                <?php else: ?>
+                                    <span class="text-muted">—</span>
+                                <?php endif; ?>
+                            </td>
                             <td data-label="Domyślny typ taboru"><?php echo e($brigade['default_vehicle_type'] ?? '-'); ?></td>
                             <td data-label="Status">
                                 <?php if ($brigade['active']): ?>

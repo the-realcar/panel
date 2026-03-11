@@ -8,6 +8,8 @@ DROP TABLE IF EXISTS password_resets CASCADE;
 DROP TABLE IF EXISTS audit_logs CASCADE;
 DROP TABLE IF EXISTS login_logs CASCADE;
 DROP TABLE IF EXISTS incidents CASCADE;
+DROP TABLE IF EXISTS applications CASCADE;
+DROP TABLE IF EXISTS route_card_trips CASCADE;
 DROP TABLE IF EXISTS route_cards CASCADE;
 DROP TABLE IF EXISTS schedules CASCADE;
 DROP TABLE IF EXISTS route_stops CASCADE;
@@ -157,9 +159,8 @@ CREATE TABLE stops (
     id SERIAL PRIMARY KEY,
     stop_id VARCHAR(20) UNIQUE NOT NULL, -- Unikalny identyfikator (zgodny z SIL)
     name VARCHAR(100) NOT NULL,
-    location_description TEXT,
-    latitude DECIMAL(10, 8),
-    longitude DECIMAL(11, 8),
+    opis TEXT,
+    status_nz BOOLEAN DEFAULT FALSE,
     active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -182,7 +183,11 @@ CREATE TABLE platforms (
 CREATE TABLE brigades (
     id SERIAL PRIMARY KEY,
     line_id INT NOT NULL REFERENCES lines(id) ON DELETE CASCADE,
-    brigade_number VARCHAR(20) NOT NULL, -- np. "105/1", "105/02"
+    brigade_number VARCHAR(20) NOT NULL, -- np. "1", "02"
+    is_peak BOOLEAN DEFAULT FALSE,
+    peak_type VARCHAR(30) CHECK (peak_type IN ('peak', 'single_shift')),
+    shift_start TIME,  -- godzina rozpoczecia zmiany, np. 04:10
+    shift_end TIME,    -- godzina zakonczenia zmiany, np. 13:53
     default_vehicle_type VARCHAR(50), -- preferowany typ pojazdu
     description TEXT,
     active BOOLEAN DEFAULT TRUE,
@@ -241,16 +246,46 @@ CREATE TABLE route_cards (
     route_date DATE NOT NULL,
     start_time TIME NOT NULL,
     end_time TIME,
-    start_km INT NOT NULL,
-    end_km INT,
-    fuel_start DECIMAL(10,2),
-    fuel_end DECIMAL(10,2),
     passengers_count INT DEFAULT 0,
     notes TEXT,
     status VARCHAR(20) DEFAULT 'in_progress', -- in_progress, completed
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Tabela wykonanych kursów per kierunek dla karty drogowej
+CREATE TABLE route_card_trips (
+    id SERIAL PRIMARY KEY,
+    route_card_id INT NOT NULL REFERENCES route_cards(id) ON DELETE CASCADE,
+    route_variant_id INT NOT NULL REFERENCES route_variants(id) ON DELETE CASCADE,
+    trips_count INT NOT NULL DEFAULT 0,
+    UNIQUE(route_card_id, route_variant_id)
+);
+CREATE INDEX idx_route_card_trips_card_id ON route_card_trips(route_card_id);
+
+-- Tabela wniosków pracowniczych
+CREATE TABLE applications (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    type VARCHAR(30) NOT NULL,  -- kzw, cancel_duty, day_off, vacation, permanent_vehicle, change_vehicle, no_vehicle_assign, change_status, resignation
+    status VARCHAR(20) DEFAULT 'pending',  -- pending, approved, rejected
+    execution_date DATE,
+    date_from DATE,
+    date_to DATE,
+    schedule_id INT REFERENCES schedules(id) ON DELETE SET NULL,
+    vehicle_id INT REFERENCES vehicles(id) ON DELETE SET NULL,
+    vehicles_json JSONB,
+    work_days JSONB,
+    reason TEXT,
+    notes TEXT,
+    reviewed_by INT REFERENCES users(id) ON DELETE SET NULL,
+    reviewed_at TIMESTAMP,
+    review_notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_applications_user_id ON applications(user_id);
+CREATE INDEX idx_applications_status ON applications(status);
 
 -- ============================================
 -- 3. TABELE ZARZĄDZANIA I LOGOWANIA
@@ -398,6 +433,11 @@ CREATE TRIGGER trigger_update_route_cards_updated_at
 
 CREATE TRIGGER trigger_update_incidents_updated_at
     BEFORE UPDATE ON incidents
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER trigger_update_applications_updated_at
+    BEFORE UPDATE ON applications
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at();
 

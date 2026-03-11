@@ -1,4 +1,4 @@
-<?php include __DIR__ . '/../../layouts/header.php'; ?>
+<?php View::partial('layouts/header', ['page_title' => $page_title]); ?>
 
 <div class="content-container">
     <div class="page-header">
@@ -48,4 +48,4 @@
     </form>
 </div>
 
-<?php include __DIR__ . '/../../layouts/footer.php'; ?>
+<?php View::partial('layouts/footer'); ?>

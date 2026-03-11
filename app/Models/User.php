@@ -65,6 +65,21 @@ class User {
         return $db->queryOne($query, [':email' => $email]);
     }
 
+    public static function listByRole($role_name) {
+        $db = new Database();
+        $query = "
+            SELECT DISTINCT u.id, u.username, u.email, u.first_name, u.last_name
+            FROM users u
+            INNER JOIN user_roles ur ON ur.user_id = u.id
+            INNER JOIN roles r ON r.id = ur.role_id
+            WHERE u.active = TRUE
+              AND r.name = :role_name
+            ORDER BY u.last_name ASC NULLS LAST, u.first_name ASC NULLS LAST, u.username ASC
+        ";
+
+        return $db->query($query, [':role_name' => $role_name]);
+    }
+
     public static function findByProviderId($provider, $provider_id) {
         $db = new Database();
         $column = null;
@@ -175,6 +190,10 @@ class User {
 
             throw $e;
         }
+    }
+
+    public static function refreshSessionAuthorizationForUser($user_id) {
+        self::refreshSessionAuthorization($user_id);
     }
 
     private static function refreshSessionAuthorization($user_id) {

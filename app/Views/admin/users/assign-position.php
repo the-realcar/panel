@@ -19,6 +19,13 @@
             <div class="alert alert-error"><?php echo e($errors['position']); ?></div>
         <?php endif; ?>
 
+        <?php if (empty($has_positions)): ?>
+            <div class="alert alert-warning">
+                Brak aktywnych stanowisk do przypisania. Najpierw dodaj stanowisko w module
+                <a href="/admin/positions/create.php">Stanowiska</a>.
+            </div>
+        <?php endif; ?>
+
         <form method="POST" action="/admin/users/assign-position.php?user_id=<?php echo $user_id; ?>">
             <?php echo csrfField(); ?>
             <input type="hidden" name="action" value="assign">
@@ -29,6 +36,7 @@
                     <select id="position_id" 
                             name="position_id" 
                             class="form-control"
+                            <?php echo empty($has_positions) ? 'disabled' : ''; ?>
                             required>
                         <option value="">-- Wybierz stanowisko --</option>
                         <?php foreach ($positions as $position): ?>
@@ -41,7 +49,7 @@
 
                 <div class="form-group col col-12 col-md-4">
                     <label>&nbsp;</label>
-                    <button type="submit" class="btn btn-primary btn-block">➕ Przypisz</button>
+                    <button type="submit" class="btn btn-primary btn-block" <?php echo empty($has_positions) ? 'disabled' : ''; ?>>➕ Przypisz</button>
                 </div>
             </div>
         </form>

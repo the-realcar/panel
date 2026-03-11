@@ -15,10 +15,10 @@ class DispatcherController extends Controller {
         $schedules_today = Schedule::listForDate($today);
 
         // Status floty
-        $vehicles_available = Vehicle::countByStatus('available');
-        $vehicles_in_use = Vehicle::countByStatus('in_use');
-        $vehicles_maintenance = Vehicle::countByStatus('maintenance');
-        $vehicles_broken = Vehicle::countByStatus('broken');
+        $vehicles_available = Vehicle::countByStatus('sprawny');
+        $vehicles_in_use = Vehicle::countByStatus('zawieszony');
+        $vehicles_maintenance = Vehicle::countByStatus('w naprawie');
+        $vehicles_broken = Vehicle::countByStatus('odstawiony');
 
         // Otwarte incydenty
         $open_incidents = Incident::countByStatus('open');

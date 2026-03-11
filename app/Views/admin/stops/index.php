@@ -19,8 +19,8 @@
                             <th>ID</th>
                             <th>Identyfikator</th>
                             <th>Nazwa</th>
-                            <th>Lokalizacja</th>
-                            <th>Współrzędne</th>
+                            <th>Opis</th>
+                            <th>Status NZ</th>
                             <th>Status</th>
                             <th>Akcje</th>
                         </tr>
@@ -31,12 +31,12 @@
                             <td data-label="ID"><?php echo $stop['id']; ?></td>
                             <td data-label="Identyfikator"><strong><?php echo e($stop['stop_id']); ?></strong></td>
                             <td data-label="Nazwa"><?php echo e($stop['name']); ?></td>
-                            <td data-label="Lokalizacja"><?php echo e($stop['location_description'] ?? '-'); ?></td>
-                            <td data-label="Współrzędne">
-                                <?php if ($stop['latitude'] && $stop['longitude']): ?>
-                                    <?php echo e($stop['latitude']); ?>, <?php echo e($stop['longitude']); ?>
+                            <td data-label="Opis"><?php echo e($stop['opis'] ?? '-'); ?></td>
+                            <td data-label="Status NZ">
+                                <?php if (!empty($stop['status_nz'])): ?>
+                                    <span class="badge badge-warning">Tak</span>
                                 <?php else: ?>
-                                    -
+                                    <span class="badge badge-secondary">Nie</span>
                                 <?php endif; ?>
                             </td>
                             <td data-label="Status">

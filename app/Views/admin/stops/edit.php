@@ -34,28 +34,17 @@
             </div>
 
             <div class="form-group">
-                <label for="location_description">Opis lokalizacji</label>
-                <textarea id="location_description" name="location_description" class="form-control" rows="3"><?php echo e($form_data['location_description'] ?? ''); ?></textarea>
+                <label for="opis">Opis</label>
+                <textarea id="opis" name="opis" class="form-control" rows="3"><?php echo e($form_data['opis'] ?? ''); ?></textarea>
                 <small class="form-text">Np. "Przy dworcu PKP", "Obok centrum handlowego"</small>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="latitude">Szerokość geograficzna</label>
-                    <input type="text" id="latitude" name="latitude" class="form-control" 
-                           value="<?php echo e($form_data['latitude'] ?? ''); ?>" placeholder="52.229676">
-                    <?php if (!empty($errors['latitude'])): ?>
-                        <div class="form-error"><?php echo e($errors['latitude']); ?></div>
-                    <?php endif; ?>
-                </div>
-
-                <div class="form-group">
-                    <label for="longitude">Długość geograficzna</label>
-                    <input type="text" id="longitude" name="longitude" class="form-control" 
-                           value="<?php echo e($form_data['longitude'] ?? ''); ?>" placeholder="21.012229">
-                    <?php if (!empty($errors['longitude'])): ?>
-                        <div class="form-error"><?php echo e($errors['longitude']); ?></div>
-                    <?php endif; ?>
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="status_nz" <?php echo !empty($form_data['status_nz']) ? 'checked' : ''; ?>>
+                        Status NZ
+                    </label>
                 </div>
             </div>
 

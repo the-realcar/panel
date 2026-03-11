@@ -240,9 +240,21 @@ class AdminUsersController extends Controller {
             }
 
             if ($_POST['action'] === 'assign') {
+                if (empty($positions)) {
+                    setFlashMessage('error', 'Brak dostepnych stanowisk. Dodaj stanowisko w panelu Stanowiska.');
+                    $this->redirectTo('/admin/users/assign-position.php?user_id=' . $user_id);
+                }
+
                 $position_id = isset($_POST['position_id']) ? (int)$_POST['position_id'] : 0;
                 if (!$position_id) {
                     $errors['position'] = 'Wybierz stanowisko.';
+                }
+
+                if (empty($errors['position'])) {
+                    $position = Position::find($position_id);
+                    if (!$position || !(bool)$position['active']) {
+                        $errors['position'] = 'Wybrane stanowisko nie istnieje lub jest nieaktywne.';
+                    }
                 }
 
                 if (empty($errors)) {
@@ -293,7 +305,97 @@ class AdminUsersController extends Controller {
             'user' => $user,
             'user_id' => $user_id,
             'positions' => $positions,
+            'has_positions' => !empty($positions),
             'current_positions' => $current_positions
+        ]);
+    }
+
+    public function assignRole() {
+        requireLogin();
+
+        $rbac = new RBAC();
+        $rbac->requirePermission('users', 'update');
+
+        $user_id = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
+        if (!$user_id) {
+            setFlashMessage('error', 'Nieprawidlowy ID uzytkownika.');
+            $this->redirectTo('/admin/users/index.php');
+        }
+
+        $user = User::find($user_id);
+        if (!$user) {
+            setFlashMessage('error', 'Uzytkownik nie zostal znaleziony.');
+            $this->redirectTo('/admin/users/index.php');
+        }
+
+        $errors = [];
+        $roles = Role::listAll();
+        $current_roles = Role::getUserRoles($user_id);
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+            if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+                setFlashMessage('error', 'Nieprawidlowy token CSRF.');
+                $this->redirectTo('/admin/users/assign-role.php?user_id=' . $user_id);
+            }
+
+            if ($_POST['action'] === 'assign') {
+                $role_id = isset($_POST['role_id']) ? (int)$_POST['role_id'] : 0;
+                if (!$role_id) {
+                    $errors['role'] = 'Wybierz role.';
+                }
+
+                if (empty($errors['role'])) {
+                    $role = Role::find($role_id);
+                    if (!$role) {
+                        $errors['role'] = 'Wybrana rola nie istnieje.';
+                    }
+                }
+
+                if (empty($errors)) {
+                    try {
+                        if (Role::assignmentExists($user_id, $role_id)) {
+                            setFlashMessage('warning', 'Uzytkownik ma juz przypisana ta role.');
+                        } else {
+                            Role::assignToUser($user_id, $role_id);
+                            User::refreshSessionAuthorizationForUser($user_id);
+                            setFlashMessage('success', 'Rola zostala przypisana pomyslnie.');
+                        }
+
+                        $this->redirectTo('/admin/users/assign-role.php?user_id=' . $user_id);
+                    } catch (Exception $e) {
+                        error_log('Error assigning role: ' . $e->getMessage());
+                        setFlashMessage('error', 'Wystapil blad podczas przypisywania roli.');
+                    }
+                }
+            }
+
+            if ($_POST['action'] === 'remove') {
+                $assignment_id = isset($_POST['assignment_id']) ? (int)$_POST['assignment_id'] : 0;
+                if (!$assignment_id) {
+                    setFlashMessage('error', 'Nieprawidlowe parametry.');
+                    $this->redirectTo('/admin/users/assign-role.php?user_id=' . $user_id);
+                }
+
+                try {
+                    Role::removeFromUser($assignment_id, $user_id);
+                    User::refreshSessionAuthorizationForUser($user_id);
+                    setFlashMessage('success', 'Rola zostala usunieta pomyslnie.');
+                    $this->redirectTo('/admin/users/assign-role.php?user_id=' . $user_id);
+                } catch (Exception $e) {
+                    error_log('Error removing role: ' . $e->getMessage());
+                    setFlashMessage('error', 'Wystapil blad podczas usuwania roli.');
+                }
+            }
+        }
+
+        $this->render('admin/users/assign-role', [
+            'page_title' => 'Przypisz role',
+            'errors' => $errors,
+            'user' => $user,
+            'user_id' => $user_id,
+            'roles' => $roles,
+            'has_roles' => !empty($roles),
+            'current_roles' => $current_roles
         ]);
     }
 

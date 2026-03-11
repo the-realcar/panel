@@ -40,7 +40,7 @@ define('ROBLOX_USER_URL', 'https://apis.roblox.com/oauth/v1/userinfo');
 define('ROBLOX_REDIRECT_URI', OAUTH_REDIRECT_BASE . '/oauth/roblox-callback.php');
 
 // Security
-define('SESSION_TIMEOUT', 1800); // 30 minutes in seconds
+define('SESSION_TIMEOUT', 7200); // 2 hours in seconds
 define('PASSWORD_MIN_LENGTH', 8);
 define('MAX_LOGIN_ATTEMPTS', 5);
 define('LOGIN_LOCKOUT_TIME', 900); // 15 minutes in seconds

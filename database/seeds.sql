@@ -2,8 +2,10 @@
 -- Panel Pracowniczy Firma KOT - Test Data Seeds
 -- ============================================
 
+\encoding UTF8
+
 -- Wyczyść istniejące dane
-TRUNCATE TABLE password_resets, audit_logs, login_logs, incidents, route_cards, schedules, 
+TRUNCATE TABLE password_resets, audit_logs, login_logs, incidents, applications, route_card_trips, route_cards, schedules, 
     route_stops, route_variants, brigades, platforms, stops, role_position_mapping,
     user_positions, user_roles, vehicles, lines, positions, roles, departments, users, sessions CASCADE;
 
@@ -16,7 +18,9 @@ ALTER SEQUENCE lines_id_seq RESTART WITH 1;
 ALTER SEQUENCE vehicles_id_seq RESTART WITH 1;
 ALTER SEQUENCE schedules_id_seq RESTART WITH 1;
 ALTER SEQUENCE route_cards_id_seq RESTART WITH 1;
+ALTER SEQUENCE route_card_trips_id_seq RESTART WITH 1;
 ALTER SEQUENCE incidents_id_seq RESTART WITH 1;
+ALTER SEQUENCE applications_id_seq RESTART WITH 1;
 ALTER SEQUENCE stops_id_seq RESTART WITH 1;
 ALTER SEQUENCE platforms_id_seq RESTART WITH 1;
 ALTER SEQUENCE brigades_id_seq RESTART WITH 1;
@@ -61,12 +65,12 @@ INSERT INTO roles (name, description, permissions) VALUES
 -- ============================================
 -- 3. UŻYTKOWNICY
 -- Hasło dla wszystkich: "password123"
--- Hash bcrypt: $2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi
+-- Hash bcrypt: $2y$10$lETpxJSbYNbp5UeGvbH0PulxBWSXN8MjxSAHk3FJmv4dkz.CFVYwG
 -- ============================================
 INSERT INTO users (username, email, password_hash, first_name, last_name, active) VALUES
-('admin', 'admin@firmakot.pl', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Jan', 'Kowalski', TRUE),
-('kierowca1', 'jan.nowak@firmakot.pl', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Jan', 'Nowak', TRUE),
-('dyspozytor1', 'anna.wisniewska@firmakot.pl', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Anna', 'Wiśniewska', TRUE);
+('admin', 'admin@firmakot.pl', '$2y$10$lETpxJSbYNbp5UeGvbH0PulxBWSXN8MjxSAHk3FJmv4dkz.CFVYwG', 'Jan', 'Kowalski', TRUE),
+('kierowca1', 'jan.nowak@firmakot.pl', '$2y$10$lETpxJSbYNbp5UeGvbH0PulxBWSXN8MjxSAHk3FJmv4dkz.CFVYwG', 'Jan', 'Nowak', TRUE),
+('dyspozytor1', 'anna.wisniewska@firmakot.pl', '$2y$10$lETpxJSbYNbp5UeGvbH0PulxBWSXN8MjxSAHk3FJmv4dkz.CFVYwG', 'Anna', 'Wiśniewska', TRUE);
 
 -- ============================================
 -- 4. PRZYPISANIE RÓL DO UŻYTKOWNIKÓW
@@ -255,15 +259,15 @@ INSERT INTO incidents (reported_by, vehicle_id, incident_type, severity, title, 
 -- ============================================
 -- 12. PRZYSTANKI
 -- ============================================
-INSERT INTO stops (stop_id, name, location_description, latitude, longitude, active) VALUES
-('DG01', 'Dworzec Główny', 'Przy dworcu kolejowym PKP', 52.229676, 21.012229, TRUE),
-('PW01', 'Plac Wolności', 'Centrum miasta, rondo', 52.233198, 21.013456, TRUE),
-('ON01', 'Osiedle Północne', 'Przy blokach mieszkalnych', 52.245678, 21.015789, TRUE),
-('DP01', 'Dworzec PKS', 'Dworzec autobusowy', 52.227890, 21.008901, TRUE),
-('LO01', 'Lotnisko', 'Terminal pasażerski', 52.165738, 20.967123, TRUE),
-('NS01', 'Nowy Świat', 'Ulica handlowa', 52.231234, 21.017890, TRUE),
-('SM01', 'Stare Miasto', 'Rynek staromiejski', 52.248765, 21.012345, TRUE),
-('PO01', 'Politechnika', 'Kampus uniwersytecki', 52.220123, 21.011111, TRUE);
+INSERT INTO stops (stop_id, name, opis, status_nz, active) VALUES
+('DG01', 'Dworzec Główny', 'Przy dworcu kolejowym PKP', FALSE, TRUE),
+('PW01', 'Plac Wolności', 'Centrum miasta, rondo', FALSE, TRUE),
+('ON01', 'Osiedle Północne', 'Przy blokach mieszkalnych', FALSE, TRUE),
+('DP01', 'Dworzec PKS', 'Dworzec autobusowy', FALSE, TRUE),
+('LO01', 'Lotnisko', 'Terminal pasażerski', TRUE, TRUE),
+('NS01', 'Nowy Świat', 'Ulica handlowa', FALSE, TRUE),
+('SM01', 'Stare Miasto', 'Rynek staromiejski', FALSE, TRUE),
+('PO01', 'Politechnika', 'Kampus uniwersytecki', FALSE, TRUE);
 
 -- ============================================
 -- 13. STANOWISKA (SŁUPKI)
@@ -292,13 +296,13 @@ INSERT INTO platforms (stop_id, platform_number, platform_type, description, act
 -- ============================================
 -- 14. BRYGADY
 -- ============================================
-INSERT INTO brigades (line_id, brigade_number, default_vehicle_type, description, active) VALUES
-(1, '1/1', 'bus', 'Pierwsza brygada linii 1 - poranna zmiana', TRUE),
-(1, '1/2', 'bus', 'Druga brygada linii 1 - popołudniowa zmiana', TRUE),
-(2, '5/1', 'bus', 'Pierwsza brygada linii 5', TRUE),
-(2, '5/2', 'articulated_bus', 'Druga brygada linii 5 - autobus przegubowy', TRUE),
-(3, '7/1', 'tram', 'Pierwsza brygada tramwajowa linii 7', TRUE),
-(3, '7/2', 'tram', 'Druga brygada tramwajowa linii 7', TRUE);
+INSERT INTO brigades (line_id, brigade_number, shift_start, shift_end, default_vehicle_type, description, active) VALUES
+(1, '1', '04:10', '13:53', 'bus', 'Pierwsza brygada linii 1 - poranna zmiana', TRUE),
+(1, '2', '14:10', '23:57', 'bus', 'Druga brygada linii 1 - popoÅudniowa zmiana', TRUE),
+(2, '1', '05:00', '14:30', 'bus', 'Pierwsza brygada linii 5', TRUE),
+(2, '2', '14:30', '23:00', 'articulated_bus', 'Druga brygada linii 5 - autobus przegubowy', TRUE),
+(3, '1', '05:15', '14:45', 'tram', 'Pierwsza brygada tramwajowa linii 7', TRUE),
+(3, '2', '14:45', '23:15', 'tram', 'Druga brygada tramwajowa linii 7', TRUE);
 
 -- ============================================
 -- 15. LOGI LOGOWANIA (przykładowe)

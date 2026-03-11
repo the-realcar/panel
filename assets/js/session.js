@@ -1,17 +1,17 @@
 /**
  * Session Management
- * Auto-logout after 30 minutes of inactivity
+ * Auto-logout after 2 hours of inactivity
  * Panel Pracowniczy Firma KOT
  */
 
 (function() {
     'use strict';
     
-    // Session timeout in milliseconds (30 minutes)
-    const SESSION_TIMEOUT = 30 * 60 * 1000;
+    // Session timeout in milliseconds (2 hours)
+    const SESSION_TIMEOUT = 2 * 60 * 60 * 1000;
     
-    // Warning time before logout (5 minutes)
-    const WARNING_TIME = 5 * 60 * 1000;
+    // Warning time before logout (10 seconds)
+    const WARNING_TIME = 10 * 1000;
     
     let sessionTimer;
     let warningTimer;
@@ -46,10 +46,10 @@
         // Hide warning if shown
         hideWarning();
         
-        // Set warning timer (25 minutes)
+        // Set warning timer (10 seconds before logout)
         warningTimer = setTimeout(showWarning, SESSION_TIMEOUT - WARNING_TIME);
         
-        // Set logout timer (30 minutes)
+        // Set logout timer (2 hours)
         sessionTimer = setTimeout(logout, SESSION_TIMEOUT);
         
         // Update last activity on server
@@ -82,7 +82,7 @@
         warning.innerHTML = `
             <h4 style="margin: 0 0 0.5rem 0; font-size: 1rem;">Sesja wkrótce wygaśnie</h4>
             <p style="margin: 0 0 1rem 0; font-size: 0.875rem;">
-                Twoja sesja wygaśnie za 5 minut. Wykonaj jakąkolwiek akcję, aby przedłużyć sesję.
+                Twoja sesja wygaśnie za 10 sekund. Wykonaj jakąkolwiek akcję, aby przedłużyć sesję.
             </p>
             <button onclick="hideSessionWarning()" style="
                 background: white;

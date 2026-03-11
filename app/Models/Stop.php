@@ -77,18 +77,17 @@ class Stop {
         $db = new Database();
         $query = "
             INSERT INTO stops (
-                stop_id, name, location_description, latitude, longitude, active
+                stop_id, name, opis, status_nz, active
             ) VALUES (
-                :stop_id, :name, :location_description, :latitude, :longitude, :active
+                :stop_id, :name, :opis, :status_nz, :active
             )
         ";
 
         return $db->execute($query, [
             ':stop_id' => $data['stop_id'],
             ':name' => $data['name'],
-            ':location_description' => $data['location_description'] ?? null,
-            ':latitude' => $data['latitude'] ?? null,
-            ':longitude' => $data['longitude'] ?? null,
+            ':opis' => $data['opis'] ?? null,
+            ':status_nz' => $data['status_nz'] ?? false,
             ':active' => $data['active'] ?? true
         ]);
     }
@@ -99,9 +98,8 @@ class Stop {
             UPDATE stops SET
                 stop_id = :stop_id,
                 name = :name,
-                location_description = :location_description,
-                latitude = :latitude,
-                longitude = :longitude,
+                opis = :opis,
+                status_nz = :status_nz,
                 active = :active
             WHERE id = :id
         ";
@@ -110,9 +108,8 @@ class Stop {
             ':id' => $id,
             ':stop_id' => $data['stop_id'],
             ':name' => $data['name'],
-            ':location_description' => $data['location_description'] ?? null,
-            ':latitude' => $data['latitude'] ?? null,
-            ':longitude' => $data['longitude'] ?? null,
+            ':opis' => $data['opis'] ?? null,
+            ':status_nz' => $data['status_nz'] ?? false,
             ':active' => $data['active'] ?? true
         ]);
     }

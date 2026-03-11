@@ -1,6 +1,16 @@
 <?php
 
 class Brigade {
+    public static function normalizeBrigadeNumber($brigade_number) {
+        $brigade_number = trim((string)$brigade_number);
+        if (strpos($brigade_number, '/') !== false) {
+            $parts = explode('/', $brigade_number);
+            $brigade_number = trim((string)end($parts));
+        }
+
+        return $brigade_number;
+    }
+
     public static function countByLine($line_id = null, $active_only = false) {
         $db = new Database();
         $where_parts = [];
@@ -40,9 +50,24 @@ class Brigade {
         return $db->query($query, [':line_id' => $line_id]);
     }
 
-    public static function listAll($limit = 50, $offset = 0, $active_only = false) {
+    public static function listAll($limit = 50, $offset = 0, $active_only = false, $line_id = null) {
         $db = new Database();
-        $where = $active_only ? 'WHERE b.active = TRUE' : '';
+        $where_parts = [];
+        $params = [
+            ':limit' => $limit,
+            ':offset' => $offset
+        ];
+
+        if ($active_only) {
+            $where_parts[] = 'b.active = TRUE';
+        }
+
+        if ($line_id !== null) {
+            $where_parts[] = 'b.line_id = :line_id';
+            $params[':line_id'] = $line_id;
+        }
+
+        $where = $where_parts ? 'WHERE ' . implode(' AND ', $where_parts) : '';
         
         $query = "
             SELECT b.*, l.line_number, l.name as line_name
@@ -53,10 +78,7 @@ class Brigade {
             LIMIT :limit OFFSET :offset
         ";
         
-        return $db->query($query, [
-            ':limit' => $limit,
-            ':offset' => $offset
-        ]);
+        return $db->query($query, $params);
     }
 
     public static function listActive() {
@@ -103,15 +125,19 @@ class Brigade {
         $db = new Database();
         $query = "
             INSERT INTO brigades (
-                line_id, brigade_number, default_vehicle_type, description, active
+                line_id, brigade_number, is_peak, peak_type, shift_start, shift_end, default_vehicle_type, description, active
             ) VALUES (
-                :line_id, :brigade_number, :default_vehicle_type, :description, :active
+                :line_id, :brigade_number, :is_peak, :peak_type, :shift_start, :shift_end, :default_vehicle_type, :description, :active
             )
         ";
 
         return $db->execute($query, [
             ':line_id' => $data['line_id'],
-            ':brigade_number' => $data['brigade_number'],
+            ':brigade_number' => self::normalizeBrigadeNumber($data['brigade_number']),
+            ':is_peak' => $data['is_peak'] ?? false,
+            ':peak_type' => $data['peak_type'] ?? null,
+            ':shift_start' => !empty($data['shift_start']) ? $data['shift_start'] : null,
+            ':shift_end' => !empty($data['shift_end']) ? $data['shift_end'] : null,
             ':default_vehicle_type' => $data['default_vehicle_type'] ?? null,
             ':description' => $data['description'] ?? null,
             ':active' => $data['active'] ?? true
@@ -124,6 +150,10 @@ class Brigade {
             UPDATE brigades SET
                 line_id = :line_id,
                 brigade_number = :brigade_number,
+                is_peak = :is_peak,
+                peak_type = :peak_type,
+                shift_start = :shift_start,
+                shift_end = :shift_end,
                 default_vehicle_type = :default_vehicle_type,
                 description = :description,
                 active = :active
@@ -133,7 +163,11 @@ class Brigade {
         return $db->execute($query, [
             ':id' => $id,
             ':line_id' => $data['line_id'],
-            ':brigade_number' => $data['brigade_number'],
+            ':brigade_number' => self::normalizeBrigadeNumber($data['brigade_number']),
+            ':is_peak' => $data['is_peak'] ?? false,
+            ':peak_type' => $data['peak_type'] ?? null,
+            ':shift_start' => !empty($data['shift_start']) ? $data['shift_start'] : null,
+            ':shift_end' => !empty($data['shift_end']) ? $data['shift_end'] : null,
             ':default_vehicle_type' => $data['default_vehicle_type'] ?? null,
             ':description' => $data['description'] ?? null,
             ':active' => $data['active'] ?? true

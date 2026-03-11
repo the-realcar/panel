@@ -92,7 +92,7 @@
                                 </td>
                                 <td>
                                     <strong><?php echo htmlspecialchars($schedule['first_name'] . ' ' . $schedule['last_name']); ?></strong>
-                                    <br><small><?php echo htmlspecialchars($schedule['employee_id']); ?></small>
+                                    <br><small><?php echo htmlspecialchars($schedule['username']); ?></small>
                                 </td>
                                 <td>
                                     <strong><?php echo htmlspecialchars($schedule['line_number']); ?></strong>

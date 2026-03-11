@@ -5,7 +5,7 @@ class AdminPlatformsController extends Controller {
         requireLogin();
 
         $rbac = new RBAC();
-        if (!$rbac->can('platforms', 'read')) {
+        if (!$rbac->hasPermission('platforms', 'read')) {
             setFlashMessage('error', 'Brak uprawnien do przegladania platform.');
             $this->redirectTo('/index.php');
         }
@@ -28,7 +28,8 @@ class AdminPlatformsController extends Controller {
         $this->render('admin/platforms/index', [
             'page_title' => 'Platformy - ' . $stop['name'],
             'stop' => $stop,
-            'platforms' => $platforms
+            'platforms' => $platforms,
+            'rbac' => $rbac
         ]);
     }
 
@@ -36,7 +37,7 @@ class AdminPlatformsController extends Controller {
         requireLogin();
 
         $rbac = new RBAC();
-        if (!$rbac->can('platforms', 'create')) {
+        if (!$rbac->hasPermission('platforms', 'create')) {
             setFlashMessage('error', 'Brak uprawnien do tworzenia platform.');
             $this->redirectTo('/index.php');
         }
@@ -107,7 +108,7 @@ class AdminPlatformsController extends Controller {
         requireLogin();
 
         $rbac = new RBAC();
-        if (!$rbac->can('platforms', 'update')) {
+        if (!$rbac->hasPermission('platforms', 'update')) {
             setFlashMessage('error', 'Brak uprawnien do edycji platform.');
             $this->redirectTo('/index.php');
         }
@@ -198,7 +199,7 @@ class AdminPlatformsController extends Controller {
         requireLogin();
 
         $rbac = new RBAC();
-        if (!$rbac->can('platforms', 'delete')) {
+        if (!$rbac->hasPermission('platforms', 'delete')) {
             setFlashMessage('error', 'Brak uprawnien do usuwania platform.');
             $this->redirectTo('/index.php');
         }

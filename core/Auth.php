@@ -52,10 +52,11 @@ class Auth {
             $sql = "SELECT * FROM users WHERE username = :username AND active = TRUE";
             $user = $this->db->queryOne($sql, [':username' => $username]);
 
-            if ($this->isLockedOut($user['id'] ?? null, $ip_address)) {
-                $this->logLoginAttempt($user['id'] ?? null, $ip_address, $user_agent, false);
-                return false;
-            }
+            // Login lockout disabled
+            // if ($this->isLockedOut($user['id'] ?? null, $ip_address)) {
+            //     $this->logLoginAttempt($user['id'] ?? null, $ip_address, $user_agent, false);
+            //     return false;
+            // }
             
             $success = false;
             
