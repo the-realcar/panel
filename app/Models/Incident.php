@@ -106,4 +106,44 @@ class Incident {
         $result = $db->queryOne($query, [':status' => $status]);
         return (int)($result['total'] ?? 0);
     }
+
+    public static function find($id) {
+        $db = new Database();
+        $query = "
+            SELECT i.*,
+                   v.nr_poj, v.model as vehicle_model,
+                   u.username as reporter_name, u.first_name as reporter_first, u.last_name as reporter_last,
+                   ru.username as resolver_username
+            FROM incidents i
+            LEFT JOIN vehicles v ON i.vehicle_id = v.id
+            LEFT JOIN users u ON i.reported_by = u.id
+            LEFT JOIN users ru ON i.resolved_by = ru.id
+            WHERE i.id = :id
+        ";
+        $row = $db->queryOne($query, [':id' => $id]);
+        return $row ?: null;
+    }
+
+    public static function update($id, array $data): void {
+        $db = new Database();
+        $db->execute("
+            UPDATE incidents SET
+                incident_type = :incident_type,
+                severity      = :severity,
+                title         = :title,
+                description   = :description,
+                status        = :status,
+                resolution_notes = :resolution_notes,
+                updated_at    = NOW()
+            WHERE id = :id
+        ", [
+            ':incident_type'     => $data['incident_type'],
+            ':severity'          => $data['severity'],
+            ':title'             => $data['title'],
+            ':description'       => $data['description'],
+            ':status'            => $data['status'],
+            ':resolution_notes'  => $data['resolution_notes'] ?? null,
+            ':id'                => $id,
+        ]);
+    }
 }

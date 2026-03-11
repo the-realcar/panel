@@ -11,17 +11,72 @@ class AdminStopsController extends Controller {
         $per_page = ITEMS_PER_PAGE;
         $offset = ($page - 1) * $per_page;
 
+        // Handle city AJAX actions
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['city_action'])) {
+            if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+                $this->jsonError('Nieprawidlowy token CSRF.');
+            }
+            $this->handleCityAction($_POST['city_action']);
+            return;
+        }
+
         $total_items = Stop::countAll();
         $total_pages = (int)ceil($total_items / $per_page);
         $stops = Stop::listAll($per_page, $offset);
+        $cities = City::listAll();
 
         $this->render('admin/stops/index', [
-            'page_title' => 'Zarzadzanie przystankami',
-            'stops' => $stops,
-            'page' => $page,
+            'page_title'  => 'Zarządzanie przystankami',
+            'stops'       => $stops,
+            'cities'      => $cities,
+            'page'        => $page,
             'total_pages' => $total_pages,
-            'rbac' => $rbac
+            'rbac'        => $rbac
         ]);
+    }
+
+    private function handleCityAction($action) {
+        $id = (int)($_POST['id'] ?? 0);
+
+        if ($action === 'create') {
+            $name = trim($_POST['name'] ?? '');
+            if (empty($name)) { $this->jsonError('Nazwa miasta jest wymagana.'); }
+            if (City::existsByName($name)) { $this->jsonError('Miasto o tej nazwie już istnieje.'); }
+            $new_id = City::create(['name' => $name, 'active' => 'on']);
+            $this->jsonSuccess(['id' => $new_id, 'name' => e($name)]);
+        }
+
+        if ($action === 'update') {
+            if (!$id) { $this->jsonError('Nieprawidlowy ID.'); }
+            $name = trim($_POST['name'] ?? '');
+            if (empty($name)) { $this->jsonError('Nazwa miasta jest wymagana.'); }
+            if (City::existsByName($name, $id)) { $this->jsonError('Miasto o tej nazwie już istnieje.'); }
+            $city = City::find($id);
+            if (!$city) { $this->jsonError('Miasto nie istnieje.'); }
+            City::update($id, ['name' => $name, 'active' => 'on']);
+            $this->jsonSuccess(['id' => $id, 'name' => e($name)]);
+        }
+
+        if ($action === 'delete') {
+            if (!$id) { $this->jsonError('Nieprawidlowy ID.'); }
+            if (City::getStopsCount($id) > 0) { $this->jsonError('Nie można usunąć miasta z przypisanymi przystankami.'); }
+            City::delete($id);
+            $this->jsonSuccess([]);
+        }
+
+        $this->jsonError('Nieznana akcja.');
+    }
+
+    private function jsonSuccess($data) {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => true, 'data' => $data]);
+        exit;
+    }
+
+    private function jsonError($msg) {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'error' => $msg]);
+        exit;
     }
 
     public function create() {
@@ -32,6 +87,7 @@ class AdminStopsController extends Controller {
 
         $errors = [];
         $form_data = ['active' => 'on'];
+        $cities = City::listActive();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
@@ -42,25 +98,20 @@ class AdminStopsController extends Controller {
             $form_data = $_POST;
 
             $validator = new Validator($form_data);
-            $validator->required('stop_id', 'Identyfikator przystanku jest wymagany.')
-                      ->required('name', 'Nazwa przystanku jest wymagana.');
+            $validator->required('name', 'Nazwa przystanku jest wymagana.');
 
             if ($validator->fails()) {
                 $errors = $validator->getErrors();
             }
 
-            if (empty($errors['stop_id']) && Stop::existsByStopId($form_data['stop_id'])) {
-                $errors['stop_id'] = 'Przystanek o tym identyfikatorze juz istnieje.';
-            }
-
             if (empty($errors)) {
                 try {
                     Stop::create([
-                        'stop_id' => $form_data['stop_id'],
-                        'name' => $form_data['name'],
-                        'opis' => !empty($form_data['opis']) ? $form_data['opis'] : null,
+                        'city_id'   => !empty($form_data['city_id']) ? $form_data['city_id'] : null,
+                        'name'      => $form_data['name'],
+                        'opis'      => !empty($form_data['opis']) ? $form_data['opis'] : null,
                         'status_nz' => isset($form_data['status_nz']) ? 'true' : 'false',
-                        'active' => isset($form_data['active']) ? 'true' : 'false'
+                        'active'    => isset($form_data['active']) ? 'true' : 'false'
                     ]);
 
                     setFlashMessage('success', 'Przystanek zostal dodany pomyslnie.');
@@ -74,8 +125,9 @@ class AdminStopsController extends Controller {
 
         $this->render('admin/stops/create', [
             'page_title' => 'Dodaj przystanek',
-            'errors' => $errors,
-            'form_data' => $form_data
+            'errors'     => $errors,
+            'form_data'  => $form_data,
+            'cities'     => $cities,
         ]);
     }
 
@@ -99,6 +151,7 @@ class AdminStopsController extends Controller {
 
         $errors = [];
         $form_data = $stop;
+        $cities = City::listActive();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
@@ -109,27 +162,20 @@ class AdminStopsController extends Controller {
             $form_data = array_merge($stop, $_POST);
 
             $validator = new Validator($form_data);
-            $validator->required('stop_id', 'Identyfikator przystanku jest wymagany.')
-                      ->required('name', 'Nazwa przystanku jest wymagana.');
+            $validator->required('name', 'Nazwa przystanku jest wymagana.');
 
             if ($validator->fails()) {
                 $errors = $validator->getErrors();
             }
 
-            if (empty($errors['stop_id']) && $form_data['stop_id'] !== $stop['stop_id']) {
-                if (Stop::existsByStopId($form_data['stop_id'], $stop_id)) {
-                    $errors['stop_id'] = 'Przystanek o tym identyfikatorze juz istnieje.';
-                }
-            }
-
             if (empty($errors)) {
                 try {
                     Stop::update($stop_id, [
-                        'stop_id' => $form_data['stop_id'],
-                        'name' => $form_data['name'],
-                        'opis' => !empty($form_data['opis']) ? $form_data['opis'] : null,
+                        'city_id'   => !empty($form_data['city_id']) ? $form_data['city_id'] : null,
+                        'name'      => $form_data['name'],
+                        'opis'      => !empty($form_data['opis']) ? $form_data['opis'] : null,
                         'status_nz' => isset($form_data['status_nz']) ? 'true' : 'false',
-                        'active' => isset($form_data['active']) ? 'true' : 'false'
+                        'active'    => isset($form_data['active']) ? 'true' : 'false'
                     ]);
 
                     setFlashMessage('success', 'Przystanek zostal zaktualizowany pomyslnie.');
@@ -143,9 +189,10 @@ class AdminStopsController extends Controller {
 
         $this->render('admin/stops/edit', [
             'page_title' => 'Edytuj przystanek',
-            'errors' => $errors,
-            'form_data' => $form_data,
-            'stop' => $stop
+            'errors'     => $errors,
+            'form_data'  => $form_data,
+            'stop'       => $stop,
+            'cities'     => $cities,
         ]);
     }
 
@@ -177,10 +224,9 @@ class AdminStopsController extends Controller {
             $this->redirectTo('/admin/stops/index.php');
         }
 
-        // Check if stop has platforms
         $platforms_count = Stop::getPlatformsCount($stop_id);
         if ($platforms_count > 0) {
-            setFlashMessage('error', 'Nie mozna usunac przystanku, ktory ma przypisane stanowiska. Usun najpierw stanowiska.');
+            setFlashMessage('error', 'Nie mozna usunac przystanku, ktory ma przypisane stanowiska.');
             $this->redirectTo('/admin/stops/index.php');
         }
 

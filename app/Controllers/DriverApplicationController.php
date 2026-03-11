@@ -25,6 +25,17 @@ class DriverApplicationController extends Controller {
                 $this->redirectTo('/driver/applications.php');
             }
 
+            // Handle cancellation of pending application
+            if (isset($_POST['action']) && $_POST['action'] === 'cancel') {
+                $app_id = (int)($_POST['app_id'] ?? 0);
+                if ($app_id && Application::cancel($app_id, $user_id)) {
+                    setFlashMessage('success', 'Wniosek zostal anulowany.');
+                } else {
+                    setFlashMessage('error', 'Nie mozna anulowac wniosku.');
+                }
+                $this->redirectTo('/driver/applications.php');
+            }
+
             $type = $_POST['type'] ?? '';
             if (!in_array($type, self::$VALID_TYPES, true)) {
                 setFlashMessage('error', 'Nieprawidlowy typ wniosku.');
@@ -34,7 +45,7 @@ class DriverApplicationController extends Controller {
             $data = [
                 'user_id' => $user_id,
                 'type'    => $type,
-                'reason'  => trim($_POST['reason'] ?? ''),
+                'reason'  => trim($_POST['reason_' . $type] ?? $_POST['reason'] ?? ''),
                 'notes'   => trim($_POST['notes'] ?? ''),
             ];
 
@@ -42,12 +53,12 @@ class DriverApplicationController extends Controller {
 
             switch ($type) {
                 case 'kzw':
-                    if (empty($_POST['execution_date'])) {
+                    if (empty($_POST['execution_date_kzw'])) {
                         $error = 'Data wykonania jest wymagana.';
                         break;
                     }
-                    $data['execution_date'] = $_POST['execution_date'];
-                    $data['vehicle_id'] = !empty($_POST['vehicle_id']) ? (int)$_POST['vehicle_id'] : null;
+                    $data['execution_date'] = $_POST['execution_date_kzw'];
+                    $data['vehicle_id'] = !empty($_POST['vehicle_id_kzw']) ? (int)$_POST['vehicle_id_kzw'] : null;
                     break;
 
                 case 'cancel_duty':
@@ -62,11 +73,11 @@ class DriverApplicationController extends Controller {
                     break;
 
                 case 'day_off':
-                    if (empty($_POST['execution_date'])) {
+                    if (empty($_POST['execution_date_day_off'])) {
                         $error = 'Data dnia wolnego jest wymagana.';
                         break;
                     }
-                    $data['execution_date'] = $_POST['execution_date'];
+                    $data['execution_date'] = $_POST['execution_date_day_off'];
                     if (empty($data['reason'])) {
                         $error = 'Powod jest wymagany.';
                     }
@@ -86,11 +97,12 @@ class DriverApplicationController extends Controller {
 
                 case 'permanent_vehicle':
                 case 'change_vehicle':
-                    if (empty($_POST['vehicle_id'])) {
+                    $vid_key = $type === 'permanent_vehicle' ? 'vehicle_id_perm' : 'vehicle_id_change';
+                    if (empty($_POST[$vid_key])) {
                         $error = 'Pojazd jest wymagany.';
                         break;
                     }
-                    $data['vehicle_id'] = (int)$_POST['vehicle_id'];
+                    $data['vehicle_id'] = (int)$_POST[$vid_key];
                     break;
 
                 case 'no_vehicle_assign':
@@ -140,7 +152,7 @@ class DriverApplicationController extends Controller {
         $future  = date('Y-m-d', strtotime('+60 days'));
 
         $upcoming_schedules = Schedule::listForUserInRange($user_id, $today, $future, 'scheduled', 50, 0);
-        $vehicles           = Vehicle::listByStatus('active', 200, 0);
+        $vehicles           = Vehicle::listAll();
         $history            = Application::getByUser($user_id, 20, 0);
 
         $this->render('driver/applications', [

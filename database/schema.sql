@@ -154,10 +154,18 @@ CREATE TABLE vehicles (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Tabela miast
+CREATE TABLE cities (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) UNIQUE NOT NULL,
+    active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Tabela przystanków (fizycznych lokalizacji)
 CREATE TABLE stops (
     id SERIAL PRIMARY KEY,
-    stop_id VARCHAR(20) UNIQUE NOT NULL, -- Unikalny identyfikator (zgodny z SIL)
+    city_id INT REFERENCES cities(id) ON DELETE SET NULL,
     name VARCHAR(100) NOT NULL,
     opis TEXT,
     status_nz BOOLEAN DEFAULT FALSE,
@@ -581,7 +589,7 @@ CREATE INDEX idx_rpm_role_id ON role_position_mapping(role_id);
 CREATE INDEX idx_rpm_position_id ON role_position_mapping(position_id);
 
 -- Indeksy dla stops
-CREATE INDEX idx_stops_stop_id ON stops(stop_id);
+CREATE INDEX idx_stops_city_id ON stops(city_id);
 CREATE INDEX idx_stops_active ON stops(active);
 
 -- Indeksy dla platforms

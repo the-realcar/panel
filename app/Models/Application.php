@@ -19,18 +19,20 @@ class Application {
 
     public static function statusLabel(string $status): string {
         $labels = [
-            'pending'  => 'Oczekujący',
-            'approved' => 'Zatwierdzony',
-            'rejected' => 'Odrzucony',
+            'pending'   => 'Oczekujący',
+            'approved'  => 'Zatwierdzony',
+            'rejected'  => 'Odrzucony',
+            'cancelled' => 'Anulowany',
         ];
         return $labels[$status] ?? $status;
     }
 
     public static function statusBadgeClass(string $status): string {
         $classes = [
-            'pending'  => 'badge-warning',
-            'approved' => 'badge-success',
-            'rejected' => 'badge-danger',
+            'pending'   => 'badge-warning',
+            'approved'  => 'badge-success',
+            'rejected'  => 'badge-danger',
+            'cancelled' => 'badge-secondary',
         ];
         return $classes[$status] ?? 'badge-secondary';
     }
@@ -175,5 +177,15 @@ class Application {
             SET status = :status, reviewed_by = :reviewer, reviewed_at = NOW(), review_notes = :notes, updated_at = NOW()
             WHERE id = :id
         ", [':status' => $status, ':reviewer' => $reviewed_by, ':notes' => $review_notes, ':id' => $id]);
+    }
+
+    public static function cancel($id, $user_id): bool {
+        $db = new Database();
+        $result = $db->execute("
+            UPDATE applications
+            SET status = 'cancelled', updated_at = NOW()
+            WHERE id = :id AND user_id = :user_id AND status = 'pending'
+        ", [':id' => $id, ':user_id' => $user_id]);
+        return (bool)$result;
     }
 }

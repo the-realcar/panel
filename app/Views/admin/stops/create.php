@@ -15,18 +15,22 @@
             <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
 
             <div class="form-group">
-                <label for="stop_id">Identyfikator przystanku *</label>
-                <input type="text" id="stop_id" name="stop_id" class="form-control" 
-                       value="<?php echo e($form_data['stop_id'] ?? ''); ?>" required>
-                <?php if (!empty($errors['stop_id'])): ?>
-                    <div class="form-error"><?php echo e($errors['stop_id']); ?></div>
-                <?php endif; ?>
-                <small class="form-text">Unikalny identyfikator zgodny z SIL (np. "P001")</small>
+                <label for="city_id">Miasto</label>
+                <select id="city_id" name="city_id" class="form-control">
+                    <option value="">— Brak / Nie dotyczy —</option>
+                    <?php foreach ($cities as $city): ?>
+                        <option value="<?php echo $city['id']; ?>"
+                            <?php echo (($form_data['city_id'] ?? '') == $city['id']) ? 'selected' : ''; ?>>
+                            <?php echo e($city['name']); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <small class="form-text">Wybierz miasto, w którym znajduje się przystanek.</small>
             </div>
 
             <div class="form-group">
                 <label for="name">Nazwa przystanku *</label>
-                <input type="text" id="name" name="name" class="form-control" 
+                <input type="text" id="name" name="name" class="form-control"
                        value="<?php echo e($form_data['name'] ?? ''); ?>" required>
                 <?php if (!empty($errors['name'])): ?>
                     <div class="form-error"><?php echo e($errors['name']); ?></div>
