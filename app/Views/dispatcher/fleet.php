@@ -48,13 +48,15 @@
     }
 
     .fleet-table tbody tr.fleet-unavailable-row > * {
-        background-color: #f8d7da !important;
-        color: #842029;
+        background-color: #f1aeb5 !important;
+        box-shadow: none !important;
+        color: #58151c !important;
     }
 
     [data-theme="dark"] .fleet-table tbody tr.fleet-unavailable-row > * {
         background-color: #5b1a1f !important;
-        color: #ffd9dc;
+        box-shadow: none !important;
+        color: #ffd9dc !important;
     }
 </style>
 

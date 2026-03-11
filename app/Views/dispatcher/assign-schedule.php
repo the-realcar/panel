@@ -1,19 +1,20 @@
-<?php include __DIR__ . '/../layouts/header.php'; ?>
+<?php View::partial('layouts/header', ['page_title' => $page_title]); ?>
 
-<div class="content-container">
-    <div class="page-header">
-        <h1><?php echo htmlspecialchars($page_title); ?></h1>
-        <a href="/dispatcher/dashboard.php" class="btn btn-secondary">Powrót do panelu</a>
+<div class="page-header">
+    <h1><?php echo e($page_title); ?></h1>
+    <a href="/dispatcher/dashboard.php" class="btn btn-secondary">Powrót do panelu</a>
+</div>
+
+<?php if (!empty($errors['general'])): ?>
+    <div class="alert alert-error">
+        <?php echo e($errors['general']); ?>
     </div>
+<?php endif; ?>
 
-    <?php if (!empty($errors['general'])): ?>
-        <div class="alert alert-danger">
-            <?php echo htmlspecialchars($errors['general']); ?>
-        </div>
-    <?php endif; ?>
-
-    <form method="POST" class="form-card">
-        <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
+<div class="card">
+    <div class="card-body">
+        <form method="POST" class="form">
+            <?php echo csrfField(); ?>
 
         <div class="form-group">
             <label for="user_id">Kierowca: <span class="required">*</span></label>
@@ -140,7 +141,8 @@
             <button type="submit" class="btn btn-primary">Przydziel grafik</button>
             <a href="/dispatcher/dashboard.php" class="btn btn-secondary">Anuluj</a>
         </div>
-    </form>
+        </form>
+    </div>
 </div>
 
 <script>
@@ -171,4 +173,4 @@ window.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<?php include __DIR__ . '/../layouts/footer.php'; ?>
+<?php View::partial('layouts/footer'); ?>

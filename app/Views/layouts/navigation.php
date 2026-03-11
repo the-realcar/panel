@@ -4,6 +4,7 @@ $is_admin = $rbac->isAdmin();
 $is_driver = $rbac->hasRole('Kierowca');
 $is_dispatcher = $rbac->hasRole('Dyspozytor');
 $is_management = $rbac->hasRole('Zarząd');
+$is_nadzor = $rbac->hasRole('Nadzór Ruchu');
 ?>
 <nav class="nav">
     <div class="container">
@@ -38,7 +39,7 @@ $is_management = $rbac->hasRole('Zarząd');
                 </li>
             <?php endif; ?>
 
-            <?php if ($is_dispatcher || $is_management || $is_admin): ?>
+            <?php if ($is_dispatcher || $is_management || $is_nadzor || $is_admin): ?>
                 <li class="nav-item">
                     <a href="/dispatcher/dashboard.php" class="<?php echo isActivePage('/dispatcher/dashboard.php') ? 'active' : ''; ?>">
                         Panel Dyspozytora
@@ -52,6 +53,11 @@ $is_management = $rbac->hasRole('Zarząd');
                 <li class="nav-item">
                     <a href="/dispatcher/assign-schedule.php" class="<?php echo isActivePage('/dispatcher/assign-schedule.php') ? 'active' : ''; ?>">
                         Przydziel Grafik
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/dispatcher/schedules.php" class="<?php echo isActivePage('/dispatcher/schedules.php') ? 'active' : ''; ?>">
+                        Grafiki
                     </a>
                 </li>
                 <?php if (!$is_admin): ?>
@@ -72,7 +78,12 @@ $is_management = $rbac->hasRole('Zarząd');
                     </li>
                     <li class="nav-item">
                         <a href="/admin/incidents/index.php" class="<?php echo isActivePage('/admin/incidents') ? 'active' : ''; ?>">
-                            Zgloszenia
+                            Zgłoszenia
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/applications/index.php" class="<?php echo isActivePage('/admin/applications') ? 'active' : ''; ?>">
+                            Wnioski
                         </a>
                     </li>
                 <?php endif; ?>

@@ -60,6 +60,35 @@ class DispatcherController extends Controller {
         ]);
     }
 
+    public function schedules() {
+        requireLogin();
+
+        $rbac = new RBAC();
+        if (!$rbac->hasRole('Dyspozytor') && !$rbac->hasRole('Zarząd') && !$rbac->isAdmin()) {
+            setFlashMessage('error', 'Brak dostepu.');
+            $this->redirectTo('/index.php');
+        }
+
+        $date_from = $_GET['date_from'] ?? date('Y-m-d', strtotime('-7 days'));
+        $date_to   = $_GET['date_to']   ?? date('Y-m-d', strtotime('+7 days'));
+        $page      = max(1, (int)($_GET['page'] ?? 1));
+        $per_page  = ITEMS_PER_PAGE;
+        $offset    = ($page - 1) * $per_page;
+
+        $total_items = Schedule::countAll($date_from, $date_to);
+        $total_pages = (int)ceil($total_items / $per_page);
+        $schedules   = Schedule::listAll($date_from, $date_to, null, $per_page, $offset);
+
+        $this->render('dispatcher/schedules', [
+            'page_title'  => 'Przegląd Grafików',
+            'schedules'   => $schedules,
+            'date_from'   => $date_from,
+            'date_to'     => $date_to,
+            'page'        => $page,
+            'total_pages' => $total_pages,
+        ]);
+    }
+
     public function assignSchedule() {
         requireLogin();
 

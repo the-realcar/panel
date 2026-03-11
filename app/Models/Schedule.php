@@ -117,6 +117,59 @@ class Schedule {
         return $db->query($query, $params);
     }
 
+    public static function listAll($date_from = '', $date_to = '', $user_id = null, $limit = 50, $offset = 0): array {
+        $db = new Database();
+        $where = [];
+        $params = [':limit' => $limit, ':offset' => $offset];
+
+        if ($date_from) {
+            $where[] = 's.schedule_date >= :date_from';
+            $params[':date_from'] = $date_from;
+        }
+        if ($date_to) {
+            $where[] = 's.schedule_date <= :date_to';
+            $params[':date_to'] = $date_to;
+        }
+        if ($user_id) {
+            $where[] = 's.user_id = :user_id';
+            $params[':user_id'] = $user_id;
+        }
+
+        $where_sql = $where ? ('WHERE ' . implode(' AND ', $where)) : '';
+
+        $query = "
+            SELECT s.*,
+                   u.first_name, u.last_name, u.username,
+                   v.nr_poj, v.model, v.reg_plate,
+                   l.line_number, l.name as line_name,
+                   b.brigade_number
+            FROM schedules s
+            LEFT JOIN users u ON s.user_id = u.id
+            LEFT JOIN vehicles v ON s.vehicle_id = v.id
+            LEFT JOIN lines l ON s.line_id = l.id
+            LEFT JOIN brigades b ON s.brigade_id = b.id
+            $where_sql
+            ORDER BY s.schedule_date DESC, s.start_time ASC
+            LIMIT :limit OFFSET :offset
+        ";
+
+        return $db->query($query, $params);
+    }
+
+    public static function countAll($date_from = '', $date_to = '', $user_id = null): int {
+        $db = new Database();
+        $where = [];
+        $params = [];
+
+        if ($date_from) { $where[] = 'schedule_date >= :date_from'; $params[':date_from'] = $date_from; }
+        if ($date_to)   { $where[] = 'schedule_date <= :date_to';   $params[':date_to']   = $date_to; }
+        if ($user_id)   { $where[] = 'user_id = :user_id';          $params[':user_id']   = $user_id; }
+
+        $where_sql = $where ? ('WHERE ' . implode(' AND ', $where)) : '';
+        $result = $db->queryOne("SELECT COUNT(*) as c FROM schedules $where_sql", $params);
+        return (int)($result['c'] ?? 0);
+    }
+
     public static function create($data) {
         $db = new Database();
         $query = "

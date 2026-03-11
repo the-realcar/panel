@@ -1,7 +1,7 @@
 <?php View::partial('layouts/header', ['page_title' => $page_title]); ?>
 
 <div class="page-header">
-    <h1>⚠️ Zarzadzanie zgloszeniami</h1>
+    <h1>⚠️ Zarządzanie zgłoszeniami</h1>
 </div>
 
 <div class="card">
@@ -10,16 +10,16 @@
             <label for="status">Filtruj po statusie:</label>
             <select name="status" id="status" class="form-control" onchange="this.form.submit()">
                 <option value="">Wszystkie</option>
-                <option value="open" <?php echo $status_filter === 'open' ? 'selected' : ''; ?>>Otwarte</option>
+                <option value="open"        <?php echo $status_filter === 'open'        ? 'selected' : ''; ?>>Otwarte</option>
                 <option value="in_progress" <?php echo $status_filter === 'in_progress' ? 'selected' : ''; ?>>W trakcie</option>
-                <option value="resolved" <?php echo $status_filter === 'resolved' ? 'selected' : ''; ?>>Rozwiazane</option>
-                <option value="closed" <?php echo $status_filter === 'closed' ? 'selected' : ''; ?>>Zamkniete</option>
+                <option value="resolved"    <?php echo $status_filter === 'resolved'    ? 'selected' : ''; ?>>Rozwiązane</option>
+                <option value="closed"      <?php echo $status_filter === 'closed'      ? 'selected' : ''; ?>>Zamknięte</option>
             </select>
         </form>
     </div>
     <div class="card-body">
         <?php if (empty($incidents)): ?>
-            <p class="text-muted">Brak zgloszen do wyswietlenia.</p>
+            <p class="text-muted">Brak zgłoszeń do wyświetlenia.</p>
         <?php else: ?>
             <div class="table-responsive">
                 <table class="table">
@@ -29,23 +29,29 @@
                             <th>Data</th>
                             <th>Typ</th>
                             <th>Priorytet</th>
-                            <th>Tytul</th>
+                            <th>Tytuł</th>
                             <th>Pojazd</th>
-                            <th>Zglaszajacy</th>
+                            <th>Zgłaszający</th>
                             <th>Status</th>
+                            <th>Akcje</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($incidents as $incident): ?>
                         <tr>
-                            <td data-label="ID"><?php echo (int)$incident['id']; ?></td>
-                            <td data-label="Data"><?php echo formatDateTime($incident['incident_date'], 'd.m.Y H:i'); ?></td>
-                            <td data-label="Typ"><?php echo e($incident['incident_type']); ?></td>
-                            <td data-label="Priorytet"><?php echo getSeverityBadge($incident['severity']); ?></td>
-                            <td data-label="Tytul"><?php echo e(truncate($incident['title'], 60)); ?></td>
-                            <td data-label="Pojazd"><?php echo e($incident['nr_poj'] ?? '-'); ?></td>
-                            <td data-label="Zglaszajacy"><?php echo e($incident['reporter_name'] ?? 'Nieznany'); ?></td>
-                            <td data-label="Status"><?php echo getStatusBadge($incident['status']); ?></td>
+                            <td><?php echo (int)$incident['id']; ?></td>
+                            <td><?php echo e(formatDateTime($incident['incident_date'], 'd.m.Y H:i')); ?></td>
+                            <td><?php echo e($incident['incident_type']); ?></td>
+                            <td><?php echo getSeverityBadge($incident['severity']); ?></td>
+                            <td><?php echo e(truncate($incident['title'], 60)); ?></td>
+                            <td><?php echo e($incident['nr_poj'] ?? '—'); ?></td>
+                            <td><?php echo e($incident['reporter_name'] ?? 'Nieznany'); ?></td>
+                            <td><?php echo getStatusBadge($incident['status']); ?></td>
+                            <td>
+                                <a href="/admin/incidents/view.php?id=<?php echo $incident['id']; ?>" class="btn btn-sm btn-secondary">
+                                    🔍 Szczegóły / Edytuj
+                                </a>
+                            </td>
                         </tr>
                         <?php endforeach; ?>
                     </tbody>

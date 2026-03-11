@@ -1,34 +1,32 @@
 <?php View::partial('layouts/header', ['page_title' => $page_title]); ?>
 
-<h1>📋 Złóż nowy wniosek</h1>
-
 <?php
 $type_info = [
     'kzw' => [
-        'label' => 'KZW',
-        'desc'  => 'Wniosek o KZW składamy wtedy, gdy chcemy odrobić niewykonaną, lub niezaliczoną wcześniej służbę. Jeżeli kierowca ma dzień wolny, który chce sobie przeznaczyć na wykonanie kursu, to także może go złożyć.',
-        'reqs'  => ['wniosek musi zostać złożony z minimum jednodniowym wyprzedzeniem', 'musisz posiadać uprawnienia kierowcy'],
+        'label' => 'KZW (Kurs Zastępczy Własny)',
+        'desc'  => 'Składasz, gdy chcesz odrobić niewykonaną lub niezaliczoną służbę albo chcesz wykonać kurs w swój dzień wolny.',
+        'reqs'  => ['minimum jednodniowe wyprzedzenie', 'posiadanie uprawnień kierowcy'],
         'req_danger' => [],
     ],
     'cancel_duty' => [
         'label' => 'Anulowanie służby',
-        'desc'  => 'Wniosek o anulowanie służby składamy wtedy, gdy z jakiegoś powodu nie możemy wykonać służby danego dnia.',
+        'desc'  => 'Składasz, gdy z ważnego powodu nie możesz wykonać zaplanowanej służby.',
         'reqs'  => [
             'minimum ranga kierowcy',
             'zaplanowana służba w przyszłości',
             'maksymalnie 3 anulowane służby w miesiącu',
-            'służba anulowana nie może być z KZW',
+            'służba z KZW nie podlega anulowaniu',
             'minimalny etat to 2/7',
-            'maksymalny czas złożenia do godz. 22 dnia służby',
+            'złożenie do godz. 22 dnia służby',
             'uzasadniony powód',
         ],
         'req_danger' => [],
     ],
     'day_off' => [
         'label' => 'Dzień wolny',
-        'desc'  => 'Wniosek o dzień wolny składamy wtedy, gdy wiemy, że kurs przypisany dnia następnego nie będzie możliwy do zrealizowania. Uprawnia on do jednodniowego zwolnienia z pracy.',
+        'desc'  => 'Składasz z wyprzedzeniem, gdy nie możesz zrealizować kursu następnego dnia. Uprawnia do jednodniowego zwolnienia z pracy.',
         'reqs'  => [
-            'wniosek musi zostać złożony z minimum jednodniowym wyprzedzeniem',
+            'minimum jednodniowe wyprzedzenie',
             'minimum 4 zaliczone służby',
             'uzasadniony powód',
         ],
@@ -36,55 +34,58 @@ $type_info = [
     ],
     'vacation' => [
         'label' => 'Urlop',
-        'desc'  => 'Wniosek o urlop składamy wtedy, gdy chcemy mieć wolne na dany okres czasu. Uprawnia on do maksymalnie dwutygodniowego zwolnienia z pracy.',
+        'desc'  => 'Składasz, gdy chcesz mieć wolne na dłuższy okres. Urlop trwa maksymalnie dwa tygodnie.',
         'reqs'  => [
-            'wniosek musi zostać złożony z minimum jednodniowym wyprzedzeniem',
+            'minimum jednodniowe wyprzedzenie',
             'minimum 10 zaliczonych służb',
-            'uzasadniony powód (wyjątkiem jest urlop na żądanie)',
+            'uzasadniony powód (wyjątek: urlop na żądanie)',
         ],
         'req_danger' => [],
     ],
     'permanent_vehicle' => [
         'label' => 'Stały pojazd',
-        'desc'  => 'Wniosek o przydzielenie stałego pojazdu składamy wtedy, gdy chcemy uzyskać pod opiekę wybrany przez siebie lub zarząd, pojazd. Będzie on używany przez większość Twoich kursów.',
+        'desc'  => 'Składasz, gdy chcesz objąć pod opiekę wybrany pojazd na stałe.',
         'reqs'  => [
             'minimum 15 zaliczonych służb',
-            'sumienność wykonywanej pracy',
-            'zaufanie wśród zarządu',
-            'nieposiadanie pojazdu stałego',
+            'sumienność i zaufanie zarządu',
+            'brak aktualnie przypisanego pojazdu stałego',
         ],
         'req_danger' => [],
     ],
     'change_vehicle' => [
         'label' => 'Zmiana stałego pojazdu',
-        'desc'  => 'Wniosek o zmianę stałego pojazdu składamy gdy chcemy zmienić pojazd, który aktualnie mamy pod swoją opieką.',
+        'desc'  => 'Składasz, gdy chcesz zmienić pojazd, który masz obecnie pod opieką.',
         'reqs'  => [
             'posiadanie stałego pojazdu',
-            'brak wniosku o przypisanie lub zmianę stałego pojazdu w ciągu ostatnich 14 dni',
+            'brak wniosku o zmianę pojazdu w ciągu ostatnich 14 dni',
         ],
         'req_danger' => ['posiadanie stałego pojazdu'],
     ],
     'no_vehicle_assign' => [
         'label' => 'Nieprzydzielanie pojazdów',
-        'desc'  => 'Wniosek o nieprzydzielanie wybranych pojazdów składamy wtedy, gdy nie mamy możliwości kursowania na liniach pewnymi pojazdami. <strong>Ten wniosek jest stosowany tylko i wyłącznie w przypadku problemów technicznych związanych z uruchomieniem pojazdu na mapie.</strong>',
+        'desc'  => 'Składasz wyłącznie w przypadku problemów technicznych z uruchomieniem konkretnego pojazdu na mapie.',
         'reqs'  => [],
         'req_danger' => [],
     ],
     'change_status' => [
         'label' => 'Zmiana etatu',
-        'desc'  => 'Wniosek o zmianę etatu składamy wtedy, gdy chcemy zmienić aktualny etat pracy.',
+        'desc'  => 'Składasz, gdy chcesz zmienić aktualny wymiar etatu pracy.',
         'reqs'  => [],
         'req_danger' => [],
     ],
     'resignation' => [
         'label' => 'Zwolnienie',
-        'desc'  => 'Wniosek o zwolnienie składamy wtedy, gdy chcemy zrezygnować z pracy w vZTM.',
+        'desc'  => 'Składasz, gdy chcesz zrezygnować z pracy w vZTM.',
         'reqs'  => [],
         'req_danger' => [],
     ],
 ];
 $default_type = array_key_first($type_info);
 ?>
+
+<div class="page-header">
+    <h1>📋 Złóż nowy wniosek</h1>
+</div>
 
 <div class="row" style="gap:0; align-items: flex-start;">
     <!-- Formularz -->
@@ -93,6 +94,7 @@ $default_type = array_key_first($type_info);
             <div class="card-body">
                 <form method="POST" action="" class="form" id="application-form">
                     <?php echo csrfField(); ?>
+                    <input type="hidden" name="action" value="submit">
 
                     <div class="form-group">
                         <label>Typ wniosku (wniosek o):</label>
@@ -112,13 +114,13 @@ $default_type = array_key_first($type_info);
                     <div class="application-fields" id="fields_kzw">
                         <div class="form-group">
                             <label for="execution_date_kzw">Data wykonania</label>
-                            <input type="date" name="execution_date" id="execution_date_kzw" class="form-control"
+                            <input type="date" name="execution_date_kzw" id="execution_date_kzw" class="form-control"
                                    min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>">
                         </div>
                         <div class="form-group">
                             <label for="vehicle_id_kzw">Proponowany pojazd</label>
-                            <select name="vehicle_id" id="vehicle_id_kzw" class="form-control">
-                                <option value="">Proponowany pojazd</option>
+                            <select name="vehicle_id_kzw" id="vehicle_id_kzw" class="form-control">
+                                <option value="">— Wybierz pojazd (opcjonalnie) —</option>
                                 <?php foreach ($vehicles as $v): ?>
                                     <option value="<?php echo $v['id']; ?>"><?php echo e($v['nr_poj']); ?><?php echo $v['model'] ? ' – ' . e($v['model']) : ''; ?></option>
                                 <?php endforeach; ?>
@@ -131,7 +133,7 @@ $default_type = array_key_first($type_info);
                         <div class="form-group">
                             <label for="schedule_id">Wybierz służbę</label>
                             <select name="schedule_id" id="schedule_id" class="form-control">
-                                <option value="">Wybierz służbę</option>
+                                <option value="">— Wybierz służbę —</option>
                                 <?php foreach ($upcoming_schedules as $s): ?>
                                     <option value="<?php echo $s['id']; ?>">
                                         <?php echo e(date('d.m.Y', strtotime($s['schedule_date']))); ?>
@@ -142,8 +144,8 @@ $default_type = array_key_first($type_info);
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="reason_cancel_duty">Powód</label>
-                            <textarea name="reason" id="reason_cancel_duty" class="form-control" rows="3" placeholder="Powód"></textarea>
+                            <label for="reason_cancel_duty">Powód *</label>
+                            <textarea name="reason_cancel_duty" id="reason_cancel_duty" class="form-control" rows="3" placeholder="Uzasadnienie..."></textarea>
                         </div>
                     </div>
 
@@ -151,12 +153,12 @@ $default_type = array_key_first($type_info);
                     <div class="application-fields" id="fields_day_off" style="display:none;">
                         <div class="form-group">
                             <label for="execution_date_day_off">Wybierz dzień</label>
-                            <input type="date" name="execution_date" id="execution_date_day_off" class="form-control"
+                            <input type="date" name="execution_date_day_off" id="execution_date_day_off" class="form-control"
                                    min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>">
                         </div>
                         <div class="form-group">
-                            <label for="reason_day_off">Powód</label>
-                            <textarea name="reason" id="reason_day_off" class="form-control" rows="3" placeholder="Powód"></textarea>
+                            <label for="reason_day_off">Powód *</label>
+                            <textarea name="reason_day_off" id="reason_day_off" class="form-control" rows="3" placeholder="Uzasadnienie..."></textarea>
                         </div>
                     </div>
 
@@ -173,17 +175,17 @@ $default_type = array_key_first($type_info);
                                    min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>">
                         </div>
                         <div class="form-group">
-                            <label for="reason_vacation">Powód</label>
-                            <textarea name="reason" id="reason_vacation" class="form-control" rows="3" placeholder="Powód"></textarea>
+                            <label for="reason_vacation">Powód *</label>
+                            <textarea name="reason_vacation" id="reason_vacation" class="form-control" rows="3" placeholder="Uzasadnienie..."></textarea>
                         </div>
                     </div>
 
-                    <!-- Stały pojazd / Zmiana stałego pojazdu -->
+                    <!-- Stały pojazd -->
                     <div class="application-fields" id="fields_permanent_vehicle" style="display:none;">
                         <div class="form-group">
-                            <label for="vehicle_id_perm">Pojazd do objęcia</label>
-                            <select name="vehicle_id" id="vehicle_id_perm" class="form-control">
-                                <option value="">Pojazd do objęcia</option>
+                            <label for="vehicle_id_perm">Pojazd do objęcia *</label>
+                            <select name="vehicle_id_perm" id="vehicle_id_perm" class="form-control">
+                                <option value="">— Wybierz pojazd —</option>
                                 <?php foreach ($vehicles as $v): ?>
                                     <option value="<?php echo $v['id']; ?>"><?php echo e($v['nr_poj']); ?><?php echo $v['model'] ? ' – ' . e($v['model']) : ''; ?></option>
                                 <?php endforeach; ?>
@@ -191,11 +193,12 @@ $default_type = array_key_first($type_info);
                         </div>
                     </div>
 
+                    <!-- Zmiana stałego pojazdu -->
                     <div class="application-fields" id="fields_change_vehicle" style="display:none;">
                         <div class="form-group">
-                            <label for="vehicle_id_change">Pojazd do objęcia</label>
-                            <select name="vehicle_id" id="vehicle_id_change" class="form-control">
-                                <option value="">Pojazd do objęcia</option>
+                            <label for="vehicle_id_change">Pojazd do objęcia *</label>
+                            <select name="vehicle_id_change" id="vehicle_id_change" class="form-control">
+                                <option value="">— Wybierz pojazd —</option>
                                 <?php foreach ($vehicles as $v): ?>
                                     <option value="<?php echo $v['id']; ?>"><?php echo e($v['nr_poj']); ?><?php echo $v['model'] ? ' – ' . e($v['model']) : ''; ?></option>
                                 <?php endforeach; ?>
@@ -206,17 +209,17 @@ $default_type = array_key_first($type_info);
                     <!-- Nieprzydzielanie pojazdów -->
                     <div class="application-fields" id="fields_no_vehicle_assign" style="display:none;">
                         <div class="form-group">
-                            <label for="vehicle_ids">Wybierz pojazdy</label>
+                            <label for="vehicle_ids">Wybierz pojazdy *</label>
                             <select name="vehicle_ids[]" id="vehicle_ids" class="form-control" multiple size="5">
                                 <?php foreach ($vehicles as $v): ?>
                                     <option value="<?php echo $v['id']; ?>"><?php echo e($v['nr_poj']); ?><?php echo $v['model'] ? ' – ' . e($v['model']) : ''; ?></option>
                                 <?php endforeach; ?>
                             </select>
-                            <small class="form-text text-muted">Przytrzymaj Ctrl / Cmd, aby wybrać kilka pojazdów.</small>
+                            <small class="form-text">Przytrzymaj Ctrl / Cmd, aby wybrać kilka pojazdów.</small>
                         </div>
                         <div class="form-group">
-                            <label for="reason_no_vehicle">Powód</label>
-                            <textarea name="reason" id="reason_no_vehicle" class="form-control" rows="3" placeholder="Powód"></textarea>
+                            <label for="reason_no_vehicle_assign">Powód *</label>
+                            <textarea name="reason_no_vehicle_assign" id="reason_no_vehicle_assign" class="form-control" rows="3" placeholder="Uzasadnienie..."></textarea>
                         </div>
                     </div>
 
@@ -244,8 +247,8 @@ $default_type = array_key_first($type_info);
                             <?php endforeach; ?>
                         </div>
                         <div class="form-group">
-                            <label for="reason_change_status">Powód</label>
-                            <textarea name="reason" id="reason_change_status" class="form-control" rows="3" placeholder="Powód"></textarea>
+                            <label for="reason_change_status">Powód *</label>
+                            <textarea name="reason_change_status" id="reason_change_status" class="form-control" rows="3" placeholder="Uzasadnienie..."></textarea>
                         </div>
                     </div>
 
@@ -253,16 +256,17 @@ $default_type = array_key_first($type_info);
                     <div class="application-fields" id="fields_resignation" style="display:none;">
                         <div class="form-group">
                             <label for="reason_resignation">Powód</label>
-                            <textarea name="reason" id="reason_resignation" class="form-control" rows="3" placeholder="Powód"></textarea>
+                            <textarea name="reason_resignation" id="reason_resignation" class="form-control" rows="3" placeholder="Uzasadnienie (opcjonalne)..."></textarea>
                         </div>
                     </div>
 
                     <!-- Uwagi zawsze widoczne -->
                     <div class="form-group">
-                        <textarea name="notes" id="notes" class="form-control" rows="3" placeholder="Uwagi (opcjonalne)"></textarea>
+                        <label for="notes">Uwagi dodatkowe</label>
+                        <textarea name="notes" id="notes" class="form-control" rows="2" placeholder="Dodatkowe informacje (opcjonalne)..."></textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-primary" id="submit-btn">WYŚLIJ</button>
+                    <button type="submit" class="btn btn-primary" id="submit-btn">📤 Wyślij wniosek</button>
                 </form>
             </div>
         </div>
@@ -271,6 +275,9 @@ $default_type = array_key_first($type_info);
     <!-- Panel informacyjny -->
     <div class="col col-12 col-md-6">
         <div class="card" id="info-panel">
+            <div class="card-header">
+                <h2 class="card-title" id="info-type-title">Informacje o wniosku</h2>
+            </div>
             <div class="card-body" id="info-content">
                 <?php foreach ($type_info as $type_key => $info): ?>
                 <div class="type-info" id="info_<?php echo $type_key; ?>" style="display:none;">
@@ -279,7 +286,7 @@ $default_type = array_key_first($type_info);
                     <p><strong>Wymagania:</strong></p>
                     <ul>
                         <?php foreach ($info['reqs'] as $req): ?>
-                        <li <?php echo in_array($req, $info['req_danger'], true) ? 'style="color:var(--color-danger, #dc3545);"' : ''; ?>>
+                        <li <?php echo in_array($req, $info['req_danger'], true) ? 'style="color:var(--danger);"' : ''; ?>>
                             <?php echo e($req); ?>
                         </li>
                         <?php endforeach; ?>
@@ -292,71 +299,87 @@ $default_type = array_key_first($type_info);
     </div>
 </div>
 
-<?php if (!empty($history)): ?>
-<div class="card" style="margin-top:2rem;">
+<!-- Historia wniosków -->
+<div class="card" style="margin-top:1.5rem;">
     <div class="card-header">
-        <h2 class="card-title">Historia wniosków</h2>
+        <h2 class="card-title">📜 Moje wnioski</h2>
     </div>
     <div class="card-body">
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Typ</th>
-                        <th>Status</th>
-                        <th>Szczegóły</th>
-                        <th>Uwagi rozpatrzenia</th>
-                        <th>Data złożenia</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($history as $app): ?>
-                    <tr>
-                        <td data-label="ID"><?php echo $app['id']; ?></td>
-                        <td data-label="Typ"><?php echo e(Application::typeLabel($app['type'])); ?></td>
-                        <td data-label="Status">
-                            <span class="badge <?php echo Application::statusBadgeClass($app['status']); ?>">
-                                <?php echo e(Application::statusLabel($app['status'])); ?>
-                            </span>
-                        </td>
-                        <td data-label="Szczegóły">
-                            <?php if ($app['execution_date']): ?>
-                                Data: <?php echo e(date('d.m.Y', strtotime($app['execution_date']))); ?>
-                            <?php elseif ($app['date_from']): ?>
-                                <?php echo e(date('d.m.Y', strtotime($app['date_from']))); ?> – <?php echo e(date('d.m.Y', strtotime($app['date_to']))); ?>
-                            <?php elseif ($app['schedule_date']): ?>
-                                Służba <?php echo e(date('d.m.Y', strtotime($app['schedule_date']))); ?>
-                            <?php elseif ($app['vehicle_nr']): ?>
-                                Pojazd: <?php echo e($app['vehicle_nr']); ?>
-                            <?php elseif ($app['work_days']): ?>
-                                Dni: <?php
+        <?php if (empty($history)): ?>
+            <p class="text-muted">Nie złożyłeś jeszcze żadnych wniosków.</p>
+        <?php else: ?>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Typ</th>
+                            <th>Status</th>
+                            <th>Szczegóły</th>
+                            <th>Uwagi rozpatrzenia</th>
+                            <th>Data złożenia</th>
+                            <th>Akcje</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($history as $app): ?>
+                        <tr>
+                            <td><?php echo $app['id']; ?></td>
+                            <td><?php echo e(Application::typeLabel($app['type'])); ?></td>
+                            <td>
+                                <span class="badge <?php echo Application::statusBadgeClass($app['status']); ?>">
+                                    <?php echo e(Application::statusLabel($app['status'])); ?>
+                                </span>
+                            </td>
+                            <td>
+                                <?php if ($app['execution_date']): ?>
+                                    Data: <?php echo e(date('d.m.Y', strtotime($app['execution_date']))); ?>
+                                <?php elseif ($app['date_from']): ?>
+                                    <?php echo e(date('d.m.Y', strtotime($app['date_from']))); ?> – <?php echo e(date('d.m.Y', strtotime($app['date_to']))); ?>
+                                <?php elseif ($app['schedule_date']): ?>
+                                    Służba <?php echo e(date('d.m.Y', strtotime($app['schedule_date']))); ?>
+                                <?php elseif ($app['vehicle_nr']): ?>
+                                    Pojazd: <?php echo e($app['vehicle_nr']); ?>
+                                <?php elseif ($app['work_days']): ?>
+                                    <?php
                                     $wd = is_string($app['work_days']) ? json_decode($app['work_days'], true) : $app['work_days'];
-                                    $day_labels = ['monday'=>'Pn','tuesday'=>'Wt','wednesday'=>'Śr','thursday'=>'Czw','friday'=>'Pt','saturday'=>'Sb','sunday'=>'Nd'];
-                                    echo e(implode(', ', array_map(fn($d) => $day_labels[$d] ?? $d, (array)$wd)));
-                                ?>
-                            <?php else: ?>
-                                —
-                            <?php endif; ?>
-                        </td>
-                        <td data-label="Uwagi rozpatrzenia">
-                            <?php if (!empty($app['review_notes'])): ?>
-                                <?php echo e($app['review_notes']); ?>
-                            <?php elseif (!empty($app['reviewer_username'])): ?>
-                                Rozpatrzył: <?php echo e(($app['reviewer_first'] ?? '') . ' ' . ($app['reviewer_last'] ?? '')); ?>
-                            <?php else: ?>
-                                —
-                            <?php endif; ?>
-                        </td>
-                        <td data-label="Data złożenia"><?php echo e(date('d.m.Y H:i', strtotime($app['created_at']))); ?></td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
+                                    $dl = ['monday'=>'Pn','tuesday'=>'Wt','wednesday'=>'Śr','thursday'=>'Czw','friday'=>'Pt','saturday'=>'Sb','sunday'=>'Nd'];
+                                    echo e(implode(', ', array_map(fn($d) => $dl[$d] ?? $d, (array)$wd)));
+                                    ?>
+                                <?php else: ?>
+                                    —
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if (!empty($app['review_notes'])): ?>
+                                    <?php echo e($app['review_notes']); ?>
+                                <?php elseif (!empty($app['reviewer_username'])): ?>
+                                    Rozpatrzył: <?php echo e(trim(($app['reviewer_first'] ?? '') . ' ' . ($app['reviewer_last'] ?? ''))); ?>
+                                <?php else: ?>
+                                    —
+                                <?php endif; ?>
+                            </td>
+                            <td><?php echo e(date('d.m.Y H:i', strtotime($app['created_at']))); ?></td>
+                            <td>
+                                <?php if ($app['status'] === 'pending'): ?>
+                                <form method="POST" action="" style="display:inline;" onsubmit="return confirm('Czy na pewno chcesz anulować ten wniosek?');">
+                                    <?php echo csrfField(); ?>
+                                    <input type="hidden" name="action" value="cancel">
+                                    <input type="hidden" name="app_id" value="<?php echo $app['id']; ?>">
+                                    <button type="submit" class="btn btn-sm btn-danger">❌ Anuluj</button>
+                                </form>
+                                <?php else: ?>
+                                    —
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
-<?php endif; ?>
 
 <script>
 (function () {
