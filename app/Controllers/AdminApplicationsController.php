@@ -65,6 +65,7 @@ class AdminApplicationsController extends Controller {
             }
 
             Application::updateStatus($id, $new_status, getCurrentUserId(), $review_notes);
+            AuditLog::log('application.' . $new_status, 'applications', $id, ['status' => $application['status']], ['status' => $new_status, 'review_notes' => $review_notes]);
             $label = $new_status === 'approved' ? 'zatwierdzony' : 'odrzucony';
             setFlashMessage('success', 'Wniosek zostal ' . $label . '.');
             $this->redirectTo('/admin/applications/index.php');

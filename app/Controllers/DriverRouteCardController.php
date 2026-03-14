@@ -48,6 +48,7 @@ class DriverRouteCardController extends Controller {
                     if ($card_id && !empty($_POST['trips']) && is_array($_POST['trips'])) {
                         RouteCard::createTrips($card_id, $_POST['trips']);
                     }
+                    AuditLog::log('route_card.create', 'route_cards', $card_id, null, ['user_id' => $user_id, 'route_date' => $_POST['route_date'], 'line_id' => $_POST['line_id']]);
 
                     setFlashMessage('success', 'Karta drogowa zostala zapisana pomyslnie.');
                     $this->redirectTo('/driver/route-card.php');

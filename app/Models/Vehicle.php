@@ -86,7 +86,7 @@ class Vehicle {
             )
         ";
 
-        return $db->execute($query, [
+        $db->execute($query, [
             ':nr_poj' => $data['nr_poj'],
             ':reg_plate' => $data['reg_plate'],
             ':vehicle_type' => $data['vehicle_type'],
@@ -107,6 +107,7 @@ class Vehicle {
             ':opiekun_2' => $data['opiekun_2'] ?? null,
             ':dodatkowe_informacje' => $data['dodatkowe_informacje'] ?? null
         ]);
+        return $db->lastInsertId('vehicles_id_seq');
     }
 
     public static function update($id, array $data) {

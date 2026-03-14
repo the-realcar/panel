@@ -81,11 +81,12 @@ class AdminPlatformsController extends Controller {
 
             if (empty($errors)) {
                 try {
-                    Platform::create([
+                    $new_platform_id = Platform::create([
                         'stop_id' => $stop['id'],
                         'platform_number' => $form_data['platform_number'],
                         'description' => !empty($form_data['description']) ? $form_data['description'] : null
                     ]);
+                    AuditLog::log('platform.create', 'platforms', $new_platform_id, null, ['stop_id' => $stop['id'], 'platform_number' => $form_data['platform_number']]);
 
                     setFlashMessage('success', 'Platforma zostala dodana pomyslnie.');
                     $this->redirectTo('/admin/platforms/index.php?stop_id=' . urlencode($stop_id));
@@ -176,6 +177,7 @@ class AdminPlatformsController extends Controller {
                         'platform_number' => $form_data['platform_number'],
                         'description' => !empty($form_data['description']) ? $form_data['description'] : null
                     ]);
+                    AuditLog::log('platform.update', 'platforms', (int)$id, ['platform_number' => $platform['platform_number']], ['platform_number' => $form_data['platform_number']]);
 
                     setFlashMessage('success', 'Platforma zostala zaktualizowana pomyslnie.');
                     $this->redirectTo('/admin/platforms/index.php?stop_id=' . urlencode($stop['stop_id']));
@@ -240,6 +242,7 @@ class AdminPlatformsController extends Controller {
 
         try {
             Platform::delete($id);
+            AuditLog::log('platform.delete', 'platforms', (int)$id, ['platform_number' => $platform['platform_number'], 'stop_id' => $platform['stop_id']], null);
             setFlashMessage('success', 'Platforma zostala usunieta pomyslnie.');
         } catch (Exception $e) {
             error_log('Error deleting platform: ' . $e->getMessage());

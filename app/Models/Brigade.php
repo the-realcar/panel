@@ -131,7 +131,7 @@ class Brigade {
             )
         ";
 
-        return $db->execute($query, [
+        $db->execute($query, [
             ':line_id' => $data['line_id'],
             ':brigade_number' => self::normalizeBrigadeNumber($data['brigade_number']),
             ':is_peak' => $data['is_peak'] ?? false,
@@ -142,6 +142,7 @@ class Brigade {
             ':description' => $data['description'] ?? null,
             ':active' => $data['active'] ?? true
         ]);
+        return $db->lastInsertId('brigades_id_seq');
     }
 
     public static function update($id, array $data) {

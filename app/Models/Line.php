@@ -68,13 +68,14 @@ class Line {
             )
         ";
 
-        return $db->execute($query, [
+        $db->execute($query, [
             ':line_number' => $data['line_number'],
             ':name' => $data['name'],
             ':route_description' => $data['route_description'],
             ':line_type' => $data['line_type'],
             ':active' => $data['active']
         ]);
+        return $db->lastInsertId('lines_id_seq');
     }
 
     public static function update($id, array $data) {

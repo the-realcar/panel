@@ -10,7 +10,7 @@ class Incident {
             (:reported_by, :vehicle_id, :incident_type, :severity, :title, :description, :incident_date, 'open')
         ";
 
-        return $db->execute($query, [
+        $db->execute($query, [
             ':reported_by' => $data['reported_by'],
             ':vehicle_id' => $data['vehicle_id'],
             ':incident_type' => $data['incident_type'],
@@ -19,6 +19,7 @@ class Incident {
             ':description' => $data['description'],
             ':incident_date' => $data['incident_date']
         ]);
+        return $db->lastInsertId('incidents_id_seq');
     }
 
     public static function getRecentByUser($user_id, $limit = 10) {

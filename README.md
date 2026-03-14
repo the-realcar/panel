@@ -7,7 +7,7 @@ System zarządzania pracownikami dla firmy transportowej wykorzystujący PHP, HT
 ### System logowania i autoryzacji
 - Logowanie z hashowaniem haseł (bcrypt)
 - System ról (RBAC): Administrator, Dyspozytor, Kierowca, Zarząd
-- Automatyczne wylogowanie po 30 minutach nieaktywności
+- Automatyczne wylogowanie po 2 godzinach nieaktywności
 - Reset hasła przez email
 
 ### Panel kierowcy

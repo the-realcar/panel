@@ -74,7 +74,7 @@ class AdminBrigadesController extends Controller {
 
             if (empty($errors)) {
                 try {
-                    Brigade::create([
+                    $new_brigade_id = Brigade::create([
                         'line_id' => $form_data['line_id'],
                         'brigade_number' => $form_data['brigade_number'],
                         'is_peak' => !empty($form_data['is_peak']) ? 'true' : 'false',
@@ -85,6 +85,7 @@ class AdminBrigadesController extends Controller {
                         'description' => !empty($form_data['description']) ? $form_data['description'] : null,
                         'active' => isset($form_data['active']) ? 'true' : 'false'
                     ]);
+                    AuditLog::log('brigade.create', 'brigades', $new_brigade_id, null, ['line_id' => $form_data['line_id'], 'brigade_number' => $form_data['brigade_number']]);
 
                     setFlashMessage('success', 'Brygada zostala dodana pomyslnie.');
                     $this->redirectTo('/admin/brigades/index.php');
@@ -173,6 +174,7 @@ class AdminBrigadesController extends Controller {
                         'description' => !empty($form_data['description']) ? $form_data['description'] : null,
                         'active' => isset($form_data['active']) ? 'true' : 'false'
                     ]);
+                    AuditLog::log('brigade.update', 'brigades', $brigade_id, ['brigade_number' => $brigade['brigade_number'], 'line_id' => $brigade['line_id']], ['brigade_number' => $form_data['brigade_number'], 'line_id' => $form_data['line_id']]);
 
                     setFlashMessage('success', 'Brygada zostala zaktualizowana pomyslnie.');
                     $this->redirectTo('/admin/brigades/index.php');
@@ -228,6 +230,7 @@ class AdminBrigadesController extends Controller {
 
         try {
             Brigade::delete($brigade_id);
+            AuditLog::log('brigade.delete', 'brigades', $brigade_id, ['brigade_number' => $brigade['brigade_number'], 'line_id' => $brigade['line_id']], null);
             setFlashMessage('success', 'Brygada zostala usunieta pomyslnie.');
         } catch (Exception $e) {
             error_log('Error deleting brigade: ' . $e->getMessage());

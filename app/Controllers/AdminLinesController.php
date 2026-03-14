@@ -58,13 +58,14 @@ class AdminLinesController extends Controller {
 
             if (empty($errors)) {
                 try {
-                    Line::create([
+                    $new_line_id = Line::create([
                         'line_number' => $form_data['line_number'],
                         'name' => $form_data['name'],
                         'route_description' => !empty($form_data['route_description']) ? $form_data['route_description'] : null,
                         'line_type' => $form_data['line_type'],
                         'active' => isset($form_data['active']) ? 'true' : 'false'
                     ]);
+                    AuditLog::log('line.create', 'lines', $new_line_id, null, ['line_number' => $form_data['line_number'], 'name' => $form_data['name'], 'line_type' => $form_data['line_type']]);
 
                     setFlashMessage('success', 'Linia zostala dodana pomyslnie.');
                     $this->redirectTo('/admin/lines/index.php');
@@ -135,6 +136,7 @@ class AdminLinesController extends Controller {
                         'line_type' => $form_data['line_type'],
                         'active' => isset($form_data['active']) ? 'true' : 'false'
                     ]);
+                    AuditLog::log('line.update', 'lines', $line_id, ['line_number' => $line['line_number'], 'name' => $line['name']], ['line_number' => $form_data['line_number'], 'name' => $form_data['name']]);
 
                     setFlashMessage('success', 'Linia zostala zaktualizowana pomyslnie.');
                     $this->redirectTo('/admin/lines/index.php');
@@ -183,6 +185,7 @@ class AdminLinesController extends Controller {
 
         try {
             Line::delete($line_id);
+            AuditLog::log('line.delete', 'lines', $line_id, ['line_number' => $line['line_number'], 'name' => $line['name']], null);
             setFlashMessage('success', 'Linia zostala usunieta pomyslnie.');
         } catch (Exception $e) {
             error_log('Error deleting line: ' . $e->getMessage());

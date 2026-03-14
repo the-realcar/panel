@@ -60,13 +60,14 @@ class AdminPositionsController extends Controller {
 
             if (empty($errors)) {
                 try {
-                    Position::create([
+                    $new_pos_id = Position::create([
                         'name' => $form_data['name'],
                         'department_id' => !empty($form_data['department_id']) ? (int)$form_data['department_id'] : null,
                         'max_count' => !empty($form_data['max_count']) ? (int)$form_data['max_count'] : null,
                         'description' => !empty($form_data['description']) ? $form_data['description'] : null,
                         'active' => isset($form_data['active']) ? 'true' : 'false'
                     ]);
+                    AuditLog::log('position.create', 'positions', $new_pos_id, null, ['name' => $form_data['name']]);
 
                     setFlashMessage('success', 'Stanowisko zostalo dodane pomyslnie.');
                     $this->redirectTo('/admin/positions/index.php');
@@ -142,6 +143,7 @@ class AdminPositionsController extends Controller {
                         'description' => !empty($form_data['description']) ? $form_data['description'] : null,
                         'active' => isset($form_data['active']) ? 'true' : 'false'
                     ]);
+                    AuditLog::log('position.update', 'positions', $position_id, ['name' => $position['name']], ['name' => $form_data['name']]);
 
                     setFlashMessage('success', 'Stanowisko zostalo zaktualizowane pomyslnie.');
                     $this->redirectTo('/admin/positions/index.php');

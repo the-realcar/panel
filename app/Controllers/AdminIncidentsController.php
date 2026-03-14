@@ -81,6 +81,7 @@ class AdminIncidentsController extends Controller {
                 'status'           => $status,
                 'resolution_notes' => $resolution_notes,
             ]);
+            AuditLog::log('incident.update', 'incidents', $id, ['status' => $incident['status'], 'severity' => $incident['severity']], ['status' => $status, 'severity' => $severity]);
 
             setFlashMessage('success', 'Zgloszenie zostalo zaktualizowane.');
             $this->redirectTo('/admin/incidents/view.php?id=' . $id);

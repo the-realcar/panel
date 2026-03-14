@@ -29,6 +29,7 @@ class DriverApplicationController extends Controller {
             if (isset($_POST['action']) && $_POST['action'] === 'cancel') {
                 $app_id = (int)($_POST['app_id'] ?? 0);
                 if ($app_id && Application::cancel($app_id, $user_id)) {
+                    AuditLog::log('application.cancel', 'applications', $app_id, null, ['user_id' => $user_id]);
                     setFlashMessage('success', 'Wniosek zostal anulowany.');
                 } else {
                     setFlashMessage('error', 'Nie mozna anulowac wniosku.');
@@ -136,6 +137,7 @@ class DriverApplicationController extends Controller {
             try {
                 $id = Application::create($data);
                 if ($id) {
+                    AuditLog::log('application.create', 'applications', $id, null, ['type' => $type, 'user_id' => $user_id]);
                     setFlashMessage('success', 'Wniosek zostal zlozony pomyslnie (ID: ' . $id . ').');
                 } else {
                     setFlashMessage('error', 'Nie udalo sie zlozyc wniosku.');

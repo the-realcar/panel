@@ -70,7 +70,7 @@ class AdminVehiclesController extends Controller {
 
             if (empty($errors)) {
                 try {
-                    Vehicle::create([
+                    $new_vehicle_id = Vehicle::create([
                         'nr_poj' => $form_data['nr_poj'],
                         'reg_plate' => !empty($form_data['reg_plate']) ? $form_data['reg_plate'] : null,
                         'vehicle_type' => $form_data['vehicle_type'],
@@ -89,8 +89,9 @@ class AdminVehiclesController extends Controller {
                         'przewoznik' => !empty($form_data['przewoznik']) ? $form_data['przewoznik'] : null,
                         'opiekun_1' => !empty($form_data['opiekun_1']) ? $form_data['opiekun_1'] : null,
                         'opiekun_2' => !empty($form_data['opiekun_2']) ? $form_data['opiekun_2'] : null,
-                        'dodatkowe_informacje' => !empty($form_data['dodatkowe_informacje']) ? $form_data['dodatkowe_informacje'] : null
+                        'dodatkowe_informacje' => !empty($form_data['dodatkowe_informacije']) ? $form_data['dodatkowe_informacje'] : null
                     ]);
+                    AuditLog::log('vehicle.create', 'vehicles', $new_vehicle_id, null, ['nr_poj' => $form_data['nr_poj'], 'vehicle_type' => $form_data['vehicle_type']]);
 
                     setFlashMessage('success', 'Pojazd zostal dodany pomyslnie.');
                     $this->redirectTo('/admin/vehicles/index.php');
@@ -189,6 +190,7 @@ class AdminVehiclesController extends Controller {
                         'opiekun_2' => !empty($form_data['opiekun_2']) ? $form_data['opiekun_2'] : null,
                         'dodatkowe_informacje' => !empty($form_data['dodatkowe_informacje']) ? $form_data['dodatkowe_informacje'] : null
                     ]);
+                    AuditLog::log('vehicle.update', 'vehicles', $vehicle_id, ['nr_poj' => $vehicle['nr_poj'], 'status' => $vehicle['status']], ['nr_poj' => $form_data['nr_poj'], 'status' => $form_data['status']]);
 
                     setFlashMessage('success', 'Pojazd zostal zaktualizowany pomyslnie.');
                     $this->redirectTo('/admin/vehicles/index.php');
@@ -237,6 +239,7 @@ class AdminVehiclesController extends Controller {
 
         try {
             Vehicle::delete($vehicle_id);
+            AuditLog::log('vehicle.delete', 'vehicles', $vehicle_id, ['nr_poj' => $vehicle['nr_poj'], 'vehicle_type' => $vehicle['vehicle_type']], null);
             setFlashMessage('success', 'Pojazd zostal usuniety pomyslnie.');
         } catch (Exception $e) {
             error_log('Error deleting vehicle: ' . $e->getMessage());

@@ -94,13 +94,14 @@ class Platform {
             )
         ";
 
-        return $db->execute($query, [
+        $db->execute($query, [
             ':stop_id' => $data['stop_id'],
             ':platform_number' => $data['platform_number'],
             ':platform_type' => $data['platform_type'] ?? 'regular',
             ':description' => $data['description'] ?? null,
             ':active' => $data['active'] ?? true
         ]);
+        return $db->lastInsertId('platforms_id_seq');
     }
 
     public static function update($id, array $data) {

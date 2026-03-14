@@ -92,7 +92,8 @@ class AdminUsersController extends Controller {
                 $data['discord_id'] = $form['discord_id'] !== '' ? $form['discord_id'] : null;
                 $data['roblox_id'] = $form['roblox_id'] !== '' ? $form['roblox_id'] : null;
 
-                User::create($data);
+                $new_user_id = User::create($data);
+                AuditLog::log('user.create', 'users', $new_user_id, null, ['username' => $form['username'], 'email' => $form['email']]);
                 setFlashMessage('success', 'Uzytkownik zostal utworzony.');
                 $this->redirectTo('/admin/users/index.php');
             }
@@ -198,6 +199,7 @@ class AdminUsersController extends Controller {
                     User::updatePassword($user_id, $password_hash);
                 }
 
+                AuditLog::log('user.update', 'users', $user_id, ['username' => $user['username'], 'email' => $user['email']], ['username' => $form['username'], 'email' => $form['email']]);
                 setFlashMessage('success', 'Uzytkownik zostal zaktualizowany.');
                 $this->redirectTo('/admin/users/index.php');
             }
@@ -264,6 +266,7 @@ class AdminUsersController extends Controller {
                         } else {
                             Position::assignToUser($user_id, $position_id);
                             User::syncRolesFromPositions($user_id);
+                            AuditLog::log('user.assign_position', 'user_positions', null, null, ['user_id' => $user_id, 'position_id' => $position_id]);
                             setFlashMessage('success', 'Stanowisko zostalo przypisane pomyslnie.');
                         }
 
@@ -290,6 +293,7 @@ class AdminUsersController extends Controller {
                 try {
                     Position::removeFromUser($assignment_id, $user_id);
                     User::syncRolesFromPositions($user_id);
+                    AuditLog::log('user.remove_position', 'user_positions', $assignment_id, ['user_id' => $user_id], null);
                     setFlashMessage('success', 'Stanowisko zostalo usuniete pomyslnie.');
                     $this->redirectTo('/admin/users/assign-position.php?user_id=' . $user_id);
                 } catch (Exception $e) {
@@ -358,6 +362,7 @@ class AdminUsersController extends Controller {
                         } else {
                             Role::assignToUser($user_id, $role_id);
                             User::refreshSessionAuthorizationForUser($user_id);
+                            AuditLog::log('user.assign_role', 'user_roles', null, null, ['user_id' => $user_id, 'role_id' => $role_id]);
                             setFlashMessage('success', 'Rola zostala przypisana pomyslnie.');
                         }
 
@@ -379,6 +384,7 @@ class AdminUsersController extends Controller {
                 try {
                     Role::removeFromUser($assignment_id, $user_id);
                     User::refreshSessionAuthorizationForUser($user_id);
+                    AuditLog::log('user.remove_role', 'user_roles', $assignment_id, ['user_id' => $user_id], null);
                     setFlashMessage('success', 'Rola zostala usunieta pomyslnie.');
                     $this->redirectTo('/admin/users/assign-role.php?user_id=' . $user_id);
                 } catch (Exception $e) {
@@ -437,6 +443,7 @@ class AdminUsersController extends Controller {
         try {
             $new_status = $action === 'activate';
             User::updateStatus($user_id, $new_status);
+            AuditLog::log('user.toggle_status', 'users', $user_id, ['active' => $user['active']], ['active' => $new_status]);
 
             $message = $action === 'activate' ? 'Uzytkownik zostal aktywowany.' : 'Uzytkownik zostal dezaktywowany.';
             setFlashMessage('success', $message);

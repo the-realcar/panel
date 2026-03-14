@@ -6,6 +6,7 @@
 
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/Database.php';
+require_once __DIR__ . '/Mailer.php';
 
 class Auth {
     private $db;
@@ -78,6 +79,8 @@ class Auth {
                 
                 // Regenerate session ID for security
                 regenerateSession();
+
+                AuditLog::log('user.login', 'users', $user['id'], null, ['username' => $user['username'], 'ip' => $ip_address]);
                 
                 $success = true;
             }
@@ -268,6 +271,7 @@ class Auth {
      * Logout user
      */
     public function logout() {
+        AuditLog::log('user.logout', 'users', isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null, ['username' => $_SESSION['username'] ?? null], null);
         session_unset();
         session_destroy();
     }
@@ -370,11 +374,25 @@ class Auth {
                 ':token' => $token,
                 ':expires_at' => $expires
             ]);
-            
-            // TODO: Send email with reset link
-            // For now, just return the token
-            $_SESSION['reset_token'] = $token;
-            
+
+            // Send password reset email
+            $resetUrl = BASE_URL . '/reset-password.php?token=' . urlencode($token);
+            $mailer = new Mailer();
+            $subject = 'Reset hasła — ' . APP_NAME;
+            $body  = '<!DOCTYPE html><html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px">';
+            $body .= '<h2>Reset hasła</h2>';
+            $body .= '<p>Otrzymaliśmy prośbę o reset hasła dla Twojego konta.</p>';
+            $body .= '<p>Kliknij poniższy link, aby ustawić nowe hasło (link ważny przez 1 godzinę):</p>';
+            $body .= '<p><a href="' . htmlspecialchars($resetUrl, ENT_QUOTES) . '" style="background:#4f46e5;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block">Zresetuj hasło</a></p>';
+            $body .= '<p style="color:#888;font-size:13px">Jeśli nie prosiłeś o reset hasła, zignoruj tę wiadomość.</p>';
+            $body .= '<p style="color:#888;font-size:13px">Link: ' . htmlspecialchars($resetUrl, ENT_QUOTES) . '</p>';
+            $body .= '</body></html>';
+
+            $sent = $mailer->send($email, $subject, $body);
+            if (!$sent) {
+                error_log('Password reset email failed to send for user_id=' . $user['id']);
+            }
+
             return true;
             
         } catch (Exception $e) {

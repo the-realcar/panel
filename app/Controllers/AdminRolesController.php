@@ -96,6 +96,7 @@ class AdminRolesController extends Controller {
                         'description' => $form['description'],
                         'permissions' => json_encode($selected_permissions, JSON_UNESCAPED_UNICODE)
                     ]);
+                    AuditLog::log('role.update', 'roles', $role_id, ['name' => $role['name']], ['name' => $form['name'], 'permissions' => $selected_permissions]);
 
                     User::refreshSessionAuthorizationForUser(getCurrentUserId());
                     setFlashMessage('success', 'Rola zostala zaktualizowana.');

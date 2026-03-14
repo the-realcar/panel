@@ -43,6 +43,7 @@ class AdminStopsController extends Controller {
             if (empty($name)) { $this->jsonError('Nazwa miasta jest wymagana.'); }
             if (City::existsByName($name)) { $this->jsonError('Miasto o tej nazwie już istnieje.'); }
             $new_id = City::create(['name' => $name, 'active' => 'on']);
+            AuditLog::log('city.create', 'cities', $new_id, null, ['name' => $name]);
             $this->jsonSuccess(['id' => $new_id, 'name' => e($name)]);
         }
 
@@ -54,6 +55,7 @@ class AdminStopsController extends Controller {
             $city = City::find($id);
             if (!$city) { $this->jsonError('Miasto nie istnieje.'); }
             City::update($id, ['name' => $name, 'active' => 'on']);
+            AuditLog::log('city.update', 'cities', $id, ['name' => $city['name']], ['name' => $name]);
             $this->jsonSuccess(['id' => $id, 'name' => e($name)]);
         }
 
@@ -61,6 +63,7 @@ class AdminStopsController extends Controller {
             if (!$id) { $this->jsonError('Nieprawidlowy ID.'); }
             if (City::getStopsCount($id) > 0) { $this->jsonError('Nie można usunąć miasta z przypisanymi przystankami.'); }
             City::delete($id);
+            AuditLog::log('city.delete', 'cities', $id, null, null);
             $this->jsonSuccess([]);
         }
 
@@ -106,13 +109,14 @@ class AdminStopsController extends Controller {
 
             if (empty($errors)) {
                 try {
-                    Stop::create([
+                    $new_stop_id = Stop::create([
                         'city_id'   => !empty($form_data['city_id']) ? $form_data['city_id'] : null,
                         'name'      => $form_data['name'],
                         'opis'      => !empty($form_data['opis']) ? $form_data['opis'] : null,
                         'status_nz' => isset($form_data['status_nz']) ? 'true' : 'false',
                         'active'    => isset($form_data['active']) ? 'true' : 'false'
                     ]);
+                    AuditLog::log('stop.create', 'stops', $new_stop_id, null, ['name' => $form_data['name']]);
 
                     setFlashMessage('success', 'Przystanek zostal dodany pomyslnie.');
                     $this->redirectTo('/admin/stops/index.php');
@@ -177,6 +181,7 @@ class AdminStopsController extends Controller {
                         'status_nz' => isset($form_data['status_nz']) ? 'true' : 'false',
                         'active'    => isset($form_data['active']) ? 'true' : 'false'
                     ]);
+                    AuditLog::log('stop.update', 'stops', $stop_id, ['name' => $stop['name']], ['name' => $form_data['name']]);
 
                     setFlashMessage('success', 'Przystanek zostal zaktualizowany pomyslnie.');
                     $this->redirectTo('/admin/stops/index.php');
@@ -232,6 +237,7 @@ class AdminStopsController extends Controller {
 
         try {
             Stop::delete($stop_id);
+            AuditLog::log('stop.delete', 'stops', $stop_id, ['name' => $stop['name']], null);
             setFlashMessage('success', 'Przystanek zostal usuniety pomyslnie.');
         } catch (Exception $e) {
             error_log('Error deleting stop: ' . $e->getMessage());

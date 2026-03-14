@@ -45,6 +45,15 @@ define('PASSWORD_MIN_LENGTH', 8);
 define('MAX_LOGIN_ATTEMPTS', 5);
 define('LOGIN_LOCKOUT_TIME', 900); // 15 minutes in seconds
 
+// Email / SMTP
+define('MAIL_HOST',       getenv('MAIL_HOST')       ?: 'smtp.gmail.com');
+define('MAIL_PORT',       (int)(getenv('MAIL_PORT') ?: 587));
+define('MAIL_USERNAME',   getenv('MAIL_USERNAME')   ?: '');
+define('MAIL_PASSWORD',   getenv('MAIL_PASSWORD')   ?: '');
+define('MAIL_FROM',       getenv('MAIL_FROM')       ?: 'noreply@firmakot.pl');
+define('MAIL_FROM_NAME',  getenv('MAIL_FROM_NAME')  ?: APP_NAME);
+define('MAIL_ENCRYPTION', getenv('MAIL_ENCRYPTION') ?: 'tls'); // tls or ssl
+
 // Pagination
 define('ITEMS_PER_PAGE', 20);
 

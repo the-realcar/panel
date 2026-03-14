@@ -58,13 +58,14 @@ class Position {
             )
         ";
 
-        return $db->execute($query, [
+        $db->execute($query, [
             ':name' => $data['name'],
             ':department_id' => $data['department_id'],
             ':max_count' => $data['max_count'],
             ':description' => $data['description'],
             ':active' => $data['active']
         ]);
+        return $db->lastInsertId('positions_id_seq');
     }
 
     public static function update($id, array $data) {

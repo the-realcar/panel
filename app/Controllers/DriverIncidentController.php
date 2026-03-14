@@ -40,7 +40,7 @@ class DriverIncidentController extends Controller {
                     setFlashMessage('error', 'Nieprawidlowy poziom waznosci.');
                 } else {
                     try {
-                        Incident::create([
+                        $new_incident_id = Incident::create([
                             'reported_by' => $user_id,
                             'vehicle_id' => !empty($_POST['vehicle_id']) ? $_POST['vehicle_id'] : null,
                             'incident_type' => $_POST['incident_type'],
@@ -49,6 +49,7 @@ class DriverIncidentController extends Controller {
                             'description' => trim($_POST['description']),
                             'incident_date' => $_POST['incident_date']
                         ]);
+                        AuditLog::log('incident.create', 'incidents', $new_incident_id, null, ['type' => $_POST['incident_type'], 'severity' => $_POST['severity'], 'title' => trim($_POST['title'])]);
 
                         setFlashMessage('success', 'Zgloszenie zostalo zapisane pomyslnie. Dziekujemy za zgloszenie.');
                         $this->redirectTo('/driver/report-incident.php');
