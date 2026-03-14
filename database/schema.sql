@@ -517,15 +517,15 @@ SELECT
         '[]'::json
     ) as roles,
     COALESCE(
-        json_agg(
-            DISTINCT json_build_object(
+        jsonb_agg(
+            DISTINCT jsonb_build_object(
                 'position_id', p.id,
                 'position_name', p.name,
                 'department_id', d.id,
                 'department_name', d.name
             )
         ) FILTER (WHERE p.id IS NOT NULL),
-        '[]'::json
+        '[]'::jsonb
     ) as positions
 FROM users u
 LEFT JOIN user_roles ur ON u.id = ur.user_id
