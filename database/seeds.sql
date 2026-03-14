@@ -32,9 +32,9 @@ ALTER SEQUENCE route_stops_id_seq RESTART WITH 1;
 -- ============================================
 INSERT INTO departments (name, description, active) VALUES
 ('Zarząd', 'Zarząd Firmy KOT', TRUE),
-('Administracja', 'Dział Administracyjny', TRUE),
-('Transport', 'Dział Transportu i Kierowców', TRUE),
+('Nadzór Ruchu', 'Nadzór Ruchu Firmy KOT', TRUE),
 ('Dyspozytornia', 'Dział Dyspozytorów', TRUE),
+('Transport', 'Dział Transportu i Kierowców', TRUE),
 ('Zajezdnia', 'Dział Techniczny i Zajezdnia', TRUE);
 
 -- ============================================
@@ -42,8 +42,6 @@ INSERT INTO departments (name, description, active) VALUES
 -- ============================================
 INSERT INTO roles (name, description, permissions) VALUES
 ('Administrator', 'Pełny dostęp do systemu', 
-    '{"users": ["read", "create", "update", "delete"], "vehicles": ["read", "create", "update", "delete"], "lines": ["read", "create", "update", "delete"], "positions": ["read", "create", "update", "delete"], "stops": ["read", "create", "update", "delete"], "platforms": ["read", "create", "update", "delete"], "brigades": ["read", "create", "update", "delete"], "route_variants": ["read", "create", "update", "delete"], "incidents": ["read", "create", "update", "delete", "resolve"], "schedules": ["read", "create", "update", "delete"], "reports": ["read", "create"]}'::jsonb),
-('Administrator IT', 'Pełny dostęp do systemu (docelowa rola wg wymagań)', 
     '{"users": ["read", "create", "update", "delete"], "vehicles": ["read", "create", "update", "delete"], "lines": ["read", "create", "update", "delete"], "positions": ["read", "create", "update", "delete"], "stops": ["read", "create", "update", "delete"], "platforms": ["read", "create", "update", "delete"], "brigades": ["read", "create", "update", "delete"], "route_variants": ["read", "create", "update", "delete"], "incidents": ["read", "create", "update", "delete", "resolve"], "schedules": ["read", "create", "update", "delete"], "reports": ["read", "create"]}'::jsonb),
 ('Dyspozytor', 'Zarządzanie grafikami i kontrola ruchu',
     '{"schedules": ["read", "create", "update", "delete"], "vehicles": ["read", "update"], "lines": ["read"], "brigades": ["read"], "stops": ["read"], "route_cards": ["read"], "incidents": ["read", "update"]}'::jsonb),
