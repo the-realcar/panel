@@ -5,6 +5,7 @@
         <h1><?php echo htmlspecialchars($page_title); ?></h1>
         <div class="header-actions">
             <a href="/dispatcher/fleet.php" class="btn btn-secondary">Status Floty</a>
+            <a href="/dispatcher/messages.php" class="btn btn-secondary">Dyspozycje</a>
             <a href="/dispatcher/assign-schedule.php" class="btn btn-primary">Przydziel Grafik</a>
         </div>
     </div>

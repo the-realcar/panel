@@ -16,13 +16,21 @@ class DriverDashboardController extends Controller {
         $today_schedules = Schedule::getTodaySchedules($user_id, $today);
         $stats = Schedule::getUserStats($user_id, $today);
         $recent_incidents = Incident::getRecentByUser($user_id, 5);
+        $recent_dispatches = Dispatch::listForRecipient($user_id, 5);
+        $unread_dispatches = Dispatch::countUnreadForRecipient($user_id);
+
+        if ($unread_dispatches > 0) {
+            Dispatch::markAllReadForRecipient($user_id);
+        }
 
         $this->render('driver/dashboard', [
             'page_title' => 'Panel Kierowcy',
             'today' => $today,
             'today_schedules' => $today_schedules,
             'stats' => $stats,
-            'recent_incidents' => $recent_incidents
+            'recent_incidents' => $recent_incidents,
+            'recent_dispatches' => $recent_dispatches,
+            'unread_dispatches' => $unread_dispatches
         ]);
     }
 }

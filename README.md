@@ -245,7 +245,7 @@ panel/
 - **SQL Injection**: parametryzowane zapytania PDO
 - **XSS**: htmlspecialchars() na wszystkich wyjściach
 - **Sesje**: bezpieczne ustawienia cookies (httpOnly, sameSite)
-- **Timeout sesji**: 30 minut nieaktywności
+- **Timeout sesji**: 2 godziny nieaktywności
 - **Logi logowania**: śledzenie prób logowania
 - **Logi audytowe**: rejestracja ważnych operacji
 
@@ -319,7 +319,7 @@ Permission denied
 **Rozwiązanie**: Ustaw właściciela plików na www-data i uprawnienia 755.
 
 ### Sesja wygasła zbyt szybko
-**Rozwiązanie**: Sprawdź ustawienie `SESSION_TIMEOUT` w `config/config.php` (domyślnie 1800s = 30 min).
+**Rozwiązanie**: Sprawdź ustawienie `SESSION_TIMEOUT` w `config/config.php` (domyślnie 7200s = 2h).
 
 ### Dark mode nie działa
 **Rozwiązanie**: Sprawdź czy `dark-mode.js` jest załadowany i czy localStorage jest dostępny w przeglądarce.
@@ -619,7 +619,7 @@ Panel dla Zarządu i Administratorów IT umożliwiający:
 > aby **zwiększyć bezpieczeństwo w przypadku pozostawienia zalogowanej sesji**.
 >
 > **Kryteria akceptacji:**
-> - Sesja wygasa po 30 minutach bezczynności
+> - Sesja wygasa po 2 godzinach bezczynności
 > - System wyświetla ostrzeżenie 2 minuty przed wylogowaniem
 > - Po wylogowaniu użytkownik jest przekierowywany do strony logowania
 > - Czas bezczynności jest konfigurowalny przez administratora

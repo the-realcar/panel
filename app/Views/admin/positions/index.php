@@ -2,9 +2,12 @@
 
 <div class="page-header">
     <h1>💼 Zarządzanie stanowiskami</h1>
-    <?php if ($rbac->hasPermission('positions', 'create')): ?>
-        <a href="/admin/positions/create.php" class="btn btn-primary">➕ Dodaj stanowisko</a>
-    <?php endif; ?>
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <a href="/admin/positions/structure.php" class="btn btn-secondary">🏢 Struktura organizacyjna</a>
+        <?php if ($rbac->hasPermission('positions', 'create')): ?>
+            <a href="/admin/positions/create.php" class="btn btn-primary">➕ Dodaj stanowisko</a>
+        <?php endif; ?>
+    </div>
 </div>
 
 <div class="card">
@@ -46,8 +49,17 @@
                                 <?php echo $current; ?>
                                 <?php if ($max): ?>
                                     / <?php echo $max; ?>
+                                    <?php
+                                    $ratio = $max > 0 ? ($current / $max) : 0;
+                                    $color = 'var(--success)';
+                                    if ($ratio >= 1) {
+                                        $color = 'var(--danger)';
+                                    } elseif ($ratio >= 0.8) {
+                                        $color = 'var(--warning)';
+                                    }
+                                    ?>
                                     <div class="progress-bar" style="margin-top: 5px;">
-                                        <div class="progress-fill" style="width: <?php echo min(100, ($current / $max) * 100); ?>%; background-color: <?php echo $current >= $max ? 'var(--danger)' : 'var(--success)'; ?>;"></div>
+                                        <div class="progress-fill" style="width: <?php echo min(100, ($current / $max) * 100); ?>%; background-color: <?php echo $color; ?>;"></div>
                                     </div>
                                 <?php endif; ?>
                             </td>

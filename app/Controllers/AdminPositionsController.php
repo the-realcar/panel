@@ -162,4 +162,32 @@ class AdminPositionsController extends Controller {
             'departments' => $departments
         ]);
     }
+
+    public function structure() {
+        requireLogin();
+
+        $rbac = new RBAC();
+        $rbac->requirePermission('positions', 'read');
+
+        $positions = Position::listStructureByDepartment();
+        $structure = [];
+
+        foreach ($positions as $position) {
+            $department_name = $position['department_name'] ?? 'Bez przypisanego dzialu';
+
+            if (!isset($structure[$department_name])) {
+                $structure[$department_name] = [];
+            }
+
+            $users = Position::listAssignedUsers((int)$position['id']);
+            $position['assigned_users'] = $users;
+            $structure[$department_name][] = $position;
+        }
+
+        $this->render('admin/positions/structure', [
+            'page_title' => 'Struktura organizacyjna',
+            'structure' => $structure,
+            'rbac' => $rbac
+        ]);
+    }
 }

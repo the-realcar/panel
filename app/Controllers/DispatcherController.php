@@ -160,4 +160,67 @@ class DispatcherController extends Controller {
             'brigades' => $brigades
         ]);
     }
+
+    public function messages() {
+        requireLogin();
+
+        $rbac = new RBAC();
+        if (!$rbac->hasRole('Dyspozytor') && !$rbac->isAdmin()) {
+            setFlashMessage('error', 'Brak dostepu do panelu dyspozytora.');
+            $this->redirectTo('/index.php');
+        }
+
+        $sender_id = getCurrentUserId();
+        $errors = [];
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+                setFlashMessage('error', 'Nieprawidlowy token CSRF.');
+                $this->redirectTo('/dispatcher/messages.php');
+            }
+
+            $recipient_id = (int)($_POST['recipient_id'] ?? 0);
+            $message = trim($_POST['message'] ?? '');
+
+            if ($recipient_id <= 0) {
+                $errors['recipient_id'] = 'Wybierz kierowce.';
+            }
+
+            if ($message === '') {
+                $errors['message'] = 'Tresc komunikatu jest wymagana.';
+            } elseif (mb_strlen($message) > 2000) {
+                $errors['message'] = 'Komunikat moze miec maksymalnie 2000 znakow.';
+            }
+
+            if (empty($errors)) {
+                $dispatch_id = Dispatch::create([
+                    'sender_id' => $sender_id,
+                    'recipient_id' => $recipient_id,
+                    'message' => $message
+                ]);
+
+                AuditLog::log('dispatch.create', 'dispatches', $dispatch_id, null, [
+                    'recipient_id' => $recipient_id,
+                    'message_length' => mb_strlen($message)
+                ]);
+
+                setFlashMessage('success', 'Komunikat zostal wyslany.');
+                $this->redirectTo('/dispatcher/messages.php');
+            }
+        }
+
+        $drivers = User::listByRole('Kierowca');
+        $sent_messages = Dispatch::listSentBy($sender_id, 50);
+
+        $this->render('dispatcher/messages', [
+            'page_title' => 'Dyspozycje dla kierowcow',
+            'drivers' => $drivers,
+            'sent_messages' => $sent_messages,
+            'errors' => $errors,
+            'form' => [
+                'recipient_id' => (int)($_POST['recipient_id'] ?? 0),
+                'message' => $_POST['message'] ?? ''
+            ]
+        ]);
+    }
 }

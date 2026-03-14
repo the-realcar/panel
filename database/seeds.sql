@@ -6,8 +6,8 @@
 
 -- Wyczyść istniejące dane
 TRUNCATE TABLE password_resets, audit_logs, login_logs, incidents, applications, route_card_trips, route_cards, schedules, 
-    route_stops, route_variants, brigades, platforms, stops, role_position_mapping,
-    user_positions, user_roles, vehicles, lines, positions, roles, departments, users, sessions CASCADE;
+    dispatches, work_hours, route_stops, route_variants, brigades, platforms, stops, role_position_mapping,
+    user_positions, user_roles, vehicles, lines, positions, roles, departments, users, settings, sessions CASCADE;
 
 -- Reset sekwencji
 ALTER SEQUENCE users_id_seq RESTART WITH 1;
@@ -21,11 +21,22 @@ ALTER SEQUENCE route_cards_id_seq RESTART WITH 1;
 ALTER SEQUENCE route_card_trips_id_seq RESTART WITH 1;
 ALTER SEQUENCE incidents_id_seq RESTART WITH 1;
 ALTER SEQUENCE applications_id_seq RESTART WITH 1;
+ALTER SEQUENCE dispatches_id_seq RESTART WITH 1;
+ALTER SEQUENCE work_hours_id_seq RESTART WITH 1;
 ALTER SEQUENCE stops_id_seq RESTART WITH 1;
 ALTER SEQUENCE platforms_id_seq RESTART WITH 1;
 ALTER SEQUENCE brigades_id_seq RESTART WITH 1;
 ALTER SEQUENCE route_variants_id_seq RESTART WITH 1;
 ALTER SEQUENCE route_stops_id_seq RESTART WITH 1;
+
+-- ============================================
+-- 0. USTAWIENIA SYSTEMOWE
+-- ============================================
+INSERT INTO settings (key, value, description) VALUES
+('company_name', 'Firma KOT', 'Nazwa firmy widoczna w panelu'),
+('base_url', 'http://localhost', 'Bazowy adres URL aplikacji'),
+('support_email', 'admin@firmakot.pl', 'Adres kontaktowy do wsparcia'),
+('session_timeout', '7200', 'Timeout sesji w sekundach');
 
 -- ============================================
 -- 1. DEPARTAMENTY
@@ -253,6 +264,20 @@ INSERT INTO incidents (reported_by, vehicle_id, incident_type, severity, title, 
 (2, 4, 'breakdown', 'high', 'Awaria klimatyzacji', 'Przestała działać klimatyzacja w autobusie BUS-003 podczas kursu na linii 1', CURRENT_TIMESTAMP - INTERVAL '2 days', 'resolved'),
 (2, 1, 'complaint', 'low', 'Reklamacja pasażera', 'Pasażer złożył reklamację dotyczącą spóźnienia o 5 minut', CURRENT_TIMESTAMP - INTERVAL '1 day', 'in_progress'),
 (2, 2, 'other', 'medium', 'Brak paliwa na stacji', 'Stacja paliwa była chwilowo niedostępna, tankowanie z opóźnieniem', CURRENT_TIMESTAMP - INTERVAL '3 hours', 'open');
+
+-- ============================================
+-- 11b. KOMUNIKATY DYSPOZYTORA
+-- ============================================
+INSERT INTO dispatches (sender_id, recipient_id, message, created_at) VALUES
+(3, 2, 'Zmiana trasy na linii 1: objazd przez Plac Wolnosci do odwolania.', CURRENT_TIMESTAMP - INTERVAL '30 minutes');
+
+-- ============================================
+-- 11c. EWIDENCJA CZASU PRACY
+-- ============================================
+INSERT INTO work_hours (user_id, work_date, hours_worked, notes, source, updated_by) VALUES
+(2, CURRENT_DATE - INTERVAL '2 days', 8.00, 'Zmiana poranna', 'manual', 1),
+(2, CURRENT_DATE - INTERVAL '1 day', 7.50, 'Skrocona zmiana', 'manual', 1),
+(2, CURRENT_DATE, 8.00, 'Zmiana dzienna', 'manual', 1);
 
 -- ============================================
 -- 12. PRZYSTANKI

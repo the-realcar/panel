@@ -119,6 +119,43 @@
     </div>
 </div>
 
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">📣 Dyspozycje od dyspozytora</h2>
+        <?php if (!empty($unread_dispatches)): ?>
+            <span class="badge badge-warning">Nowe: <?php echo (int)$unread_dispatches; ?></span>
+        <?php endif; ?>
+    </div>
+    <div class="card-body">
+        <?php if (empty($recent_dispatches)): ?>
+            <p class="text-muted">Brak komunikatow od dyspozytora.</p>
+        <?php else: ?>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Nadawca</th>
+                            <th>Komunikat</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($recent_dispatches as $dispatch): ?>
+                        <tr>
+                            <td data-label="Data"><?php echo formatDateTime($dispatch['created_at'], 'd.m.Y H:i'); ?></td>
+                            <td data-label="Nadawca">
+                                <?php echo e(trim(($dispatch['sender_first_name'] ?? '') . ' ' . ($dispatch['sender_last_name'] ?? '')) ?: ($dispatch['sender_username'] ?? 'System')); ?>
+                            </td>
+                            <td data-label="Komunikat" style="white-space: pre-wrap;"><?php echo e($dispatch['message']); ?></td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
+
 <div class="row">
     <div class="col col-12 col-md-6">
         <div class="card">

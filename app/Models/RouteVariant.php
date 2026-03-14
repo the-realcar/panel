@@ -82,13 +82,14 @@ class RouteVariant {
             )
         ";
 
-        return $db->execute($query, [
+        $db->execute($query, [
             ':line_id' => $data['line_id'],
             ':variant_name' => $data['variant_name'],
             ':variant_type' => $data['variant_type'] ?? 'normal',
             ':direction' => $data['direction'] ?? null,
             ':is_active' => $data['is_active'] ?? true
         ]);
+        return $db->lastInsertId('route_variants_id_seq');
     }
 
     public static function update($id, array $data) {

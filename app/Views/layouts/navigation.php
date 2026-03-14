@@ -5,6 +5,7 @@ $is_driver = $rbac->hasRole('Kierowca');
 $is_dispatcher = $rbac->hasRole('Dyspozytor');
 $is_management = $rbac->hasRole('Zarząd');
 $is_nadzor = $rbac->hasRole('Nadzór Ruchu');
+$is_hr = $rbac->hasRole('Kadry');
 ?>
 <nav class="nav">
     <div class="container">
@@ -37,6 +38,11 @@ $is_nadzor = $rbac->hasRole('Nadzór Ruchu');
                         Zglos awarie
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="/driver/documentation.php" class="<?php echo isActivePage('/driver/documentation.php') ? 'active' : ''; ?>">
+                        Dokumentacja
+                    </a>
+                </li>
             <?php endif; ?>
 
             <?php if ($is_dispatcher || $is_management || $is_nadzor || $is_admin): ?>
@@ -60,6 +66,11 @@ $is_nadzor = $rbac->hasRole('Nadzór Ruchu');
                         Grafiki
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="/dispatcher/messages.php" class="<?php echo isActivePage('/dispatcher/messages.php') ? 'active' : ''; ?>">
+                        Dyspozycje
+                    </a>
+                </li>
                 <?php if (!$is_admin): ?>
                     <li class="nav-item">
                         <a href="/admin/vehicles/index.php" class="<?php echo isActivePage('/admin/vehicles') ? 'active' : ''; ?>">
@@ -77,6 +88,11 @@ $is_nadzor = $rbac->hasRole('Nadzór Ruchu');
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a href="/admin/route-variants/index.php" class="<?php echo isActivePage('/admin/route-variants') ? 'active' : ''; ?>">
+                            Warianty tras
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="/admin/incidents/index.php" class="<?php echo isActivePage('/admin/incidents') ? 'active' : ''; ?>">
                             Zgłoszenia
                         </a>
@@ -87,6 +103,19 @@ $is_nadzor = $rbac->hasRole('Nadzór Ruchu');
                         </a>
                     </li>
                 <?php endif; ?>
+            <?php endif; ?>
+
+            <?php if ($is_hr || $is_admin): ?>
+                <li class="nav-item">
+                    <a href="/hr/dashboard.php" class="<?php echo isActivePage('/hr/dashboard.php') ? 'active' : ''; ?>">
+                        Panel Kadr
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/hr/work-hours.php" class="<?php echo isActivePage('/hr/work-hours.php') ? 'active' : ''; ?>">
+                        ECP
+                    </a>
+                </li>
             <?php endif; ?>
 
             <?php if ($is_admin): ?>
@@ -121,6 +150,11 @@ $is_nadzor = $rbac->hasRole('Nadzór Ruchu');
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="/admin/route-variants/index.php" class="<?php echo isActivePage('/admin/route-variants') ? 'active' : ''; ?>">
+                        Warianty tras
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="/admin/positions/index.php" class="<?php echo isActivePage('/admin/positions') ? 'active' : ''; ?>">
                         Stanowiska
                     </a>
@@ -128,6 +162,16 @@ $is_nadzor = $rbac->hasRole('Nadzór Ruchu');
                 <li class="nav-item">
                     <a href="/admin/roles/index.php" class="<?php echo isActivePage('/admin/roles') ? 'active' : ''; ?>">
                         Role
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/settings/index.php" class="<?php echo isActivePage('/admin/settings') ? 'active' : ''; ?>">
+                        Ustawienia
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/logs/index.php" class="<?php echo isActivePage('/admin/logs') ? 'active' : ''; ?>">
+                        Logi
                     </a>
                 </li>
                 <li class="nav-item">

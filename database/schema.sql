@@ -7,8 +7,10 @@
 DROP TABLE IF EXISTS password_resets CASCADE;
 DROP TABLE IF EXISTS audit_logs CASCADE;
 DROP TABLE IF EXISTS login_logs CASCADE;
+DROP TABLE IF EXISTS work_hours CASCADE;
 DROP TABLE IF EXISTS incidents CASCADE;
 DROP TABLE IF EXISTS applications CASCADE;
+DROP TABLE IF EXISTS dispatches CASCADE;
 DROP TABLE IF EXISTS route_card_trips CASCADE;
 DROP TABLE IF EXISTS route_cards CASCADE;
 DROP TABLE IF EXISTS schedules CASCADE;
@@ -26,6 +28,7 @@ DROP TABLE IF EXISTS positions CASCADE;
 DROP TABLE IF EXISTS roles CASCADE;
 DROP TABLE IF EXISTS departments CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS settings CASCADE;
 DROP TABLE IF EXISTS sessions CASCADE;
 
 DROP FUNCTION IF EXISTS check_position_limit() CASCADE;
@@ -317,6 +320,34 @@ CREATE TABLE incidents (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Tabela ewidencji czasu pracy (ECP)
+CREATE TABLE work_hours (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    work_date DATE NOT NULL,
+    hours_worked NUMERIC(5,2) NOT NULL CHECK (hours_worked >= 0 AND hours_worked <= 24),
+    notes TEXT,
+    source VARCHAR(20) NOT NULL DEFAULT 'manual' CHECK (source IN ('manual', 'import', 'auto')),
+    updated_by INT REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, work_date)
+);
+CREATE INDEX idx_work_hours_user_date ON work_hours(user_id, work_date DESC);
+CREATE INDEX idx_work_hours_date ON work_hours(work_date DESC);
+
+-- Tabela komunikatow dyspozytora do kierowcow
+CREATE TABLE dispatches (
+    id SERIAL PRIMARY KEY,
+    sender_id INT REFERENCES users(id) ON DELETE SET NULL,
+    recipient_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    message TEXT NOT NULL,
+    read_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_dispatches_recipient_created ON dispatches(recipient_id, created_at DESC);
+CREATE INDEX idx_dispatches_sender_created ON dispatches(sender_id, created_at DESC);
+
 -- Tabela logów logowania
 CREATE TABLE login_logs (
     id SERIAL PRIMARY KEY,
@@ -357,6 +388,16 @@ CREATE TABLE sessions (
     data TEXT,
     last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabela ustawien systemowych (klucz-wartosc)
+CREATE TABLE settings (
+    key VARCHAR(100) PRIMARY KEY,
+    value TEXT,
+    description TEXT,
+    updated_by INT REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ============================================
@@ -466,6 +507,16 @@ CREATE TRIGGER trigger_update_brigades_updated_at
 
 CREATE TRIGGER trigger_update_route_variants_updated_at
     BEFORE UPDATE ON route_variants
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER trigger_update_work_hours_updated_at
+    BEFORE UPDATE ON work_hours
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER trigger_update_settings_updated_at
+    BEFORE UPDATE ON settings
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at();
 

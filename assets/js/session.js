@@ -10,8 +10,8 @@
     // Session timeout in milliseconds (2 hours)
     const SESSION_TIMEOUT = 2 * 60 * 60 * 1000;
     
-    // Warning time before logout (10 seconds)
-    const WARNING_TIME = 10 * 1000;
+    // Warning time before logout (2 minutes)
+    const WARNING_TIME = 2 * 60 * 1000;
     
     let sessionTimer;
     let warningTimer;
@@ -46,7 +46,7 @@
         // Hide warning if shown
         hideWarning();
         
-        // Set warning timer (10 seconds before logout)
+        // Set warning timer (2 minutes before logout)
         warningTimer = setTimeout(showWarning, SESSION_TIMEOUT - WARNING_TIME);
         
         // Set logout timer (2 hours)
@@ -82,7 +82,7 @@
         warning.innerHTML = `
             <h4 style="margin: 0 0 0.5rem 0; font-size: 1rem;">Sesja wkrótce wygaśnie</h4>
             <p style="margin: 0 0 1rem 0; font-size: 0.875rem;">
-                Twoja sesja wygaśnie za 10 sekund. Wykonaj jakąkolwiek akcję, aby przedłużyć sesję.
+                Twoja sesja wygaśnie za 2 minuty. Wykonaj jakąkolwiek akcję, aby przedłużyć sesję.
             </p>
             <button onclick="hideSessionWarning()" style="
                 background: white;

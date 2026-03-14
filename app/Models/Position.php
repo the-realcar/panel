@@ -28,6 +28,33 @@ class Position {
         ]);
     }
 
+    public static function listStructureByDepartment() {
+        $db = new Database();
+        $query = "
+            SELECT p.*, d.name as department_name, COUNT(up.id) as current_count
+            FROM positions p
+            LEFT JOIN departments d ON p.department_id = d.id
+            LEFT JOIN user_positions up ON p.id = up.position_id
+            GROUP BY p.id, d.name
+            ORDER BY d.name ASC NULLS LAST, p.name ASC
+        ";
+
+        return $db->query($query);
+    }
+
+    public static function listAssignedUsers($position_id) {
+        $db = new Database();
+        $query = "
+            SELECT u.id, u.username, u.first_name, u.last_name, u.active
+            FROM user_positions up
+            INNER JOIN users u ON u.id = up.user_id
+            WHERE up.position_id = :position_id
+            ORDER BY u.last_name ASC NULLS LAST, u.first_name ASC NULLS LAST, u.username ASC
+        ";
+
+        return $db->query($query, [':position_id' => $position_id]);
+    }
+
     public static function find($id) {
         $db = new Database();
         $query = "SELECT * FROM positions WHERE id = :id";
