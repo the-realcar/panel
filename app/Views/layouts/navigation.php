@@ -105,6 +105,14 @@ $is_hr = $rbac->hasRole('Kadry');
                 <?php endif; ?>
             <?php endif; ?>
 
+            <?php if ($is_management || $is_admin): ?>
+                <li class="nav-item">
+                    <a href="/management/schedule-generator/index.php" class="<?php echo isActivePage('/management/schedule-generator') ? 'active' : ''; ?>">
+                        Generator Rozkladow
+                    </a>
+                </li>
+            <?php endif; ?>
+
             <?php if ($is_hr || $is_admin): ?>
                 <li class="nav-item">
                     <a href="/hr/dashboard.php" class="<?php echo isActivePage('/hr/dashboard.php') ? 'active' : ''; ?>">
