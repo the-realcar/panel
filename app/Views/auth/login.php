@@ -110,6 +110,7 @@
                 </a>
             </div>
 
+            <?php if (defined('SHOW_TEST_CREDENTIALS') && SHOW_TEST_CREDENTIALS): ?>
             <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
                 <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin: 0;">
                     <strong>Dane testowe:</strong><br>
@@ -118,6 +119,7 @@
                     dyspozytor1 / password123
                 </p>
             </div>
+            <?php endif; ?>
         </div>
     </div>
 

@@ -45,6 +45,13 @@ define('PASSWORD_MIN_LENGTH', 8);
 define('MAX_LOGIN_ATTEMPTS', 5);
 define('LOGIN_LOCKOUT_TIME', 900); // 15 minutes in seconds
 
+$show_test_credentials_env = getenv('SHOW_TEST_CREDENTIALS');
+if ($show_test_credentials_env === false) {
+    define('SHOW_TEST_CREDENTIALS', APP_ENV === 'development');
+} else {
+    define('SHOW_TEST_CREDENTIALS', filter_var($show_test_credentials_env, FILTER_VALIDATE_BOOLEAN));
+}
+
 // Email / SMTP
 define('MAIL_HOST',       getenv('MAIL_HOST')       ?: 'smtp.gmail.com');
 define('MAIL_PORT',       (int)(getenv('MAIL_PORT') ?: 587));

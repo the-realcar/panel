@@ -84,6 +84,8 @@ psql -U panel_user -d panel_firmakot -f database/seeds.sql
 
 Stwórz zmienne środowiskowe lub edytuj pliki w katalogu `config/`:
 
+Wdrozenie produkcyjne warto oprzec o szablon `/.env.production.example` i ustawic sekretne wartosci w managerze sekretow lub zmiennych systemowych.
+
 **Opcja A: Zmienne środowiskowe (zalecane)**
 
 ```bash
@@ -165,7 +167,7 @@ sudo chmod -R 755 /var/www/panel
 
 ### 6. Testowanie instalacji
 
-Przejdź do: `http://localhost/public/login.php`
+Przejdź do: `http://localhost/login.php`
 
 ---
 
@@ -180,6 +182,8 @@ System zawiera 3 predefiniowanych użytkowników testowych:
 | `dyspozytor1` | `password123` | Dyspozytor |
 
 **⚠️ WAŻNE**: Zmień te hasła przed wdrożeniem produkcyjnym!
+
+Szczegolowa checklista przejscia z testow na produkcje znajduje sie w `docs/deployment-checklist.md`.
 
 ---
 
