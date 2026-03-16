@@ -88,6 +88,11 @@ $is_hr = $rbac->hasRole('Kadry');
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a href="/admin/brigades/generate-schedule.php" class="<?php echo isActivePage('/admin/brigades/generate-schedule') ? 'active' : ''; ?>">
+                            Generator rozkładów
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="/admin/route-variants/index.php" class="<?php echo isActivePage('/admin/route-variants') ? 'active' : ''; ?>">
                             Warianty tras
                         </a>
@@ -155,6 +160,11 @@ $is_hr = $rbac->hasRole('Kadry');
                 <li class="nav-item">
                     <a href="/admin/brigades/index.php" class="<?php echo isActivePage('/admin/brigades') ? 'active' : ''; ?>">
                         Brygady
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/brigades/generate-schedule.php" class="<?php echo isActivePage('/admin/brigades/generate-schedule') ? 'active' : ''; ?>">
+                        Generator rozkładów
                     </a>
                 </li>
                 <li class="nav-item">
