@@ -44,6 +44,19 @@ class Stop {
         return $db->queryOne($query, [':id' => $id]);
     }
 
+    public static function findByName($name) {
+        $db = new Database();
+        $query = "
+            SELECT s.*, c.name as city_name
+            FROM stops s
+            LEFT JOIN cities c ON s.city_id = c.id
+            WHERE s.name = :name
+            LIMIT 1
+        ";
+
+        return $db->queryOne($query, [':name' => $name]);
+    }
+
     public static function existsByName($name, $exclude_id = null) {
         $db = new Database();
         $query = "SELECT COUNT(*) as count FROM stops WHERE name = :name";

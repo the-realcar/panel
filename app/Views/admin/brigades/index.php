@@ -2,6 +2,7 @@
 
 <div class="page-header">
     <h1>🚌 Zarządzanie brygadami</h1>
+    <a href="/admin/brigades/schedule.php" class="btn btn-secondary">📋 Plan zmian</a>
     <?php if ($rbac->hasPermission('brigades', 'create')): ?>
         <a href="/admin/brigades/create.php" class="btn btn-primary">➕ Dodaj brygadę</a>
     <?php endif; ?>
@@ -33,7 +34,9 @@
                             <th>Brygada</th>
                             <th>Typ brygady</th>
                             <th>Godziny pracy</th>
+                            <th>Odjazdy i kierunki</th>
                             <th>Domyślny typ taboru</th>
+                            <th>Spółka</th>
                             <th>Status</th>
                             <th>Akcje</th>
                         </tr>
@@ -55,13 +58,33 @@
                                 <?php endif; ?>
                             </td>
                             <td data-label="Godziny pracy">
-                                <?php if (!empty($brigade['shift_start']) && !empty($brigade['shift_end'])): ?>
-                                    <?php echo e(substr($brigade['shift_start'], 0, 5)); ?> – <?php echo e(substr($brigade['shift_end'], 0, 5)); ?>
+                                <?php
+                                    $shiftA = (!empty($brigade['shift_a_start']) && !empty($brigade['shift_a_end']))
+                                        ? 'A: ' . substr($brigade['shift_a_start'], 0, 5) . ' – ' . substr($brigade['shift_a_end'], 0, 5)
+                                        : null;
+                                    $shiftB = (!empty($brigade['shift_b_start']) && !empty($brigade['shift_b_end']))
+                                        ? 'B: ' . substr($brigade['shift_b_start'], 0, 5) . ' – ' . substr($brigade['shift_b_end'], 0, 5)
+                                        : null;
+                                ?>
+                                <?php if ($shiftA || $shiftB): ?>
+                                    <?php if ($shiftA): ?><div><?php echo e($shiftA); ?></div><?php endif; ?>
+                                    <?php if ($shiftB): ?><div><?php echo e($shiftB); ?></div><?php endif; ?>
                                 <?php else: ?>
                                     <span class="text-muted">—</span>
                                 <?php endif; ?>
                             </td>
+                            <td data-label="Odjazdy i kierunki">
+                                <?php if (!empty($brigade['departures_summary'])): ?>
+                                    <?php echo e($brigade['departures_summary']); ?>
+                                    <?php if ((int)($brigade['departures_count'] ?? 0) > 0): ?>
+                                        <br><small class="text-muted">Liczba odjazdow: <?php echo (int)$brigade['departures_count']; ?></small>
+                                    <?php endif; ?>
+                                <?php else: ?>
+                                    <span class="text-muted">Brak</span>
+                                <?php endif; ?>
+                            </td>
                             <td data-label="Domyślny typ taboru"><?php echo e($brigade['default_vehicle_type'] ?? '-'); ?></td>
+                            <td data-label="Spółka"><?php echo e($brigade['przewoznik'] ?? '—'); ?></td>
                             <td data-label="Status">
                                 <?php if ($brigade['active']): ?>
                                     <span class="badge badge-success">Aktywna</span>

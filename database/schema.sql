@@ -18,6 +18,7 @@ DROP TABLE IF EXISTS route_cards CASCADE;
 DROP TABLE IF EXISTS schedules CASCADE;
 DROP TABLE IF EXISTS route_stops CASCADE;
 DROP TABLE IF EXISTS route_variants CASCADE;
+DROP TABLE IF EXISTS brigade_departures CASCADE;
 DROP TABLE IF EXISTS brigades CASCADE;
 DROP TABLE IF EXISTS platforms CASCADE;
 DROP TABLE IF EXISTS stops CASCADE;
@@ -201,15 +202,34 @@ CREATE TABLE brigades (
     brigade_number VARCHAR(20) NOT NULL, -- np. "1", "02"
     is_peak BOOLEAN DEFAULT FALSE,
     peak_type VARCHAR(30) CHECK (peak_type IN ('peak', 'single_shift')),
-    shift_start TIME,  -- godzina rozpoczecia zmiany, np. 04:10
-    shift_end TIME,    -- godzina zakonczenia zmiany, np. 13:53
+    shift_a_start TIME,  -- zmiana A: godzina rozpoczecia, np. 04:10
+    shift_a_end TIME,    -- zmiana A: godzina zakonczenia, np. 13:53
+    shift_b_start TIME,  -- zmiana B: godzina rozpoczecia, np. 14:00
+    shift_b_end TIME,    -- zmiana B: godzina zakonczenia, np. 22:30
+    shift_a_first_stop VARCHAR(100),   -- zmiana A: pierwszy przystanek
+    shift_a_last_stop VARCHAR(100),    -- zmiana A: przystanek koncowy
+    shift_a_capacity VARCHAR(20) CHECK (shift_a_capacity IN ('MIDI', 'MAXI', 'MEGA', 'MEGA/MAXI+', 'MAXI/MAXI+')),
+    shift_b_first_stop VARCHAR(100),   -- zmiana B: pierwszy przystanek
+    shift_b_last_stop VARCHAR(100),    -- zmiana B: przystanek koncowy
+    shift_b_capacity VARCHAR(20) CHECK (shift_b_capacity IN ('MIDI', 'MAXI', 'MEGA', 'MEGA/MAXI+', 'MAXI/MAXI+')),
     default_vehicle_type VARCHAR(50), -- preferowany typ pojazdu
+    przewoznik VARCHAR(20) CHECK (przewoznik IN ('Ostrans', 'KujaTrans', 'Ostromunikacja')),
     description TEXT,
     active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(line_id, brigade_number)
 );
+
+-- Tabela godzin odjazdow i kierunkow dla brygad
+CREATE TABLE brigade_departures (
+    id SERIAL PRIMARY KEY,
+    brigade_id INT NOT NULL REFERENCES brigades(id) ON DELETE CASCADE,
+    departure_time TIME NOT NULL,
+    direction VARCHAR(120) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_brigade_departures_brigade_time ON brigade_departures(brigade_id, departure_time);
 
 -- Tabela wariantów tras (kierunki i odmiany tras dla linii)
 CREATE TABLE route_variants (

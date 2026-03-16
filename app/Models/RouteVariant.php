@@ -72,6 +72,22 @@ class RouteVariant {
         return $db->queryOne($query, [':id' => $id]);
     }
 
+    public static function findByLineAndDirection($line_id, $direction) {
+        $db = new Database();
+        $query = "
+            SELECT *
+            FROM route_variants
+            WHERE line_id = :line_id AND direction = :direction
+            ORDER BY id ASC
+            LIMIT 1
+        ";
+
+        return $db->queryOne($query, [
+            ':line_id' => $line_id,
+            ':direction' => $direction
+        ]);
+    }
+
     public static function create(array $data) {
         $db = new Database();
         $query = "

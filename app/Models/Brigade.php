@@ -1,6 +1,25 @@
 <?php
 
 class Brigade {
+    private static function departureSummarySelect() {
+        return "
+            (
+                SELECT STRING_AGG(
+                    TO_CHAR(bd.departure_time, 'HH24:MI') || ' (' || bd.direction || ')',
+                    ', '
+                    ORDER BY bd.departure_time ASC, bd.id ASC
+                )
+                FROM brigade_departures bd
+                WHERE bd.brigade_id = b.id
+            ) AS departures_summary,
+            (
+                SELECT COUNT(*)
+                FROM brigade_departures bd
+                WHERE bd.brigade_id = b.id
+            ) AS departures_count
+        ";
+    }
+
     public static function normalizeBrigadeNumber($brigade_number) {
         $brigade_number = trim((string)$brigade_number);
         if (strpos($brigade_number, '/') !== false) {
@@ -40,7 +59,8 @@ class Brigade {
         }
         
         $query = "
-            SELECT b.*, l.line_number, l.name as line_name
+            SELECT b.*, l.line_number, l.name as line_name,
+                   " . self::departureSummarySelect() . "
             FROM brigades b
             INNER JOIN lines l ON b.line_id = l.id
             $where
@@ -70,7 +90,8 @@ class Brigade {
         $where = $where_parts ? 'WHERE ' . implode(' AND ', $where_parts) : '';
         
         $query = "
-            SELECT b.*, l.line_number, l.name as line_name
+            SELECT b.*, l.line_number, l.name as line_name,
+                   " . self::departureSummarySelect() . "
             FROM brigades b
             INNER JOIN lines l ON b.line_id = l.id
             $where
@@ -84,7 +105,8 @@ class Brigade {
     public static function listActive() {
         $db = new Database();
         $query = "
-            SELECT b.*, l.line_number, l.name as line_name
+            SELECT b.*, l.line_number, l.name as line_name,
+                   " . self::departureSummarySelect() . "
             FROM brigades b
             INNER JOIN lines l ON b.line_id = l.id
             WHERE b.active = TRUE
@@ -96,7 +118,8 @@ class Brigade {
     public static function find($id) {
         $db = new Database();
         $query = "
-            SELECT b.*, l.line_number, l.name as line_name
+            SELECT b.*, l.line_number, l.name as line_name,
+                   " . self::departureSummarySelect() . "
             FROM brigades b
             INNER JOIN lines l ON b.line_id = l.id
             WHERE b.id = :id
@@ -125,9 +148,13 @@ class Brigade {
         $db = new Database();
         $query = "
             INSERT INTO brigades (
-                line_id, brigade_number, is_peak, peak_type, shift_start, shift_end, default_vehicle_type, description, active
+                line_id, brigade_number, is_peak, peak_type, shift_a_start, shift_a_end, shift_b_start, shift_b_end,
+                shift_a_first_stop, shift_a_last_stop, shift_a_capacity, shift_b_first_stop, shift_b_last_stop, shift_b_capacity,
+                default_vehicle_type, przewoznik, description, active
             ) VALUES (
-                :line_id, :brigade_number, :is_peak, :peak_type, :shift_start, :shift_end, :default_vehicle_type, :description, :active
+                :line_id, :brigade_number, :is_peak, :peak_type, :shift_a_start, :shift_a_end, :shift_b_start, :shift_b_end,
+                :shift_a_first_stop, :shift_a_last_stop, :shift_a_capacity, :shift_b_first_stop, :shift_b_last_stop, :shift_b_capacity,
+                :default_vehicle_type, :przewoznik, :description, :active
             )
         ";
 
@@ -136,9 +163,18 @@ class Brigade {
             ':brigade_number' => self::normalizeBrigadeNumber($data['brigade_number']),
             ':is_peak' => $data['is_peak'] ?? false,
             ':peak_type' => $data['peak_type'] ?? null,
-            ':shift_start' => !empty($data['shift_start']) ? $data['shift_start'] : null,
-            ':shift_end' => !empty($data['shift_end']) ? $data['shift_end'] : null,
+            ':shift_a_start' => !empty($data['shift_a_start']) ? $data['shift_a_start'] : null,
+            ':shift_a_end'   => !empty($data['shift_a_end'])   ? $data['shift_a_end']   : null,
+            ':shift_b_start' => !empty($data['shift_b_start']) ? $data['shift_b_start'] : null,
+            ':shift_b_end'   => !empty($data['shift_b_end'])   ? $data['shift_b_end']   : null,
+            ':shift_a_first_stop' => !empty($data['shift_a_first_stop']) ? $data['shift_a_first_stop'] : null,
+            ':shift_a_last_stop'  => !empty($data['shift_a_last_stop'])  ? $data['shift_a_last_stop']  : null,
+            ':shift_a_capacity'   => !empty($data['shift_a_capacity'])   ? $data['shift_a_capacity']   : null,
+            ':shift_b_first_stop' => !empty($data['shift_b_first_stop']) ? $data['shift_b_first_stop'] : null,
+            ':shift_b_last_stop'  => !empty($data['shift_b_last_stop'])  ? $data['shift_b_last_stop']  : null,
+            ':shift_b_capacity'   => !empty($data['shift_b_capacity'])   ? $data['shift_b_capacity']   : null,
             ':default_vehicle_type' => $data['default_vehicle_type'] ?? null,
+            ':przewoznik' => !empty($data['przewoznik']) ? $data['przewoznik'] : null,
             ':description' => $data['description'] ?? null,
             ':active' => $data['active'] ?? true
         ]);
@@ -153,9 +189,18 @@ class Brigade {
                 brigade_number = :brigade_number,
                 is_peak = :is_peak,
                 peak_type = :peak_type,
-                shift_start = :shift_start,
-                shift_end = :shift_end,
+                shift_a_start = :shift_a_start,
+                shift_a_end = :shift_a_end,
+                shift_b_start = :shift_b_start,
+                shift_b_end = :shift_b_end,
+                shift_a_first_stop = :shift_a_first_stop,
+                shift_a_last_stop = :shift_a_last_stop,
+                shift_a_capacity = :shift_a_capacity,
+                shift_b_first_stop = :shift_b_first_stop,
+                shift_b_last_stop = :shift_b_last_stop,
+                shift_b_capacity = :shift_b_capacity,
                 default_vehicle_type = :default_vehicle_type,
+                przewoznik = :przewoznik,
                 description = :description,
                 active = :active
             WHERE id = :id
@@ -167,9 +212,18 @@ class Brigade {
             ':brigade_number' => self::normalizeBrigadeNumber($data['brigade_number']),
             ':is_peak' => $data['is_peak'] ?? false,
             ':peak_type' => $data['peak_type'] ?? null,
-            ':shift_start' => !empty($data['shift_start']) ? $data['shift_start'] : null,
-            ':shift_end' => !empty($data['shift_end']) ? $data['shift_end'] : null,
+            ':shift_a_start' => !empty($data['shift_a_start']) ? $data['shift_a_start'] : null,
+            ':shift_a_end'   => !empty($data['shift_a_end'])   ? $data['shift_a_end']   : null,
+            ':shift_b_start' => !empty($data['shift_b_start']) ? $data['shift_b_start'] : null,
+            ':shift_b_end'   => !empty($data['shift_b_end'])   ? $data['shift_b_end']   : null,
+            ':shift_a_first_stop' => !empty($data['shift_a_first_stop']) ? $data['shift_a_first_stop'] : null,
+            ':shift_a_last_stop'  => !empty($data['shift_a_last_stop'])  ? $data['shift_a_last_stop']  : null,
+            ':shift_a_capacity'   => !empty($data['shift_a_capacity'])   ? $data['shift_a_capacity']   : null,
+            ':shift_b_first_stop' => !empty($data['shift_b_first_stop']) ? $data['shift_b_first_stop'] : null,
+            ':shift_b_last_stop'  => !empty($data['shift_b_last_stop'])  ? $data['shift_b_last_stop']  : null,
+            ':shift_b_capacity'   => !empty($data['shift_b_capacity'])   ? $data['shift_b_capacity']   : null,
             ':default_vehicle_type' => $data['default_vehicle_type'] ?? null,
+            ':przewoznik' => !empty($data['przewoznik']) ? $data['przewoznik'] : null,
             ':description' => $data['description'] ?? null,
             ':active' => $data['active'] ?? true
         ]);
@@ -186,5 +240,48 @@ class Brigade {
         $query = "SELECT COUNT(*) as count FROM schedules WHERE brigade_id = :id";
         $result = $db->queryOne($query, [':id' => $id]);
         return (int)($result['count'] ?? 0) > 0;
+    }
+
+    public static function listDepartures($brigade_id) {
+        $db = new Database();
+        $query = '
+            SELECT id, brigade_id, departure_time, direction
+            FROM brigade_departures
+            WHERE brigade_id = :brigade_id
+            ORDER BY departure_time ASC, id ASC
+        ';
+
+        return $db->query($query, [':brigade_id' => $brigade_id]);
+    }
+
+    public static function replaceDepartures($brigade_id, array $departures) {
+        $db = new Database();
+        $db->beginTransaction();
+
+        try {
+            $db->execute('DELETE FROM brigade_departures WHERE brigade_id = :brigade_id', [':brigade_id' => $brigade_id]);
+
+            if (!empty($departures)) {
+                $insert_query = '
+                    INSERT INTO brigade_departures (brigade_id, departure_time, direction)
+                    VALUES (:brigade_id, :departure_time, :direction)
+                ';
+
+                foreach ($departures as $departure) {
+                    $db->execute($insert_query, [
+                        ':brigade_id' => $brigade_id,
+                        ':departure_time' => $departure['departure_time'],
+                        ':direction' => $departure['direction']
+                    ]);
+                }
+            }
+
+            $db->commit();
+        } catch (Exception $e) {
+            if ($db->inTransaction()) {
+                $db->rollback();
+            }
+            throw $e;
+        }
     }
 }

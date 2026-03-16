@@ -44,6 +44,12 @@ class Line {
         return $db->queryOne($query, [':id' => $id]);
     }
 
+    public static function findByNumber($line_number) {
+        $db = new Database();
+        $query = "SELECT * FROM lines WHERE line_number = :line_number";
+        return $db->queryOne($query, [':line_number' => $line_number]);
+    }
+
     public static function existsByNumber($line_number, $exclude_id = null) {
         $db = new Database();
         $query = "SELECT COUNT(*) as count FROM lines WHERE line_number = :line_number";

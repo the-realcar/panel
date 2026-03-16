@@ -67,6 +67,22 @@ class Platform {
         return $db->queryOne($query, [':id' => $id]);
     }
 
+    public static function findByStopAndNumber($stop_id, $platform_number) {
+        $db = new Database();
+        $query = "
+            SELECT p.*, s.name as stop_name, s.stop_id as stop_code
+            FROM platforms p
+            INNER JOIN stops s ON p.stop_id = s.id
+            WHERE p.stop_id = :stop_id AND p.platform_number = :platform_number
+            LIMIT 1
+        ";
+
+        return $db->queryOne($query, [
+            ':stop_id' => $stop_id,
+            ':platform_number' => $platform_number
+        ]);
+    }
+
     public static function exists($stop_id, $platform_number, $exclude_id = null) {
         $db = new Database();
         $query = "SELECT COUNT(*) as count FROM platforms WHERE stop_id = :stop_id AND platform_number = :platform_number";

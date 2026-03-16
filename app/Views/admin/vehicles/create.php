@@ -264,4 +264,32 @@
     </div>
 </div>
 
+<div class="card" style="margin-top: 1.5rem;">
+    <div class="card-body">
+        <h2>Masowy import pojazdow z CSV</h2>
+        <p class="text-muted">Wklej CSV z separatorem <strong>;</strong>. Naglowek moze zawierac np. nr_poj; reg_plate; vehicle_type; model; rok_prod; pojemnosc; status; marka; engine; gearbox; typ_napedu; klimatyzacja; zajezdnia; przewoznik;</p>
+
+        <form method="POST" action="/admin/vehicles/create.php">
+            <?php echo csrfField(); ?>
+            <input type="hidden" name="import_mode" value="bulk_csv">
+
+            <div class="form-group">
+                <label for="bulk_csv">Dane CSV *</label>
+                <textarea id="bulk_csv"
+                          name="bulk_csv"
+                          class="form-control <?php echo isset($errors['bulk_csv']) ? 'is-invalid' : ''; ?>"
+                          rows="12"
+                          placeholder="nr_poj;reg_plate;vehicle_type;model;rok_prod;pojemnosc;status;marka;engine;gearbox;typ_napedu;klimatyzacja;zajezdnia;przewoznik&#10;1201;KR12345;bus;Solaris Urbino 12;2018;MAXI;sprawny;Solaris;DAF;Voith;Diesel;tak;KM;Ostrans"><?php echo e($form_data['bulk_csv'] ?? ''); ?></textarea>
+                <?php if (isset($errors['bulk_csv'])): ?>
+                    <div class="invalid-feedback"><?php echo e($errors['bulk_csv']); ?></div>
+                <?php endif; ?>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">📥 Importuj pojazdy</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <?php View::partial('layouts/footer'); ?>
