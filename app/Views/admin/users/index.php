@@ -15,6 +15,7 @@
                 <option value="">Wszyscy</option>
                 <option value="active" <?php echo $status_filter === 'active' ? 'selected' : ''; ?>>Aktywni</option>
                 <option value="inactive" <?php echo $status_filter === 'inactive' ? 'selected' : ''; ?>>Nieaktywni</option>
+                <option value="archived" <?php echo $status_filter === 'archived' ? 'selected' : ''; ?>>Zarchiwizowani</option>
             </select>
         </form>
     </div>
@@ -61,7 +62,9 @@
                                 <?php endif; ?>
                             </td>
                             <td data-label="Status">
-                                <?php if ($user['active']): ?>
+                                <?php if (!empty($user['archived'])): ?>
+                                    <span class="badge badge-secondary">Zarchiwizowany</span>
+                                <?php elseif ($user['active']): ?>
                                     <span class="badge badge-success">Aktywny</span>
                                 <?php else: ?>
                                     <span class="badge badge-secondary">Nieaktywny</span>
@@ -85,7 +88,17 @@
                                            class="btn btn-sm btn-secondary">📋 Stanowiska</a>
                                     <?php endif; ?>
                                     <?php if ($rbac->hasPermission('users', 'update') && $user['id'] != getCurrentUserId()): ?>
-                                        <?php if ($user['active']): ?>
+                                        <?php if (!empty($user['archived'])): ?>
+                                            <form method="POST" action="/admin/users/toggle-status.php" style="display:inline;">
+                                                <?php echo csrfField(); ?>
+                                                <input type="hidden" name="id" value="<?php echo $user['id']; ?>">
+                                                <input type="hidden" name="action" value="unarchive">
+                                                <button type="submit" class="btn btn-sm btn-success"
+                                                        onclick="return confirm('Przywrocic tego uzytkownika z archiwum?');">
+                                                    ♻️ Przywroc
+                                                </button>
+                                            </form>
+                                        <?php elseif ($user['active']): ?>
                                             <form method="POST" action="/admin/users/toggle-status.php" style="display:inline;">
                                                 <?php echo csrfField(); ?>
                                                 <input type="hidden" name="id" value="<?php echo $user['id']; ?>">
@@ -102,6 +115,18 @@
                                                 <input type="hidden" name="action" value="activate">
                                                 <button type="submit" class="btn btn-sm btn-success">
                                                     ✅ Aktywuj
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
+
+                                        <?php if (empty($user['archived'])): ?>
+                                            <form method="POST" action="/admin/users/toggle-status.php" style="display:inline;">
+                                                <?php echo csrfField(); ?>
+                                                <input type="hidden" name="id" value="<?php echo $user['id']; ?>">
+                                                <input type="hidden" name="action" value="archive">
+                                                <button type="submit" class="btn btn-sm btn-danger"
+                                                        onclick="return confirm('Czy na pewno chcesz zarchiwizowac konto? Konto nie zostanie usuniete.');">
+                                                    🗄️ Archiwizuj
                                                 </button>
                                             </form>
                                         <?php endif; ?>

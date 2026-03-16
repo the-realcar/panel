@@ -301,6 +301,77 @@ class AdminRouteVariantsController extends Controller {
                 }
             }
 
+            if ($action === 'reorder') {
+                $ordered_raw = trim((string)($_POST['ordered_stop_ids'] ?? ''));
+                $ordered_ids = array_values(array_filter(array_map('trim', explode(',', $ordered_raw)), static function ($value) {
+                    return $value !== '';
+                }));
+
+                $ordered_ids = array_map('intval', $ordered_ids);
+                $ordered_ids = array_values(array_unique(array_filter($ordered_ids, static function ($id) {
+                    return $id > 0;
+                })));
+
+                $db = new Database();
+                $existing = $db->query(
+                    'SELECT id FROM route_stops WHERE route_variant_id = :variant_id ORDER BY stop_sequence ASC',
+                    [':variant_id' => $variant_id]
+                );
+
+                $existing_ids = array_map(static function ($row) {
+                    return (int)$row['id'];
+                }, $existing);
+
+                $is_same_count = count($ordered_ids) === count($existing_ids);
+                $sorted_ordered = $ordered_ids;
+                $sorted_existing = $existing_ids;
+                sort($sorted_ordered);
+                sort($sorted_existing);
+
+                if (!$is_same_count || $sorted_ordered !== $sorted_existing) {
+                    setFlashMessage('error', 'Nieprawidlowa lista kolejnosci przystankow.');
+                } else {
+                    $db->beginTransaction();
+                    try {
+                        foreach ($ordered_ids as $index => $stop_id) {
+                            $db->execute(
+                                'UPDATE route_stops SET stop_sequence = :seq WHERE id = :id AND route_variant_id = :variant_id',
+                                [
+                                    ':seq' => -1 * ($index + 1),
+                                    ':id' => $stop_id,
+                                    ':variant_id' => $variant_id
+                                ]
+                            );
+                        }
+
+                        foreach ($ordered_ids as $index => $stop_id) {
+                            $db->execute(
+                                'UPDATE route_stops SET stop_sequence = :seq WHERE id = :id AND route_variant_id = :variant_id',
+                                [
+                                    ':seq' => $index + 1,
+                                    ':id' => $stop_id,
+                                    ':variant_id' => $variant_id
+                                ]
+                            );
+                        }
+
+                        $db->commit();
+
+                        AuditLog::log('route_stop.reorder_bulk', 'route_stops', null, null, [
+                            'route_variant_id' => $variant_id,
+                            'ordered_ids' => $ordered_ids
+                        ]);
+
+                        setFlashMessage('success', 'Zapisano nowa kolejnosc trasy.');
+                    } catch (Exception $e) {
+                        if ($db->inTransaction()) {
+                            $db->rollback();
+                        }
+                        setFlashMessage('error', 'Nie udalo sie zapisac nowej kolejnosci.');
+                    }
+                }
+            }
+
             $this->redirectTo('/admin/route-variants/stops.php?id=' . $variant_id);
         }
 

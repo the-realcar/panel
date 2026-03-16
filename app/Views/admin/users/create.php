@@ -40,6 +40,30 @@
 
             <div class="form-row">
                 <div class="form-group col col-12 col-md-6">
+                    <label for="hired_date" class="form-label">Data zatrudnienia</label>
+                    <input type="date" id="hired_date" name="hired_date" class="form-control" value="<?php echo e($form['hired_date']); ?>" required>
+                    <?php if (!empty($errors['hired_date'])): ?>
+                        <div class="form-error"><?php echo e($errors['hired_date']); ?></div>
+                    <?php endif; ?>
+                </div>
+                <div class="form-group col col-12 col-md-6">
+                    <label for="role_id" class="form-label">Rola</label>
+                    <select id="role_id" name="role_id" class="form-control" required>
+                        <option value="">Wybierz role</option>
+                        <?php foreach ($roles as $role): ?>
+                            <option value="<?php echo (int)$role['id']; ?>" <?php echo (string)$form['role_id'] === (string)$role['id'] ? 'selected' : ''; ?>>
+                                <?php echo e($role['name']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <?php if (!empty($errors['role_id'])): ?>
+                        <div class="form-error"><?php echo e($errors['role_id']); ?></div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col col-12 col-md-6">
                     <label for="password" class="form-label">Haslo</label>
                     <input type="password" id="password" name="password" class="form-control" required>
                     <?php if (!empty($errors['password'])): ?>
@@ -51,6 +75,10 @@
                     <label class="checkbox-label">
                         <input type="checkbox" name="active" <?php echo $form['active'] ? 'checked' : ''; ?>>
                         Aktywny
+                    </label>
+                    <label class="checkbox-label" style="margin-top: 0.5rem; display: block;">
+                        <input type="checkbox" name="archived" <?php echo $form['archived'] ? 'checked' : ''; ?>>
+                        Zarchiwizowany
                     </label>
                 </div>
             </div>

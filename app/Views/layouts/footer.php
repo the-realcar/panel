@@ -16,6 +16,9 @@
     <script src="/assets/js/main.js"></script>
     <script src="/assets/js/dark-mode.js"></script>
     <?php if (isLoggedIn()): ?>
+    <script>
+        window.APP_SESSION_TIMEOUT_SECONDS = <?php echo (int)getSessionTimeoutSeconds(); ?>;
+    </script>
     <script src="/assets/js/session.js"></script>
     <?php endif; ?>
 </body>

@@ -303,40 +303,6 @@
             </div>
 
             <div class="row">
-                <div class="col col-12 col-md-3">
-                    <div class="form-group">
-                        <label for="start_km">Początkowy stan licznika (km) *</label>
-                        <input type="number" name="start_km" id="start_km" class="form-control" 
-                               min="0" step="1" required>
-                    </div>
-                </div>
-
-                <div class="col col-12 col-md-3">
-                    <div class="form-group">
-                        <label for="end_km">Końcowy stan licznika (km) *</label>
-                        <input type="number" name="end_km" id="end_km" class="form-control" 
-                               min="0" step="1" required>
-                    </div>
-                </div>
-
-                <div class="col col-12 col-md-3">
-                    <div class="form-group">
-                        <label for="fuel_start">Początkowy stan paliwa (l)</label>
-                        <input type="number" name="fuel_start" id="fuel_start" class="form-control" 
-                               min="0" step="0.01">
-                    </div>
-                </div>
-
-                <div class="col col-12 col-md-3">
-                    <div class="form-group">
-                        <label for="fuel_end">Końcowy stan paliwa (l)</label>
-                        <input type="number" name="fuel_end" id="fuel_end" class="form-control" 
-                               min="0" step="0.01">
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
                 <div class="col col-12 col-md-6">
                     <div class="form-group">
                         <label for="passengers_count">Liczba pasażerów</label>
@@ -380,7 +346,7 @@
                             <th>Pojazd</th>
                             <th>Linia</th>
                             <th>Godziny</th>
-                            <th>Przejechane km</th>
+                            <th>Wykonane kursy</th>
                             <th>Pasażerowie</th>
                             <th>Status</th>
                         </tr>
@@ -407,8 +373,8 @@
                                 <?php echo formatTime($card['start_time']); ?> - 
                                 <?php echo formatTime($card['end_time']); ?>
                             </td>
-                            <td data-label="Przejechane km">
-                                <?php echo ($card['end_km'] - $card['start_km']); ?> km
+                            <td data-label="Wykonane kursy">
+                                <?php echo (int)($card['total_trips'] ?? 0); ?>
                             </td>
                             <td data-label="Pasażerowie">
                                 <?php echo $card['passengers_count'] ?? 0; ?>

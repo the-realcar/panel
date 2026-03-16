@@ -1,17 +1,21 @@
 /**
  * Session Management
- * Auto-logout after 2 hours of inactivity
+ * Auto-logout after configurable inactivity
  * Panel Pracowniczy Firma KOT
  */
 
 (function() {
     'use strict';
     
-    // Session timeout in milliseconds (2 hours)
-    const SESSION_TIMEOUT = 2 * 60 * 60 * 1000;
+    // Session timeout in milliseconds (provided by backend, fallback to 2h)
+    const timeoutFromBackend = Number(window.APP_SESSION_TIMEOUT_SECONDS);
+    const SESSION_TIMEOUT = ((Number.isFinite(timeoutFromBackend) && timeoutFromBackend > 0)
+        ? timeoutFromBackend
+        : (2 * 60 * 60)) * 1000;
     
-    // Warning time before logout (2 minutes)
-    const WARNING_TIME = 2 * 60 * 1000;
+    // Warning time before logout: max 2 min, at least 1 min, scaled for short sessions
+    const WARNING_TIME = Math.min(2 * 60 * 1000, Math.max(60 * 1000, Math.floor(SESSION_TIMEOUT * 0.1)));
+    const WARNING_MINUTES = Math.max(1, Math.ceil(WARNING_TIME / 60000));
     
     let sessionTimer;
     let warningTimer;
@@ -82,7 +86,7 @@
         warning.innerHTML = `
             <h4 style="margin: 0 0 0.5rem 0; font-size: 1rem;">Sesja wkrótce wygaśnie</h4>
             <p style="margin: 0 0 1rem 0; font-size: 0.875rem;">
-                Twoja sesja wygaśnie za 2 minuty. Wykonaj jakąkolwiek akcję, aby przedłużyć sesję.
+                Twoja sesja wygaśnie za ${WARNING_MINUTES} min. Wykonaj jakąkolwiek akcję, aby przedłużyć sesję.
             </p>
             <button onclick="hideSessionWarning()" style="
                 background: white;

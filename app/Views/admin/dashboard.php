@@ -80,6 +80,56 @@
 
 <div class="card">
     <div class="card-header">
+        <h2 class="card-title">🧪 Kontrola SLA (US-027 / US-028)</h2>
+    </div>
+    <div class="card-body">
+        <?php if (empty($sla_checks)): ?>
+            <p class="text-muted">Brak danych SLA.</p>
+        <?php else: ?>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Kontrola</th>
+                            <th>Wartosc</th>
+                            <th>Cel</th>
+                            <th>Status</th>
+                            <th>Szczegoly</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($sla_checks as $check): ?>
+                            <?php
+                            $badge_class = 'badge-secondary';
+                            $status_label = 'N/A';
+                            if ($check['status'] === 'ok') {
+                                $badge_class = 'badge-success';
+                                $status_label = 'OK';
+                            } elseif ($check['status'] === 'warn') {
+                                $badge_class = 'badge-warning';
+                                $status_label = 'UWAGA';
+                            } elseif ($check['status'] === 'fail') {
+                                $badge_class = 'badge-danger';
+                                $status_label = 'BLAD';
+                            }
+                            ?>
+                            <tr>
+                                <td data-label="Kontrola"><?php echo e($check['label']); ?></td>
+                                <td data-label="Wartosc"><?php echo e($check['value']); ?></td>
+                                <td data-label="Cel"><?php echo e($check['target']); ?></td>
+                                <td data-label="Status"><span class="badge <?php echo $badge_class; ?>"><?php echo e($status_label); ?></span></td>
+                                <td data-label="Szczegoly"><small><?php echo e($check['details']); ?></small></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
         <h2 class="card-title">🔐 Ostatnie logowania</h2>
     </div>
     <div class="card-body">

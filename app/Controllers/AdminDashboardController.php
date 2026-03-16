@@ -11,12 +11,14 @@ class AdminDashboardController extends Controller {
         }
 
         $stats = AdminStats::getStats();
+        $sla_checks = AdminStats::getSlaChecks();
         $recent_logins = LoginLog::getRecent(10);
         $recent_incidents = Incident::getRecentForAdmin(10);
 
         $this->render('admin/dashboard', [
             'page_title' => 'Panel Administracyjny',
             'stats' => $stats,
+            'sla_checks' => $sla_checks,
             'recent_logins' => $recent_logins,
             'recent_incidents' => $recent_incidents
         ]);

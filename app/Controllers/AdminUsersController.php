@@ -33,11 +33,15 @@ class AdminUsersController extends Controller {
         $rbac->requirePermission('users', 'create');
 
         $errors = [];
+        $roles = Role::listAll();
         $form = [
             'username' => '',
             'email' => '',
             'first_name' => '',
             'last_name' => '',
+            'hired_date' => '',
+            'role_id' => '',
+            'archived' => false,
             'active' => true,
             'discord_id' => '',
             'roblox_id' => ''
@@ -53,6 +57,9 @@ class AdminUsersController extends Controller {
             $form['email'] = trim($_POST['email'] ?? '');
             $form['first_name'] = trim($_POST['first_name'] ?? '');
             $form['last_name'] = trim($_POST['last_name'] ?? '');
+            $form['hired_date'] = trim($_POST['hired_date'] ?? '');
+            $form['role_id'] = trim((string)($_POST['role_id'] ?? ''));
+            $form['archived'] = isset($_POST['archived']);
             $form['active'] = isset($_POST['active']);
             $form['discord_id'] = trim($_POST['discord_id'] ?? '');
             $form['roblox_id'] = trim($_POST['roblox_id'] ?? '');
@@ -66,6 +73,22 @@ class AdminUsersController extends Controller {
                       ->minLength('password', PASSWORD_MIN_LENGTH, 'Haslo jest za krotkie');
 
             if ($validator->passes()) {
+                if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $form['hired_date'])) {
+                    $errors['hired_date'] = 'Podaj poprawna date zatrudnienia.';
+                }
+
+                if ($form['role_id'] === '' || !ctype_digit($form['role_id'])) {
+                    $errors['role_id'] = 'Wybierz role pracownika.';
+                }
+
+                $selected_role = null;
+                if (empty($errors['role_id'])) {
+                    $selected_role = Role::find((int)$form['role_id']);
+                    if (!$selected_role) {
+                        $errors['role_id'] = 'Wybrana rola nie istnieje.';
+                    }
+                }
+
                 if (User::findByUsername($form['username'])) {
                     $errors['username'] = 'Taki login juz istnieje.';
                 }
@@ -89,10 +112,15 @@ class AdminUsersController extends Controller {
                 $password_hash = password_hash($password, PASSWORD_BCRYPT);
                 $data = $form;
                 $data['password_hash'] = $password_hash;
+                $data['hired_date'] = $form['hired_date'];
                 $data['discord_id'] = $form['discord_id'] !== '' ? $form['discord_id'] : null;
                 $data['roblox_id'] = $form['roblox_id'] !== '' ? $form['roblox_id'] : null;
+                if ($form['archived']) {
+                    $data['active'] = false;
+                }
 
                 $new_user_id = User::create($data);
+                Role::assignToUser($new_user_id, (int)$form['role_id']);
                 AuditLog::log('user.create', 'users', $new_user_id, null, ['username' => $form['username'], 'email' => $form['email']]);
                 setFlashMessage('success', 'Uzytkownik zostal utworzony.');
                 $this->redirectTo('/admin/users/index.php');
@@ -102,7 +130,8 @@ class AdminUsersController extends Controller {
         $this->render('admin/users/create', [
             'page_title' => 'Dodaj uzytkownika',
             'errors' => $errors,
-            'form' => $form
+            'form' => $form,
+            'roles' => $roles
         ]);
     }
 
@@ -130,6 +159,8 @@ class AdminUsersController extends Controller {
             'email' => $user['email'],
             'first_name' => $user['first_name'] ?? '',
             'last_name' => $user['last_name'] ?? '',
+            'hired_date' => $user['hired_date'] ?? '',
+            'archived' => (bool)($user['archived'] ?? false),
             'active' => (bool)$user['active'],
             'discord_id' => $user['discord_id'] ?? '',
             'roblox_id' => $user['roblox_id'] ?? ''
@@ -145,6 +176,8 @@ class AdminUsersController extends Controller {
             $form['email'] = trim($_POST['email'] ?? '');
             $form['first_name'] = trim($_POST['first_name'] ?? '');
             $form['last_name'] = trim($_POST['last_name'] ?? '');
+            $form['hired_date'] = trim($_POST['hired_date'] ?? '');
+            $form['archived'] = isset($_POST['archived']);
             $form['active'] = isset($_POST['active']);
             $form['discord_id'] = trim($_POST['discord_id'] ?? '');
             $form['roblox_id'] = trim($_POST['roblox_id'] ?? '');
@@ -160,6 +193,10 @@ class AdminUsersController extends Controller {
             }
 
             if ($validator->passes()) {
+                if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $form['hired_date'])) {
+                    $errors['hired_date'] = 'Podaj poprawna date zatrudnienia.';
+                }
+
                 $existing = User::findByUsername($form['username']);
                 if ($existing && (int)$existing['id'] !== $user_id) {
                     $errors['username'] = 'Taki login juz istnieje.';
@@ -189,6 +226,9 @@ class AdminUsersController extends Controller {
 
             if (empty($errors)) {
                 $data = $form;
+                if ($form['archived']) {
+                    $data['active'] = false;
+                }
                 $data['discord_id'] = $form['discord_id'] !== '' ? $form['discord_id'] : null;
                 $data['roblox_id'] = $form['roblox_id'] !== '' ? $form['roblox_id'] : null;
 
@@ -424,7 +464,7 @@ class AdminUsersController extends Controller {
         $user_id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
         $action = $_POST['action'] ?? '';
 
-        if (!$user_id || !in_array($action, ['activate', 'deactivate'])) {
+        if (!$user_id || !in_array($action, ['activate', 'deactivate', 'archive', 'unarchive'], true)) {
             setFlashMessage('error', 'Nieprawidlowe parametry.');
             $this->redirectTo('/admin/users/index.php');
         }
@@ -441,11 +481,18 @@ class AdminUsersController extends Controller {
         }
 
         try {
-            $new_status = $action === 'activate';
-            User::updateStatus($user_id, $new_status);
-            AuditLog::log('user.toggle_status', 'users', $user_id, ['active' => $user['active']], ['active' => $new_status]);
+            if ($action === 'archive' || $action === 'unarchive') {
+                $archived = $action === 'archive';
+                User::updateArchiveState($user_id, $archived);
+                AuditLog::log('user.toggle_archive', 'users', $user_id, ['archived' => (bool)($user['archived'] ?? false)], ['archived' => $archived]);
+                $message = $archived ? 'Uzytkownik zostal zarchiwizowany.' : 'Uzytkownik zostal przywrocony z archiwum.';
+            } else {
+                $new_status = $action === 'activate';
+                User::updateStatus($user_id, $new_status);
+                AuditLog::log('user.toggle_status', 'users', $user_id, ['active' => $user['active']], ['active' => $new_status]);
+                $message = $action === 'activate' ? 'Uzytkownik zostal aktywowany.' : 'Uzytkownik zostal dezaktywowany.';
+            }
 
-            $message = $action === 'activate' ? 'Uzytkownik zostal aktywowany.' : 'Uzytkownik zostal dezaktywowany.';
             setFlashMessage('success', $message);
         } catch (Exception $e) {
             error_log('Error toggling user status: ' . $e->getMessage());

@@ -20,6 +20,7 @@ class AdminLogsController extends Controller {
 
         $login_logs = SystemLog::listLoginLogs($filters, 150);
         $audit_logs = SystemLog::listAuditLogs($filters, 250);
+        $error_logs = SystemLog::listErrorLogs($filters, 250);
         $error_log_lines = SystemLog::readErrorLogTail(120);
 
         $this->render('admin/logs/index', [
@@ -27,6 +28,7 @@ class AdminLogsController extends Controller {
             'filters' => $filters,
             'login_logs' => $login_logs,
             'audit_logs' => $audit_logs,
+            'error_logs' => $error_logs,
             'error_log_lines' => $error_log_lines
         ]);
     }

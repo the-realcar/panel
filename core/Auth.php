@@ -363,7 +363,7 @@ class Auth {
             
             // Generate reset token
             $token = bin2hex(random_bytes(32));
-            $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
+            $expires = date('Y-m-d H:i:s', strtotime('+24 hours'));
             
             // Save reset token
             $insertSql = "INSERT INTO password_resets (user_id, token, expires_at) 
@@ -382,7 +382,7 @@ class Auth {
             $body  = '<!DOCTYPE html><html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px">';
             $body .= '<h2>Reset hasła</h2>';
             $body .= '<p>Otrzymaliśmy prośbę o reset hasła dla Twojego konta.</p>';
-            $body .= '<p>Kliknij poniższy link, aby ustawić nowe hasło (link ważny przez 1 godzinę):</p>';
+            $body .= '<p>Kliknij ponizszy link, aby ustawic nowe haslo (link wazny przez 24 godziny):</p>';
             $body .= '<p><a href="' . htmlspecialchars($resetUrl, ENT_QUOTES) . '" style="background:#4f46e5;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block">Zresetuj hasło</a></p>';
             $body .= '<p style="color:#888;font-size:13px">Jeśli nie prosiłeś o reset hasła, zignoruj tę wiadomość.</p>';
             $body .= '<p style="color:#888;font-size:13px">Link: ' . htmlspecialchars($resetUrl, ENT_QUOTES) . '</p>';

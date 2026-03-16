@@ -23,9 +23,45 @@ ini_set('session.cookie_samesite', 'Strict');
 // Session name
 session_name('FIRMAKOT_SESSION');
 
+/**
+ * Resolve effective session timeout (seconds).
+ * Falls back to SESSION_TIMEOUT when DB value is unavailable or invalid.
+ *
+ * @return int
+ */
+function getSessionTimeoutSeconds() {
+    static $resolved_timeout = null;
+
+    if ($resolved_timeout !== null) {
+        return $resolved_timeout;
+    }
+
+    $resolved_timeout = (int)SESSION_TIMEOUT;
+
+    try {
+        $pdo = getDatabaseConnection();
+        $stmt = $pdo->prepare('SELECT value FROM settings WHERE key = :key LIMIT 1');
+        $stmt->execute([':key' => 'session_timeout']);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($row && isset($row['value']) && ctype_digit((string)$row['value'])) {
+            $db_timeout = (int)$row['value'];
+            if ($db_timeout >= 300 && $db_timeout <= 86400) {
+                $resolved_timeout = $db_timeout;
+            }
+        }
+    } catch (Throwable $e) {
+        // Keep default timeout if settings table/value is not available.
+    }
+
+    return $resolved_timeout;
+}
+
+$session_timeout_seconds = getSessionTimeoutSeconds();
+
 // Session lifetime
-ini_set('session.gc_maxlifetime', SESSION_TIMEOUT);
-ini_set('session.cookie_lifetime', SESSION_TIMEOUT);
+ini_set('session.gc_maxlifetime', $session_timeout_seconds);
+ini_set('session.cookie_lifetime', $session_timeout_seconds);
 
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
@@ -50,11 +86,13 @@ function checkSessionTimeout() {
     if (!isLoggedIn()) {
         return false;
     }
+
+    $session_timeout_seconds = getSessionTimeoutSeconds();
     
     if (isset($_SESSION['last_activity'])) {
         $inactive = time() - $_SESSION['last_activity'];
         
-        if ($inactive > SESSION_TIMEOUT) {
+        if ($inactive > $session_timeout_seconds) {
             session_unset();
             session_destroy();
             return false;

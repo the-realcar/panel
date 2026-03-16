@@ -65,10 +65,18 @@
                 <?php if (empty($route_stops)): ?>
                     <p class="text-muted">Brak przystankow przypisanych do wariantu.</p>
                 <?php else: ?>
+                    <form id="reorder-form" method="POST" action="/admin/route-variants/stops.php?id=<?php echo (int)$variant['id']; ?>" class="form-inline" style="margin-bottom: 0.75rem; gap: 0.5rem;">
+                        <?php echo csrfField(); ?>
+                        <input type="hidden" name="action" value="reorder">
+                        <input type="hidden" name="ordered_stop_ids" id="ordered_stop_ids" value="">
+                        <span class="text-muted">Przeciagnij wiersze za uchwyt i zapisz nowa kolejnosc.</span>
+                        <button type="submit" class="btn btn-primary btn-sm">Zapisz kolejnosc</button>
+                    </form>
                     <div class="table-responsive">
                         <table class="table">
                             <thead>
                                 <tr>
+                                    <th>Przeciagnij</th>
                                     <th>Kolejnosc</th>
                                     <th>Przystanek / stanowisko</th>
                                     <th>Czas dojazdu</th>
@@ -76,9 +84,10 @@
                                     <th>Akcje</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="route-stops-body">
                                 <?php foreach ($route_stops as $stop): ?>
-                                    <tr>
+                                    <tr draggable="true" data-stop-id="<?php echo (int)$stop['id']; ?>">
+                                        <td data-label="Przeciagnij" style="cursor: grab;">↕</td>
                                         <td data-label="Kolejnosc"><strong><?php echo (int)$stop['stop_sequence']; ?></strong></td>
                                         <td data-label="Przystanek / stanowisko">
                                             <?php echo e($stop['stop_name']); ?>
@@ -130,5 +139,62 @@
         </div>
     </div>
 </div>
+
+<?php if (!empty($route_stops)): ?>
+<script>
+(function() {
+    const tbody = document.getElementById('route-stops-body');
+    const reorderForm = document.getElementById('reorder-form');
+    const orderedInput = document.getElementById('ordered_stop_ids');
+
+    if (!tbody || !reorderForm || !orderedInput) {
+        return;
+    }
+
+    let draggedRow = null;
+
+    function collectIds() {
+        return Array.from(tbody.querySelectorAll('tr[data-stop-id]')).map((row) => row.getAttribute('data-stop-id'));
+    }
+
+    tbody.querySelectorAll('tr[data-stop-id]').forEach((row) => {
+        row.addEventListener('dragstart', function() {
+            draggedRow = row;
+            row.style.opacity = '0.5';
+        });
+
+        row.addEventListener('dragend', function() {
+            row.style.opacity = '1';
+        });
+
+        row.addEventListener('dragover', function(event) {
+            event.preventDefault();
+        });
+
+        row.addEventListener('drop', function(event) {
+            event.preventDefault();
+
+            if (!draggedRow || draggedRow === row) {
+                return;
+            }
+
+            const rows = Array.from(tbody.querySelectorAll('tr[data-stop-id]'));
+            const draggedIndex = rows.indexOf(draggedRow);
+            const targetIndex = rows.indexOf(row);
+
+            if (draggedIndex < targetIndex) {
+                row.after(draggedRow);
+            } else {
+                row.before(draggedRow);
+            }
+        });
+    });
+
+    reorderForm.addEventListener('submit', function() {
+        orderedInput.value = collectIds().join(',');
+    });
+})();
+</script>
+<?php endif; ?>
 
 <?php View::partial('layouts/footer'); ?>

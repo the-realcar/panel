@@ -139,7 +139,27 @@ class DispatcherController extends Controller {
                         'status' => 'scheduled',
                         'notes' => !empty($form_data['notes']) ? $form_data['notes'] : null
                     ]);
+
+                    $assignment_id = Assignment::create([
+                        'dispatcher_id' => getCurrentUserId(),
+                        'user_id' => (int)$form_data['user_id'],
+                        'vehicle_id' => (int)$form_data['vehicle_id'],
+                        'line_id' => (int)$form_data['line_id'],
+                        'brigade_id' => !empty($form_data['brigade_id']) ? (int)$form_data['brigade_id'] : null,
+                        'schedule_id' => $new_schedule_id,
+                        'assignment_date' => $form_data['schedule_date'],
+                        'start_time' => $form_data['start_time'],
+                        'end_time' => $form_data['end_time'],
+                        'status' => 'active',
+                        'notes' => !empty($form_data['notes']) ? $form_data['notes'] : null
+                    ]);
+
                     AuditLog::log('schedule.create', 'schedules', $new_schedule_id, null, ['user_id' => $form_data['user_id'], 'schedule_date' => $form_data['schedule_date'], 'line_id' => $form_data['line_id']]);
+                    AuditLog::log('assignment.create', 'assignments', $assignment_id, null, [
+                        'dispatcher_id' => getCurrentUserId(),
+                        'user_id' => $form_data['user_id'],
+                        'schedule_id' => $new_schedule_id
+                    ]);
 
                     setFlashMessage('success', 'Grafik zostal przydzielony pomyslnie.');
                     $this->redirectTo('/dispatcher/dashboard.php');

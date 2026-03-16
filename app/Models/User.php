@@ -6,9 +6,11 @@ class User {
         $where = '';
 
         if ($status_filter === 'active') {
-            $where = 'WHERE u.active = TRUE';
+            $where = 'WHERE u.active = TRUE AND COALESCE(u.archived, FALSE) = FALSE';
         } elseif ($status_filter === 'inactive') {
-            $where = 'WHERE u.active = FALSE';
+            $where = 'WHERE u.active = FALSE AND COALESCE(u.archived, FALSE) = FALSE';
+        } elseif ($status_filter === 'archived') {
+            $where = 'WHERE COALESCE(u.archived, FALSE) = TRUE';
         }
 
         $query = "SELECT COUNT(*) as total FROM users u $where";
@@ -21,9 +23,11 @@ class User {
         $where = '';
 
         if ($status_filter === 'active') {
-            $where = 'WHERE u.active = TRUE';
+            $where = 'WHERE u.active = TRUE AND COALESCE(u.archived, FALSE) = FALSE';
         } elseif ($status_filter === 'inactive') {
-            $where = 'WHERE u.active = FALSE';
+            $where = 'WHERE u.active = FALSE AND COALESCE(u.archived, FALSE) = FALSE';
+        } elseif ($status_filter === 'archived') {
+            $where = 'WHERE COALESCE(u.archived, FALSE) = TRUE';
         }
 
         $query = "
@@ -73,6 +77,7 @@ class User {
             INNER JOIN user_roles ur ON ur.user_id = u.id
             INNER JOIN roles r ON r.id = ur.role_id
             WHERE u.active = TRUE
+                            AND COALESCE(u.archived, FALSE) = FALSE
               AND r.name = :role_name
             ORDER BY u.last_name ASC NULLS LAST, u.first_name ASC NULLS LAST, u.username ASC
         ";
@@ -100,8 +105,8 @@ class User {
 
     public static function create(array $data) {
         $db = new Database();
-        $query = "INSERT INTO users (username, email, password_hash, first_name, last_name, active, discord_id, roblox_id)
-                  VALUES (:username, :email, :password_hash, :first_name, :last_name, :active, :discord_id, :roblox_id)";
+        $query = "INSERT INTO users (username, email, password_hash, first_name, last_name, hired_date, archived, active, discord_id, roblox_id)
+                  VALUES (:username, :email, :password_hash, :first_name, :last_name, :hired_date, :archived, :active, :discord_id, :roblox_id)";
 
         $db->execute($query, [
             ':username' => $data['username'],
@@ -109,6 +114,8 @@ class User {
             ':password_hash' => $data['password_hash'],
             ':first_name' => $data['first_name'],
             ':last_name' => $data['last_name'],
+            ':hired_date' => $data['hired_date'] !== '' ? $data['hired_date'] : null,
+            ':archived' => !empty($data['archived']) ? 'true' : 'false',
             ':active' => $data['active'] ? 'true' : 'false',
             ':discord_id' => $data['discord_id'],
             ':roblox_id' => $data['roblox_id']
@@ -124,6 +131,8 @@ class User {
                       email = :email,
                       first_name = :first_name,
                       last_name = :last_name,
+                      hired_date = :hired_date,
+                      archived = :archived,
                       active = :active,
                       discord_id = :discord_id,
                       roblox_id = :roblox_id,
@@ -135,6 +144,8 @@ class User {
             ':email' => $data['email'],
             ':first_name' => $data['first_name'],
             ':last_name' => $data['last_name'],
+            ':hired_date' => $data['hired_date'] !== '' ? $data['hired_date'] : null,
+            ':archived' => !empty($data['archived']) ? 'true' : 'false',
             ':active' => $data['active'] ? 'true' : 'false',
             ':discord_id' => $data['discord_id'],
             ':roblox_id' => $data['roblox_id'],
@@ -156,6 +167,20 @@ class User {
         $query = "UPDATE users SET active = :active, updated_at = CURRENT_TIMESTAMP WHERE id = :id";
         return $db->execute($query, [
             ':active' => $active ? 'true' : 'false',
+            ':id' => $id
+        ]);
+    }
+
+    public static function updateArchiveState($id, $archived) {
+        $db = new Database();
+        $query = "UPDATE users
+                  SET archived = :archived,
+                      active = CASE WHEN :archived = 'true' THEN FALSE ELSE active END,
+                      updated_at = CURRENT_TIMESTAMP
+                  WHERE id = :id";
+
+        return $db->execute($query, [
+            ':archived' => $archived ? 'true' : 'false',
             ':id' => $id
         ]);
     }

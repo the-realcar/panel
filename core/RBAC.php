@@ -110,6 +110,27 @@ class RBAC {
 
         return $all_permissions;
     }
+
+    private function denyAccess(string $message = 'Brak uprawnien.') {
+        http_response_code(403);
+
+        echo '<!doctype html>';
+        echo '<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">';
+        echo '<title>403 - Brak dostepu</title>';
+        echo '<style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:#f6f7fb;color:#111}'
+           . '.wrap{max-width:680px;margin:6rem auto;padding:1.5rem}'
+           . '.card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1.5rem}'
+           . 'h1{margin:0 0 .75rem 0;font-size:1.4rem}'
+           . 'p{margin:.5rem 0;color:#4b5563}'
+           . 'a{display:inline-block;margin-top:1rem;color:#0b63ce;text-decoration:none}'
+           . 'a:hover{text-decoration:underline}</style>';
+        echo '</head><body><div class="wrap"><div class="card">';
+        echo '<h1>403 - Brak dostepu</h1>';
+        echo '<p>' . htmlspecialchars($message, ENT_QUOTES, 'UTF-8') . '</p>';
+        echo '<a href="/index.php">Wroc do strony glownej</a>';
+        echo '</div></div></body></html>';
+        exit;
+    }
     
     /**
      * Check if user has role
@@ -196,9 +217,7 @@ class RBAC {
      */
     public function requirePermission($resource, $action, $redirect_url = '/login.php') {
         if (!$this->hasPermission($resource, $action)) {
-            setFlashMessage('error', 'Nie masz uprawnień do wykonania tej operacji.');
-            header('Location: ' . $redirect_url);
-            exit;
+            $this->denyAccess('Nie masz uprawnien do wykonania tej operacji.');
         }
     }
     
@@ -210,9 +229,7 @@ class RBAC {
      */
     public function requireRole($role_name, $redirect_url = '/login.php') {
         if (!$this->hasRole($role_name)) {
-            setFlashMessage('error', 'Nie masz uprawnień do dostępu do tej strony.');
-            header('Location: ' . $redirect_url);
-            exit;
+            $this->denyAccess('Nie masz uprawnien do dostepu do tej strony.');
         }
     }
     

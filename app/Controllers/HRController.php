@@ -158,27 +158,13 @@ class HRController extends Controller {
             $month = date('Y-m');
         }
 
-        $user_id = (int)($_GET['user_id'] ?? 0);
-        if ($user_id <= 0) {
-            setFlashMessage('error', 'Wybierz pracownika do raportu miesiecznego.');
-            $this->redirectTo('/hr/work-hours.php?month=' . urlencode($month));
-        }
-
-        $report = $this->buildMonthlyReportData($user_id, $month);
-        if ($report === null) {
-            setFlashMessage('error', 'Nie znaleziono pracownika dla raportu.');
-            $this->redirectTo('/hr/work-hours.php?month=' . urlencode($month));
-        }
+        $report = $this->buildMonthlyPositionsReportData($month);
 
         $this->render('hr/monthly-report', [
-            'page_title' => 'Raport miesieczny ECP',
+            'page_title' => 'Raport miesieczny stanowisk i spolek',
             'month' => $month,
-            'user' => $report['user'],
-            'work_hours' => $report['work_hours'],
-            'schedule_stats' => $report['schedule_stats'],
-            'route_stats' => $report['route_stats'],
-            'incident_stats' => $report['incident_stats'],
-            'entries' => $report['entries'],
+            'rows' => $report['rows'],
+            'totals' => $report['totals'],
             'generated_at' => date('Y-m-d H:i:s')
         ]);
     }
@@ -191,32 +177,31 @@ class HRController extends Controller {
             $month = date('Y-m');
         }
 
-        $user_id = (int)($_GET['user_id'] ?? 0);
         $format = strtolower(trim((string)($_GET['format'] ?? 'csv')));
         if (!in_array($format, ['csv', 'pdf'], true)) {
             $format = 'csv';
         }
 
-        $report = $this->buildMonthlyReportData($user_id, $month);
-        if ($report === null) {
-            setFlashMessage('error', 'Nie mozna wygenerowac eksportu dla wybranego pracownika.');
-            $this->redirectTo('/hr/work-hours.php?month=' . urlencode($month));
-        }
+        $report = $this->buildMonthlyPositionsReportData($month);
 
         if ($format === 'csv') {
-            $filename = 'raport-ecp-' . $report['user']['username'] . '-' . $month . '.csv';
+            $filename = 'raport-stanowiska-spolki-' . $month . '.csv';
             header('Content-Type: text/csv; charset=UTF-8');
             header('Content-Disposition: attachment; filename="' . $filename . '"');
 
-            echo "user_id,username,miesiac,work_date,hours_worked,notes\n";
-            foreach ($report['entries'] as $entry) {
+            echo "miesiac,spolka,stanowisko,pracownicy,sluzby_wykonane,karty_drogowe,kursy_wykonane,obsluzone_przystanki,pasazerowie,incydenty\n";
+            foreach ($report['rows'] as $row) {
                 $row = [
-                    (string)$report['user']['id'],
-                    (string)$report['user']['username'],
                     $month,
-                    (string)$entry['work_date'],
-                    number_format((float)$entry['hours_worked'], 2, '.', ''),
-                    str_replace(["\r", "\n", '"'], [' ', ' ', '""'], (string)($entry['notes'] ?? ''))
+                    (string)$row['company_name'],
+                    (string)$row['position_name'],
+                    (string)(int)$row['active_people'],
+                    (string)(int)$row['completed_shifts'],
+                    (string)(int)$row['route_cards_count'],
+                    (string)(int)$row['executed_courses'],
+                    (string)(int)$row['served_stops'],
+                    (string)(int)$row['passengers_total'],
+                    (string)(int)$row['incidents_count']
                 ];
 
                 echo '"' . implode('","', $row) . "\"\n";
@@ -224,23 +209,29 @@ class HRController extends Controller {
             exit;
         }
 
-        $filename = 'raport-ecp-' . $report['user']['username'] . '-' . $month . '.pdf';
+        $filename = 'raport-stanowiska-spolki-' . $month . '.pdf';
         $pdf_lines = [
-            'Raport miesieczny ECP',
-            'Pracownik: ' . trim(($report['user']['first_name'] ?? '') . ' ' . ($report['user']['last_name'] ?? '')) . ' (' . $report['user']['username'] . ')',
+            'Raport miesieczny stanowisk i spolek',
             'Miesiac: ' . $month,
-            'Suma godzin: ' . number_format((float)($report['work_hours']['total_hours'] ?? 0), 2, '.', ''),
-            'Liczba dni: ' . (int)($report['work_hours']['days_count'] ?? 0),
-            'Liczba sluzb: ' . (int)($report['schedule_stats']['shifts_count'] ?? 0),
-            'Wykonane sluzby: ' . (int)($report['schedule_stats']['completed_shifts'] ?? 0),
-            'Karty drogowe: ' . (int)($report['route_stats']['route_cards_count'] ?? 0),
-            'Pasazerowie: ' . (int)($report['route_stats']['passengers_total'] ?? 0),
-            'Incydenty: ' . (int)($report['incident_stats']['incidents_count'] ?? 0),
-            '--- Szczegoly ECP ---'
+            'Suma sluzb wykonanych: ' . (int)($report['totals']['completed_shifts'] ?? 0),
+            'Suma kart drogowych: ' . (int)($report['totals']['route_cards_count'] ?? 0),
+            'Suma kursow: ' . (int)($report['totals']['executed_courses'] ?? 0),
+            'Suma obsluzonych przystankow: ' . (int)($report['totals']['served_stops'] ?? 0),
+            'Suma pasazerow: ' . (int)($report['totals']['passengers_total'] ?? 0),
+            'Suma incydentow: ' . (int)($report['totals']['incidents_count'] ?? 0),
+            '--- Szczegoly ---'
         ];
 
-        foreach ($report['entries'] as $entry) {
-            $pdf_lines[] = (string)$entry['work_date'] . ' | ' . number_format((float)$entry['hours_worked'], 2, '.', '') . 'h | ' . trim((string)($entry['notes'] ?? ''));
+        foreach ($report['rows'] as $row) {
+            $pdf_lines[] =
+                $row['company_name'] . ' | ' .
+                $row['position_name'] . ' | prac.: ' . (int)$row['active_people'] .
+                ' | sluzby: ' . (int)$row['completed_shifts'] .
+                ' | karty: ' . (int)$row['route_cards_count'] .
+                ' | kursy: ' . (int)$row['executed_courses'] .
+                ' | przystanki: ' . (int)$row['served_stops'] .
+                ' | pasazerowie: ' . (int)$row['passengers_total'] .
+                ' | incydenty: ' . (int)$row['incidents_count'];
         }
 
         $pdf_content = $this->buildSimplePdf($pdf_lines);
@@ -250,69 +241,165 @@ class HRController extends Controller {
         exit;
     }
 
-    private function buildMonthlyReportData(int $user_id, string $month): ?array {
-        if ($user_id <= 0) {
-            return null;
-        }
-
-        $user = User::find($user_id);
-        if (!$user) {
-            return null;
-        }
-
+    private function buildMonthlyPositionsReportData(string $month): array {
         $db = new Database();
-        $work_hours = $db->queryOne(
+
+        $rows = $db->query(
             "
-            SELECT COALESCE(SUM(hours_worked), 0) AS total_hours,
-                   COUNT(*) AS days_count
-            FROM work_hours
-            WHERE user_id = :user_id
-              AND TO_CHAR(work_date, 'YYYY-MM') = :month
+            WITH position_users AS (
+                SELECT
+                    up.user_id,
+                    p.id AS position_id,
+                    p.name AS position_name,
+                    CASE
+                        WHEN p.name ILIKE '%(Spółka)%' OR p.name ILIKE '%Spolki%' OR p.name ILIKE '%Spółki%' THEN 'Spolki'
+                        ELSE 'Firma KOT'
+                    END AS position_group
+                FROM user_positions up
+                INNER JOIN positions p ON p.id = up.position_id
+                INNER JOIN users u ON u.id = up.user_id
+                WHERE up.active = TRUE
+                  AND p.active = TRUE
+                  AND u.active = TRUE
+            ),
+            variant_stop_counts AS (
+                SELECT route_variant_id, COUNT(*)::int AS stop_count
+                FROM route_stops
+                GROUP BY route_variant_id
+            ),
+            activity_rows AS (
+                SELECT
+                    s.user_id,
+                    COALESCE(v.przewoznik, 'Nieprzypisano') AS company_name,
+                    COUNT(*) FILTER (WHERE s.status = 'completed')::int AS completed_shifts,
+                    0::int AS route_cards_count,
+                    0::int AS executed_courses,
+                    0::int AS served_stops,
+                    0::int AS passengers_total,
+                    0::int AS incidents_count
+                FROM schedules s
+                LEFT JOIN vehicles v ON v.id = s.vehicle_id
+                WHERE TO_CHAR(s.schedule_date, 'YYYY-MM') = :month
+                GROUP BY s.user_id, COALESCE(v.przewoznik, 'Nieprzypisano')
+
+                UNION ALL
+
+                SELECT
+                    rc.user_id,
+                    COALESCE(v.przewoznik, 'Nieprzypisano') AS company_name,
+                    0::int AS completed_shifts,
+                    COUNT(*)::int AS route_cards_count,
+                    0::int AS executed_courses,
+                    0::int AS served_stops,
+                    COALESCE(SUM(rc.passengers_count), 0)::int AS passengers_total,
+                    0::int AS incidents_count
+                FROM route_cards rc
+                LEFT JOIN vehicles v ON v.id = rc.vehicle_id
+                WHERE TO_CHAR(rc.route_date, 'YYYY-MM') = :month
+                GROUP BY rc.user_id, COALESCE(v.przewoznik, 'Nieprzypisano')
+
+                UNION ALL
+
+                SELECT
+                    rc.user_id,
+                    COALESCE(v.przewoznik, 'Nieprzypisano') AS company_name,
+                    0::int AS completed_shifts,
+                    0::int AS route_cards_count,
+                    COALESCE(SUM(rct.trips_count), 0)::int AS executed_courses,
+                    COALESCE(SUM(rct.trips_count * COALESCE(vsc.stop_count, 0)), 0)::int AS served_stops,
+                    0::int AS passengers_total,
+                    0::int AS incidents_count
+                FROM route_card_trips rct
+                INNER JOIN route_cards rc ON rc.id = rct.route_card_id
+                LEFT JOIN vehicles v ON v.id = rc.vehicle_id
+                LEFT JOIN variant_stop_counts vsc ON vsc.route_variant_id = rct.route_variant_id
+                WHERE TO_CHAR(rc.route_date, 'YYYY-MM') = :month
+                GROUP BY rc.user_id, COALESCE(v.przewoznik, 'Nieprzypisano')
+
+                UNION ALL
+
+                SELECT
+                    i.reported_by AS user_id,
+                    COALESCE(v.przewoznik, 'Nieprzypisano') AS company_name,
+                    0::int AS completed_shifts,
+                    0::int AS route_cards_count,
+                    0::int AS executed_courses,
+                    0::int AS served_stops,
+                    0::int AS passengers_total,
+                    COUNT(*)::int AS incidents_count
+                FROM incidents i
+                LEFT JOIN vehicles v ON v.id = i.vehicle_id
+                WHERE TO_CHAR(i.incident_date, 'YYYY-MM') = :month
+                  AND i.reported_by IS NOT NULL
+                GROUP BY i.reported_by, COALESCE(v.przewoznik, 'Nieprzypisano')
+            ),
+            user_company_activity AS (
+                SELECT
+                    user_id,
+                    company_name,
+                    SUM(completed_shifts)::int AS completed_shifts,
+                    SUM(route_cards_count)::int AS route_cards_count,
+                    SUM(executed_courses)::int AS executed_courses,
+                    SUM(served_stops)::int AS served_stops,
+                    SUM(passengers_total)::int AS passengers_total,
+                    SUM(incidents_count)::int AS incidents_count
+                FROM activity_rows
+                GROUP BY user_id, company_name
+            )
+            SELECT
+                CASE
+                    WHEN pu.position_group = 'Firma KOT' THEN 'Firma KOT'
+                    ELSE uca.company_name
+                END AS company_name,
+                pu.position_name,
+                COUNT(DISTINCT pu.user_id)::int AS assigned_people,
+                COUNT(DISTINCT uca.user_id)::int AS active_people,
+                COALESCE(SUM(uca.completed_shifts), 0)::int AS completed_shifts,
+                COALESCE(SUM(uca.route_cards_count), 0)::int AS route_cards_count,
+                COALESCE(SUM(uca.executed_courses), 0)::int AS executed_courses,
+                COALESCE(SUM(uca.served_stops), 0)::int AS served_stops,
+                COALESCE(SUM(uca.passengers_total), 0)::int AS passengers_total,
+                COALESCE(SUM(uca.incidents_count), 0)::int AS incidents_count
+            FROM position_users pu
+            LEFT JOIN user_company_activity uca ON uca.user_id = pu.user_id
+            GROUP BY
+                CASE
+                    WHEN pu.position_group = 'Firma KOT' THEN 'Firma KOT'
+                    ELSE uca.company_name
+                END,
+                pu.position_name
+            ORDER BY 1 ASC NULLS LAST, 2 ASC
             ",
-            [':user_id' => $user_id, ':month' => $month]
+            [':month' => $month]
         );
 
-        $schedule_stats = $db->queryOne(
-            "
-            SELECT COUNT(*) AS shifts_count,
-                   COUNT(*) FILTER (WHERE status = 'completed') AS completed_shifts
-            FROM schedules
-            WHERE user_id = :user_id
-              AND TO_CHAR(schedule_date, 'YYYY-MM') = :month
-            ",
-            [':user_id' => $user_id, ':month' => $month]
-        );
+        $clean_rows = array_values(array_filter($rows, function ($row) {
+            return !empty($row['company_name']);
+        }));
 
-        $route_stats = $db->queryOne(
-            "
-            SELECT COUNT(*) AS route_cards_count,
-                   COALESCE(SUM(passengers_count), 0) AS passengers_total
-            FROM route_cards
-            WHERE user_id = :user_id
-              AND TO_CHAR(route_date, 'YYYY-MM') = :month
-            ",
-            [':user_id' => $user_id, ':month' => $month]
-        );
+        $totals = [
+            'active_people' => 0,
+            'completed_shifts' => 0,
+            'route_cards_count' => 0,
+            'executed_courses' => 0,
+            'served_stops' => 0,
+            'passengers_total' => 0,
+            'incidents_count' => 0
+        ];
 
-        $incident_stats = $db->queryOne(
-            "
-            SELECT COUNT(*) AS incidents_count
-            FROM incidents
-            WHERE reported_by = :user_id
-              AND TO_CHAR(incident_date, 'YYYY-MM') = :month
-            ",
-            [':user_id' => $user_id, ':month' => $month]
-        );
-
-        $entries = WorkHour::listEntriesForUserMonth($user_id, $month);
+        foreach ($clean_rows as $row) {
+            $totals['active_people'] += (int)$row['active_people'];
+            $totals['completed_shifts'] += (int)$row['completed_shifts'];
+            $totals['route_cards_count'] += (int)$row['route_cards_count'];
+            $totals['executed_courses'] += (int)$row['executed_courses'];
+            $totals['served_stops'] += (int)$row['served_stops'];
+            $totals['passengers_total'] += (int)$row['passengers_total'];
+            $totals['incidents_count'] += (int)$row['incidents_count'];
+        }
 
         return [
-            'user' => $user,
-            'work_hours' => $work_hours,
-            'schedule_stats' => $schedule_stats,
-            'route_stats' => $route_stats,
-            'incident_stats' => $incident_stats,
-            'entries' => $entries
+            'rows' => $clean_rows,
+            'totals' => $totals
         ];
     }
 

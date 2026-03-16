@@ -81,6 +81,40 @@ class SystemLog {
         );
     }
 
+    public static function listErrorLogs(array $filters = [], int $limit = 200): array {
+        $db = new Database();
+        $where = [];
+        $params = [':limit' => $limit];
+
+        if (!empty($filters['date_from'])) {
+            $where[] = 'el.created_at >= :date_from';
+            $params[':date_from'] = $filters['date_from'] . ' 00:00:00';
+        }
+
+        if (!empty($filters['date_to'])) {
+            $where[] = 'el.created_at <= :date_to';
+            $params[':date_to'] = $filters['date_to'] . ' 23:59:59';
+        }
+
+        if (!empty($filters['action'])) {
+            $where[] = '(el.error_type ILIKE :error_filter OR el.message ILIKE :error_filter)';
+            $params[':error_filter'] = '%' . $filters['action'] . '%';
+        }
+
+        $where_sql = $where ? ('WHERE ' . implode(' AND ', $where)) : '';
+
+        return $db->query(
+            "
+            SELECT el.*
+            FROM error_logs el
+            $where_sql
+            ORDER BY el.created_at DESC
+            LIMIT :limit
+            ",
+            $params
+        );
+    }
+
     public static function readErrorLogTail(int $lines = 120): array {
         $path = BASE_PATH . '/logs/error.log';
         if (!is_file($path)) {

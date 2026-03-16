@@ -2,7 +2,10 @@
 
 <div class="page-header">
     <h1>🏢 Struktura organizacyjna</h1>
-    <a href="/admin/positions/index.php" class="btn btn-secondary">← Powrot do stanowisk</a>
+    <div class="btn-group">
+        <a href="/admin/positions/export-structure.php" class="btn btn-primary">📄 Eksport PDF</a>
+        <a href="/admin/positions/index.php" class="btn btn-secondary">← Powrot do stanowisk</a>
+    </div>
 </div>
 
 <?php if (empty($structure)): ?>

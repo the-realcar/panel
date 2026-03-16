@@ -5,11 +5,13 @@
 
 -- Wyczyść istniejące obiekty
 DROP TABLE IF EXISTS password_resets CASCADE;
+DROP TABLE IF EXISTS error_logs CASCADE;
 DROP TABLE IF EXISTS audit_logs CASCADE;
 DROP TABLE IF EXISTS login_logs CASCADE;
 DROP TABLE IF EXISTS work_hours CASCADE;
 DROP TABLE IF EXISTS incidents CASCADE;
 DROP TABLE IF EXISTS applications CASCADE;
+DROP TABLE IF EXISTS assignments CASCADE;
 DROP TABLE IF EXISTS dispatches CASCADE;
 DROP TABLE IF EXISTS route_card_trips CASCADE;
 DROP TABLE IF EXISTS route_cards CASCADE;
@@ -50,6 +52,8 @@ CREATE TABLE users (
     roblox_id VARCHAR(64) UNIQUE,
     first_name VARCHAR(50),
     last_name VARCHAR(50),
+    hired_date DATE,
+    archived BOOLEAN DEFAULT FALSE,
     active BOOLEAN DEFAULT TRUE,
     last_login TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -248,6 +252,26 @@ CREATE TABLE schedules (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Tabela przydzialow dyspozytora (historyczne przypisania kierowca-pojazd-linia-brygada)
+CREATE TABLE assignments (
+    id SERIAL PRIMARY KEY,
+    dispatcher_id INT REFERENCES users(id) ON DELETE SET NULL,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    vehicle_id INT REFERENCES vehicles(id) ON DELETE SET NULL,
+    line_id INT REFERENCES lines(id) ON DELETE SET NULL,
+    brigade_id INT REFERENCES brigades(id) ON DELETE SET NULL,
+    schedule_id INT UNIQUE REFERENCES schedules(id) ON DELETE SET NULL,
+    assignment_date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'cancelled', 'completed')),
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_assignments_user_date ON assignments(user_id, assignment_date DESC);
+CREATE INDEX idx_assignments_dispatcher_date ON assignments(dispatcher_id, assignment_date DESC);
+
 -- Tabela kart drogowych
 CREATE TABLE route_cards (
     id SERIAL PRIMARY KEY,
@@ -371,6 +395,21 @@ CREATE TABLE audit_logs (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Tabela logów błędów aplikacji
+CREATE TABLE error_logs (
+    id SERIAL PRIMARY KEY,
+    error_type VARCHAR(50) NOT NULL,
+    message TEXT NOT NULL,
+    file_path TEXT,
+    line_number INT,
+    context JSONB,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    user_id INT REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_error_logs_created_at ON error_logs(created_at DESC);
+
 -- Tabela resetów haseł
 CREATE TABLE password_resets (
     id SERIAL PRIMARY KEY,
@@ -472,6 +511,11 @@ CREATE TRIGGER trigger_update_lines_updated_at
 
 CREATE TRIGGER trigger_update_schedules_updated_at
     BEFORE UPDATE ON schedules
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER trigger_update_assignments_updated_at
+    BEFORE UPDATE ON assignments
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at();
 

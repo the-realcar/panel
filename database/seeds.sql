@@ -5,7 +5,7 @@
 \encoding UTF8
 
 -- Wyczyść istniejące dane
-TRUNCATE TABLE password_resets, audit_logs, login_logs, incidents, applications, route_card_trips, route_cards, schedules, 
+TRUNCATE TABLE password_resets, error_logs, audit_logs, login_logs, incidents, applications, route_card_trips, route_cards, assignments, schedules, 
     dispatches, work_hours, route_stops, route_variants, brigades, platforms, stops, role_position_mapping,
     user_positions, user_roles, vehicles, lines, positions, roles, departments, users, settings, sessions CASCADE;
 
@@ -17,6 +17,7 @@ ALTER SEQUENCE positions_id_seq RESTART WITH 1;
 ALTER SEQUENCE lines_id_seq RESTART WITH 1;
 ALTER SEQUENCE vehicles_id_seq RESTART WITH 1;
 ALTER SEQUENCE schedules_id_seq RESTART WITH 1;
+ALTER SEQUENCE assignments_id_seq RESTART WITH 1;
 ALTER SEQUENCE route_cards_id_seq RESTART WITH 1;
 ALTER SEQUENCE route_card_trips_id_seq RESTART WITH 1;
 ALTER SEQUENCE incidents_id_seq RESTART WITH 1;
@@ -28,6 +29,7 @@ ALTER SEQUENCE platforms_id_seq RESTART WITH 1;
 ALTER SEQUENCE brigades_id_seq RESTART WITH 1;
 ALTER SEQUENCE route_variants_id_seq RESTART WITH 1;
 ALTER SEQUENCE route_stops_id_seq RESTART WITH 1;
+ALTER SEQUENCE error_logs_id_seq RESTART WITH 1;
 
 -- ============================================
 -- 0. USTAWIENIA SYSTEMOWE
@@ -76,10 +78,10 @@ INSERT INTO roles (name, description, permissions) VALUES
 -- Hasło dla wszystkich: "password123"
 -- Hash bcrypt: $2y$10$lETpxJSbYNbp5UeGvbH0PulxBWSXN8MjxSAHk3FJmv4dkz.CFVYwG
 -- ============================================
-INSERT INTO users (username, email, password_hash, first_name, last_name, active) VALUES
-('admin', 'admin@firmakot.pl', '$2y$10$lETpxJSbYNbp5UeGvbH0PulxBWSXN8MjxSAHk3FJmv4dkz.CFVYwG', 'Jan', 'Kowalski', TRUE),
-('kierowca1', 'jan.nowak@firmakot.pl', '$2y$10$lETpxJSbYNbp5UeGvbH0PulxBWSXN8MjxSAHk3FJmv4dkz.CFVYwG', 'Jan', 'Nowak', TRUE),
-('dyspozytor1', 'anna.wisniewska@firmakot.pl', '$2y$10$lETpxJSbYNbp5UeGvbH0PulxBWSXN8MjxSAHk3FJmv4dkz.CFVYwG', 'Anna', 'Wiśniewska', TRUE);
+INSERT INTO users (username, email, password_hash, first_name, last_name, hired_date, archived, active) VALUES
+('admin', 'admin@firmakot.pl', '$2y$10$lETpxJSbYNbp5UeGvbH0PulxBWSXN8MjxSAHk3FJmv4dkz.CFVYwG', 'Jan', 'Kowalski', CURRENT_DATE - INTERVAL '365 days', FALSE, TRUE),
+('kierowca1', 'jan.nowak@firmakot.pl', '$2y$10$lETpxJSbYNbp5UeGvbH0PulxBWSXN8MjxSAHk3FJmv4dkz.CFVYwG', 'Jan', 'Nowak', CURRENT_DATE - INTERVAL '200 days', FALSE, TRUE),
+('dyspozytor1', 'anna.wisniewska@firmakot.pl', '$2y$10$lETpxJSbYNbp5UeGvbH0PulxBWSXN8MjxSAHk3FJmv4dkz.CFVYwG', 'Anna', 'Wiśniewska', CURRENT_DATE - INTERVAL '120 days', FALSE, TRUE);
 
 -- ============================================
 -- 4. PRZYPISANIE RÓL DO UŻYTKOWNIKÓW
@@ -251,11 +253,29 @@ INSERT INTO schedules (user_id, vehicle_id, line_id, brigade_id, schedule_date, 
 (2, 1, 1, 1, CURRENT_DATE - 1, '06:00:00', '14:00:00', 'completed', 'Wykonano zgodnie z planem');
 
 -- ============================================
+-- 9b. PRZYDZIALY DYSPozytora (ASSIGNMENTS)
+-- ============================================
+INSERT INTO assignments (dispatcher_id, user_id, vehicle_id, line_id, brigade_id, schedule_id, assignment_date, start_time, end_time, status, notes)
+SELECT
+    3,
+    s.user_id,
+    s.vehicle_id,
+    s.line_id,
+    s.brigade_id,
+    s.id,
+    s.schedule_date,
+    s.start_time,
+    s.end_time,
+    CASE WHEN s.status = 'completed' THEN 'completed' ELSE 'active' END,
+    COALESCE(s.notes, 'Przydzial wygenerowany z seedow')
+FROM schedules s;
+
+-- ============================================
 -- 10. KARTY DROGOWE (przykładowe)
 -- ============================================
-INSERT INTO route_cards (user_id, vehicle_id, line_id, route_date, start_time, end_time, start_km, end_km, fuel_start, fuel_end, passengers_count, status, notes) VALUES
-(2, 1, 1, CURRENT_DATE - 1, '06:00:00', '14:00:00', 125000, 125280, 45.5, 21.3, 450, 'completed', 'Przejazd bez problemów'),
-(2, 2, 2, CURRENT_DATE - 2, '14:30:00', '22:30:00', 98500, 98820, 38.2, 15.7, 380, 'completed', 'Zwiększony ruch w godzinach szczytu');
+INSERT INTO route_cards (user_id, vehicle_id, line_id, route_date, start_time, end_time, passengers_count, status, notes) VALUES
+(2, 1, 1, CURRENT_DATE - 1, '06:00:00', '14:00:00', 450, 'completed', 'Przejazd bez problemów'),
+(2, 2, 2, CURRENT_DATE - 2, '14:30:00', '22:30:00', 380, 'completed', 'Zwiekszony ruch w godzinach szczytu');
 
 -- ============================================
 -- 11. INCYDENTY/AWARIE

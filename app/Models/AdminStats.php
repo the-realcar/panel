@@ -20,4 +20,68 @@ class AdminStats {
 
         return $db->queryOne($query);
     }
+
+    public static function getSlaChecks(): array {
+        $checks = [];
+
+        $db_ms = null;
+        $db_ok = true;
+        $db_error = null;
+        $db = new Database();
+
+        $start = microtime(true);
+        try {
+            $db->queryOne('SELECT 1 AS ok');
+            $db_ms = (microtime(true) - $start) * 1000;
+        } catch (Throwable $e) {
+            $db_ok = false;
+            $db_error = $e->getMessage();
+            $db_ms = (microtime(true) - $start) * 1000;
+        }
+
+        $checks[] = [
+            'key' => 'response_db',
+            'label' => 'Czas odpowiedzi DB',
+            'target' => '< ' . (int)SLA_MAX_RESPONSE_MS . ' ms',
+            'value' => $db_ms !== null ? number_format($db_ms, 2, '.', '') . ' ms' : 'brak danych',
+            'status' => $db_ok && $db_ms < SLA_MAX_RESPONSE_MS ? 'ok' : 'fail',
+            'details' => $db_ok ? 'Pomiar zapytania kontrolnego SELECT 1.' : ('Blad DB: ' . $db_error)
+        ];
+
+        $https_enabled = false;
+        if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+            $https_enabled = true;
+        } elseif (defined('BASE_URL') && parse_url(BASE_URL, PHP_URL_SCHEME) === 'https') {
+            $https_enabled = true;
+        }
+
+        $checks[] = [
+            'key' => 'ssl_https',
+            'label' => 'SSL / HTTPS',
+            'target' => 'Wlaczone HTTPS',
+            'value' => $https_enabled ? 'HTTPS aktywne' : 'HTTPS niewykryte',
+            'status' => $https_enabled ? 'ok' : 'fail',
+            'details' => 'Wymaganie US-028: bezpieczny dostep szyfrowany.'
+        ];
+
+        $checks[] = [
+            'key' => 'uptime_target',
+            'label' => 'Cel dostepnosci',
+            'target' => '>= ' . number_format((float)SLA_UPTIME_TARGET_PERCENT, 1, '.', '') . '%',
+            'value' => number_format((float)SLA_UPTIME_TARGET_PERCENT, 1, '.', '') . '% (cel)',
+            'status' => 'warn',
+            'details' => 'Weryfikuj z zewnetrznym monitoringiem (np. UptimeRobot) przez endpoint /health.php.'
+        ];
+
+        $checks[] = [
+            'key' => 'monitoring_endpoint',
+            'label' => 'Endpoint monitoringu',
+            'target' => 'Dostepny /health.php',
+            'value' => is_file(BASE_PATH . '/health.php') ? 'Skonfigurowany' : 'Brak',
+            'status' => is_file(BASE_PATH . '/health.php') ? 'ok' : 'fail',
+            'details' => 'Endpoint przeznaczony pod monitoring 24/7.'
+        ];
+
+        return $checks;
+    }
 }

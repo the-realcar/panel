@@ -4,11 +4,9 @@
     <h1>🕒 Ewidencja Czasu Pracy (ECP)</h1>
     <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
         <a href="/hr/dashboard.php?month=<?php echo urlencode($month); ?>" class="btn btn-secondary">← Powrot do panelu kadr</a>
-        <?php if ((int)$selected_user_id > 0): ?>
-            <a href="/hr/monthly-report.php?month=<?php echo urlencode($month); ?>&user_id=<?php echo (int)$selected_user_id; ?>" class="btn btn-primary">Raport miesieczny PDF</a>
-            <a href="/hr/export-report.php?format=csv&month=<?php echo urlencode($month); ?>&user_id=<?php echo (int)$selected_user_id; ?>" class="btn btn-secondary">CSV</a>
-            <a href="/hr/export-report.php?format=pdf&month=<?php echo urlencode($month); ?>&user_id=<?php echo (int)$selected_user_id; ?>" class="btn btn-secondary">PDF</a>
-        <?php endif; ?>
+        <a href="/hr/monthly-report.php?month=<?php echo urlencode($month); ?>" class="btn btn-primary">Raport stanowiska × spolki</a>
+        <a href="/hr/export-report.php?format=csv&month=<?php echo urlencode($month); ?>" class="btn btn-secondary">CSV raportu</a>
+        <a href="/hr/export-report.php?format=pdf&month=<?php echo urlencode($month); ?>" class="btn btn-secondary">PDF raportu</a>
     </div>
 </div>
 
