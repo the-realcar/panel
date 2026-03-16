@@ -68,7 +68,6 @@ class Stop {
 
     public static function create(array $data) {
         $db = new Database();
-        $db = new Database();
         $db->execute("
             INSERT INTO stops (city_id, name, opis, status_nz, active)
             VALUES (:city_id, :name, :opis, :status_nz, :active)
