@@ -331,7 +331,7 @@ class AdminVehiclesController extends Controller {
                         'przewoznik' => !empty($form_data['przewoznik']) ? $form_data['przewoznik'] : null,
                         'opiekun_1' => !empty($form_data['opiekun_1']) ? $form_data['opiekun_1'] : null,
                         'opiekun_2' => !empty($form_data['opiekun_2']) ? $form_data['opiekun_2'] : null,
-                        'dodatkowe_informacje' => !empty($form_data['dodatkowe_informacije']) ? $form_data['dodatkowe_informacje'] : null
+                        'dodatkowe_informacje' => !empty($form_data['dodatkowe_informacje']) ? $form_data['dodatkowe_informacje'] : null
                     ]);
                     AuditLog::log('vehicle.create', 'vehicles', $new_vehicle_id, null, ['nr_poj' => $form_data['nr_poj'], 'vehicle_type' => $form_data['vehicle_type']]);
 
