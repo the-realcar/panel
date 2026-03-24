@@ -1,6 +1,14 @@
 <?php
 
 class Stop {
+    private static function cityJoinSql(): string {
+        return City::isAvailable() ? 'LEFT JOIN cities c ON s.city_id = c.id' : '';
+    }
+
+    private static function cityNameSelectSql(): string {
+        return City::isAvailable() ? 'c.name as city_name' : 'NULL::VARCHAR as city_name';
+    }
+
     public static function countAll($active_only = false) {
         $db = new Database();
         $where = $active_only ? 'WHERE active = TRUE' : '';
@@ -13,9 +21,9 @@ class Stop {
         $db = new Database();
         $where = $active_only ? 'WHERE s.active = TRUE' : '';
         $query = "
-            SELECT s.*, c.name as city_name
+            SELECT s.*, " . self::cityNameSelectSql() . "
             FROM stops s
-            LEFT JOIN cities c ON s.city_id = c.id
+            " . self::cityJoinSql() . "
             $where
             ORDER BY s.name ASC
             LIMIT :limit OFFSET :offset
@@ -26,9 +34,9 @@ class Stop {
     public static function listActive() {
         $db = new Database();
         return $db->query("
-            SELECT s.*, c.name as city_name
+            SELECT s.*, " . self::cityNameSelectSql() . "
             FROM stops s
-            LEFT JOIN cities c ON s.city_id = c.id
+            " . self::cityJoinSql() . "
             WHERE s.active = TRUE ORDER BY s.name ASC
         ");
     }
@@ -36,9 +44,9 @@ class Stop {
     public static function find($id) {
         $db = new Database();
         $query = "
-            SELECT s.*, c.name as city_name
+            SELECT s.*, " . self::cityNameSelectSql() . "
             FROM stops s
-            LEFT JOIN cities c ON s.city_id = c.id
+            " . self::cityJoinSql() . "
             WHERE s.id = :id
         ";
         return $db->queryOne($query, [':id' => $id]);
@@ -47,9 +55,9 @@ class Stop {
     public static function findByName($name) {
         $db = new Database();
         $query = "
-            SELECT s.*, c.name as city_name
+            SELECT s.*, " . self::cityNameSelectSql() . "
             FROM stops s
-            LEFT JOIN cities c ON s.city_id = c.id
+            " . self::cityJoinSql() . "
             WHERE s.name = :name
             LIMIT 1
         ";

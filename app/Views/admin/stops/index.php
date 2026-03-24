@@ -11,9 +11,15 @@
 <div class="card">
     <div class="card-header d-flex justify-between align-center">
         <h2 class="card-title" style="margin:0;">🏙️ Miasta</h2>
-        <button class="btn btn-sm btn-primary" onclick="showCityForm()">➕ Dodaj miasto</button>
+        <button class="btn btn-sm btn-primary" onclick="showCityForm()" <?php echo !$cities_available ? 'disabled' : ''; ?>>➕ Dodaj miasto</button>
     </div>
     <div class="card-body">
+        <?php if (!$cities_available): ?>
+            <div class="alert alert-warning">
+                Tabela <code>cities</code> nie jest dostępna w aktualnej bazie danych. Lista przystanków pozostaje dostępna, ale zarządzanie miastami jest wyłączone do czasu synchronizacji schematu.
+            </div>
+        <?php endif; ?>
+
         <div id="city-form" style="display:none;" class="mb-2">
             <div class="form-inline" style="gap:0.75rem;">
                 <input type="text" id="city-name-input" class="form-control" placeholder="Nazwa miasta" style="max-width:280px;">

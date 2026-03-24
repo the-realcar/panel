@@ -16,11 +16,18 @@ class DriverDashboardController extends Controller {
         $today_schedules = Schedule::getTodaySchedules($user_id, $today);
         $stats = Schedule::getUserStats($user_id, $today);
         $recent_incidents = Incident::getRecentByUser($user_id, 5);
-        $recent_dispatches = Dispatch::listForRecipient($user_id, 5);
-        $unread_dispatches = Dispatch::countUnreadForRecipient($user_id);
+        $recent_dispatches = [];
+        $unread_dispatches = 0;
 
-        if ($unread_dispatches > 0) {
-            Dispatch::markAllReadForRecipient($user_id);
+        try {
+            $recent_dispatches = Dispatch::listForRecipient($user_id, 5);
+            $unread_dispatches = Dispatch::countUnreadForRecipient($user_id);
+
+            if ($unread_dispatches > 0) {
+                Dispatch::markAllReadForRecipient($user_id);
+            }
+        } catch (Throwable $e) {
+            error_log('DriverDashboardController dispatches error: ' . $e->getMessage());
         }
 
         $this->render('driver/dashboard', [

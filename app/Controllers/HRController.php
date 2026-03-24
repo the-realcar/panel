@@ -43,6 +43,7 @@ class HRController extends Controller {
 
         $drivers = WorkHour::listDriverUsers();
         $selected_user_id = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
+        $work_hours_available = WorkHour::isAvailable();
 
         if ($selected_user_id <= 0 && !empty($drivers)) {
             $selected_user_id = (int)$drivers[0]['id'];
@@ -51,6 +52,11 @@ class HRController extends Controller {
         $errors = [];
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!$work_hours_available) {
+                setFlashMessage('error', 'Tabela ECP nie jest dostępna w tej bazie danych.');
+                $this->redirectTo('/hr/work-hours.php?month=' . urlencode($month) . '&user_id=' . $selected_user_id);
+            }
+
             if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
                 setFlashMessage('error', 'Nieprawidlowy token CSRF.');
                 $this->redirectTo('/hr/work-hours.php?month=' . urlencode($month) . '&user_id=' . $selected_user_id);
@@ -146,7 +152,8 @@ class HRController extends Controller {
             'month' => $month,
             'entries' => $entries,
             'monthly_total' => $monthly_total,
-            'errors' => $errors
+            'errors' => $errors,
+            'work_hours_available' => $work_hours_available
         ]);
     }
 

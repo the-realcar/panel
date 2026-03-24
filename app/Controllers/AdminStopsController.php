@@ -10,12 +10,18 @@ class AdminStopsController extends Controller {
         $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
         $per_page = ITEMS_PER_PAGE;
         $offset = ($page - 1) * $per_page;
+        $cities_available = City::isAvailable();
 
         // Handle city AJAX actions
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['city_action'])) {
             if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
                 $this->jsonError('Nieprawidlowy token CSRF.');
             }
+
+            if (!$cities_available) {
+                $this->jsonError('Tabela miast nie jest dostępna w tej bazie danych.');
+            }
+
             $this->handleCityAction($_POST['city_action']);
             return;
         }
@@ -29,6 +35,7 @@ class AdminStopsController extends Controller {
             'page_title'  => 'Zarządzanie przystankami',
             'stops'       => $stops,
             'cities'      => $cities,
+            'cities_available' => $cities_available,
             'page'        => $page,
             'total_pages' => $total_pages,
             'rbac'        => $rbac

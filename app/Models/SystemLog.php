@@ -1,6 +1,11 @@
 <?php
 
 class SystemLog {
+    public static function supportsErrorLogs(): bool {
+        $db = new Database();
+        return $db->tableExists('error_logs');
+    }
+
     public static function listLoginLogs(array $filters = [], int $limit = 100): array {
         $db = new Database();
         $where = [];
@@ -82,6 +87,10 @@ class SystemLog {
     }
 
     public static function listErrorLogs(array $filters = [], int $limit = 200): array {
+        if (!self::supportsErrorLogs()) {
+            return [];
+        }
+
         $db = new Database();
         $where = [];
         $params = [':limit' => $limit];

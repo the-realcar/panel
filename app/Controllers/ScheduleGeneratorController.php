@@ -45,6 +45,7 @@ class ScheduleGeneratorController extends Controller {
         $selected_variant = null;
         $stops            = [];
         $timetable        = null;
+        $departures_available = Brigade::supportsDepartures();
 
         if ($variant_id) {
             $selected_variant = RouteVariant::find($variant_id);
@@ -64,6 +65,7 @@ class ScheduleGeneratorController extends Controller {
             'selected_variant' => $selected_variant,
             'stops'            => $stops,
             'timetable'        => $timetable,
+            'departures_available' => $departures_available,
             'rbac'             => $rbac,
         ]);
     }
@@ -83,6 +85,10 @@ class ScheduleGeneratorController extends Controller {
      * or null when no departures exist.
      */
     private function buildTimetable(int $line_id, ?string $direction, array $stops): ?array {
+        if (!Brigade::supportsDepartures()) {
+            return null;
+        }
+
         $db = new Database();
 
         $sql = "

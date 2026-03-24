@@ -199,6 +199,10 @@ class DispatcherController extends Controller {
                 $this->redirectTo('/dispatcher/messages.php');
             }
 
+            if (!Dispatch::isAvailable()) {
+                $errors['general'] = 'Moduł dyspozycji nie jest dostępny w tej bazie danych.';
+            }
+
             $recipient_id = (int)($_POST['recipient_id'] ?? 0);
             $message = trim($_POST['message'] ?? '');
 
@@ -237,6 +241,7 @@ class DispatcherController extends Controller {
             'drivers' => $drivers,
             'sent_messages' => $sent_messages,
             'errors' => $errors,
+            'dispatches_available' => Dispatch::isAvailable(),
             'form' => [
                 'recipient_id' => (int)($_POST['recipient_id'] ?? 0),
                 'message' => $_POST['message'] ?? ''

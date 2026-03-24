@@ -1,7 +1,16 @@
 <?php
 
 class Dispatch {
+    public static function isAvailable(): bool {
+        $db = new Database();
+        return $db->tableExists('dispatches');
+    }
+
     public static function create(array $data): int {
+        if (!self::isAvailable()) {
+            throw new RuntimeException('Tabela dyspozycji nie jest dostępna w tej bazie danych.');
+        }
+
         $db = new Database();
         $result = $db->queryOne(
             "
@@ -20,6 +29,10 @@ class Dispatch {
     }
 
     public static function listForRecipient(int $recipient_id, int $limit = 20): array {
+        if (!self::isAvailable()) {
+            return [];
+        }
+
         $db = new Database();
         return $db->query(
             "
@@ -38,6 +51,10 @@ class Dispatch {
     }
 
     public static function listSentBy(int $sender_id, int $limit = 50): array {
+        if (!self::isAvailable()) {
+            return [];
+        }
+
         $db = new Database();
         return $db->query(
             "
@@ -56,6 +73,10 @@ class Dispatch {
     }
 
     public static function countUnreadForRecipient(int $recipient_id): int {
+        if (!self::isAvailable()) {
+            return 0;
+        }
+
         $db = new Database();
         $result = $db->queryOne(
             "SELECT COUNT(*) AS total FROM dispatches WHERE recipient_id = :recipient_id AND read_at IS NULL",
@@ -66,6 +87,10 @@ class Dispatch {
     }
 
     public static function markAllReadForRecipient(int $recipient_id): void {
+        if (!self::isAvailable()) {
+            return;
+        }
+
         $db = new Database();
         $db->execute(
             "

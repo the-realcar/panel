@@ -8,6 +8,16 @@
         </div>
     </div>
 
+    <?php if (!empty($errors['general'])): ?>
+        <div class="alert alert-error"><?php echo htmlspecialchars($errors['general']); ?></div>
+    <?php endif; ?>
+
+    <?php if (!$dispatches_available): ?>
+        <div class="alert alert-warning">
+            Tabela dyspozycji nie jest dostępna w aktualnej bazie danych. Widok pozostaje dostępny, ale wysyłka i historia komunikatów są wyłączone do czasu synchronizacji schematu.
+        </div>
+    <?php endif; ?>
+
     <div class="card">
         <div class="card-header">
             <h2 class="card-title">Nowy komunikat</h2>
@@ -40,7 +50,7 @@
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Wyslij komunikat</button>
+                    <button type="submit" class="btn btn-primary" <?php echo !$dispatches_available ? 'disabled' : ''; ?>>Wyslij komunikat</button>
                 </div>
             </form>
         </div>

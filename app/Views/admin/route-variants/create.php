@@ -36,7 +36,7 @@
             <div class="form-group">
                 <label for="variant_type" class="form-label">Typ wariantu</label>
                 <select id="variant_type" name="variant_type" class="form-control" required>
-                    <?php $types = ['normal' => 'Normalny', 'short' => 'Skrocony', 'depot_entry' => 'Zjazd do zajezdni', 'depot_exit' => 'Wyjazd z zajezdni']; ?>
+                    <?php $types = ['normal' => 'Normalny', 'short' => 'Skrocony', 'kzw' => 'KZW (Kurs z Wolnego)', 'depot_entry' => 'Zjazd do zajezdni', 'depot_exit' => 'Wyjazd z zajezdni']; ?>
                     <?php foreach ($types as $value => $label): ?>
                         <option value="<?php echo e($value); ?>" <?php echo (($form_data['variant_type'] ?? 'normal') === $value) ? 'selected' : ''; ?>><?php echo e($label); ?></option>
                     <?php endforeach; ?>

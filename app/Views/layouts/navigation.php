@@ -6,6 +6,9 @@ $is_dispatcher = $rbac->hasRole('Dyspozytor');
 $is_management = $rbac->hasRole('Zarząd');
 $is_nadzor = $rbac->hasRole('Nadzór Ruchu');
 $is_hr = $rbac->hasRole('Kadry');
+$current_path = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?? '';
+$is_brigades_page = str_starts_with($current_path, '/admin/brigades/') && !str_ends_with($current_path, '/generate-schedule.php');
+$is_brigade_generator_page = str_ends_with($current_path, '/admin/brigades/generate-schedule.php');
 ?>
 <nav class="nav">
     <div class="container">
@@ -83,12 +86,12 @@ $is_hr = $rbac->hasRole('Kadry');
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="/admin/brigades/index.php" class="<?php echo isActivePage('/admin/brigades') ? 'active' : ''; ?>">
+                        <a href="/admin/brigades/index.php" class="<?php echo $is_brigades_page ? 'active' : ''; ?>">
                             Brygady
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="/admin/brigades/generate-schedule.php" class="<?php echo isActivePage('/admin/brigades/generate-schedule') ? 'active' : ''; ?>">
+                        <a href="/admin/brigades/generate-schedule.php" class="<?php echo $is_brigade_generator_page ? 'active' : ''; ?>">
                             Generator rozkładów
                         </a>
                     </li>
@@ -158,12 +161,12 @@ $is_hr = $rbac->hasRole('Kadry');
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="/admin/brigades/index.php" class="<?php echo isActivePage('/admin/brigades') ? 'active' : ''; ?>">
+                    <a href="/admin/brigades/index.php" class="<?php echo $is_brigades_page ? 'active' : ''; ?>">
                         Brygady
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="/admin/brigades/generate-schedule.php" class="<?php echo isActivePage('/admin/brigades/generate-schedule') ? 'active' : ''; ?>">
+                    <a href="/admin/brigades/generate-schedule.php" class="<?php echo $is_brigade_generator_page ? 'active' : ''; ?>">
                         Generator rozkładów
                     </a>
                 </li>

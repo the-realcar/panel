@@ -1,11 +1,4 @@
-<?php include __DIR__ . '/../layouts/header.php'; ?>
-
-<link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-    crossorigin="anonymous"
->
+<?php View::partial('layouts/header', ['page_title' => $page_title]); ?>
 
 <style>
     [data-theme="dark"] body,
@@ -21,7 +14,9 @@
     }
 
     .fleet-table {
-        font-size: 0.92rem;
+        width: 100%;
+        table-layout: fixed;
+        font-size: clamp(0.74rem, 0.62rem + 0.24vw, 0.9rem);
     }
 
     [data-theme="dark"] .fleet-table {
@@ -39,12 +34,59 @@
     }
 
     .fleet-table th {
-        white-space: nowrap;
+        white-space: normal;
         vertical-align: middle;
+        line-height: 1.2;
+        padding: 0.75rem 0.55rem;
     }
 
     .fleet-table td {
         vertical-align: middle;
+        padding: 0.75rem 0.55rem;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        line-height: 1.35;
+    }
+
+    .fleet-table th:nth-child(1),
+    .fleet-table td:nth-child(1) {
+        width: 8.5%;
+    }
+
+    .fleet-table th:nth-child(2),
+    .fleet-table td:nth-child(2),
+    .fleet-table th:nth-child(3),
+    .fleet-table td:nth-child(3),
+    .fleet-table th:nth-child(4),
+    .fleet-table td:nth-child(4),
+    .fleet-table th:nth-child(5),
+    .fleet-table td:nth-child(5),
+    .fleet-table th:nth-child(6),
+    .fleet-table td:nth-child(6),
+    .fleet-table th:nth-child(7),
+    .fleet-table td:nth-child(7),
+    .fleet-table th:nth-child(8),
+    .fleet-table td:nth-child(8),
+    .fleet-table th:nth-child(9),
+    .fleet-table td:nth-child(9),
+    .fleet-table th:nth-child(10),
+    .fleet-table td:nth-child(10),
+    .fleet-table th:nth-child(11),
+    .fleet-table td:nth-child(11),
+    .fleet-table th:nth-child(12),
+    .fleet-table td:nth-child(12),
+    .fleet-table th:nth-child(13),
+    .fleet-table td:nth-child(13) {
+        width: 7.625%;
+    }
+
+    .fleet-table .badge {
+        display: inline-flex;
+        max-width: 100%;
+        justify-content: center;
+        text-align: center;
+        white-space: normal;
+        line-height: 1.15;
     }
 
     .fleet-table tbody tr.fleet-unavailable-row > * {
@@ -96,8 +138,8 @@
             <p>Brak pojazdów do wyświetlenia.</p>
         </div>
     <?php else: ?>
-        <div class="table-responsive">
-            <table class="table table-striped table-hover table-bordered align-middle fleet-table mb-0">
+        <div class="table-responsive" style="overflow-x: visible;">
+            <table class="table fleet-table">
                 <thead>
                     <tr>
                         <th>Nr pojazdu</th>
@@ -120,14 +162,14 @@
                         <?php
                         $is_unavailable = in_array($vehicle['status'], ['w naprawie', 'odstawiony'], true);
                         ?>
-                        <tr class="<?php echo $is_unavailable ? 'fleet-unavailable-row table-danger' : ''; ?>">
+                        <tr class="<?php echo $is_unavailable ? 'fleet-unavailable-row' : ''; ?>">
                             <td><strong><?php echo htmlspecialchars($vehicle['nr_poj']); ?></strong></td>
                             <td><?php echo htmlspecialchars($vehicle['marka'] ?? '—'); ?></td>
                             <td><?php echo htmlspecialchars($vehicle['model']); ?></td>
                             <td><?php echo htmlspecialchars($vehicle['typ_napedu'] ?? '—'); ?></td>
                             <td>
                                 <?php if ($vehicle['reg_plate']): ?>
-                                    <span class="badge text-bg-secondary">
+                                    <span class="badge badge-secondary">
                                         <?php echo htmlspecialchars($vehicle['reg_plate']); ?>
                                     </span>
                                 <?php else: ?>
@@ -144,13 +186,13 @@
                             <td>
                                 <?php
                                 $status_info = [
-                                    'sprawny' => ['label' => 'Sprawny', 'class' => 'text-bg-success'],
-                                    'w naprawie' => ['label' => 'W naprawie', 'class' => 'text-bg-warning'],
-                                    'odstawiony' => ['label' => 'Odstawiony', 'class' => 'text-bg-danger'],
-                                    'zawieszony' => ['label' => 'Zawieszony', 'class' => 'text-bg-secondary']
+                                    'sprawny' => ['label' => 'Sprawny', 'class' => 'badge-success'],
+                                    'w naprawie' => ['label' => 'W naprawie', 'class' => 'badge-warning'],
+                                    'odstawiony' => ['label' => 'Odstawiony', 'class' => 'badge-danger'],
+                                    'zawieszony' => ['label' => 'Zawieszony', 'class' => 'badge-secondary']
                                 ];
                                 $status = $vehicle['status'];
-                                $info = $status_info[$status] ?? ['label' => $status, 'class' => 'text-bg-secondary'];
+                                $info = $status_info[$status] ?? ['label' => $status, 'class' => 'badge-secondary'];
                                 ?>
                                 <span class="badge <?php echo $info['class']; ?>">
                                     <?php echo htmlspecialchars($info['label']); ?>
@@ -164,4 +206,4 @@
     <?php endif; ?>
 </div>
 
-<?php include __DIR__ . '/../layouts/footer.php'; ?>
+<?php View::partial('layouts/footer'); ?>

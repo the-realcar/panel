@@ -1,14 +1,23 @@
 <?php
 
 class Setting {
+    public static function isAvailable(): bool {
+        $db = new Database();
+        return $db->tableExists('settings');
+    }
+
     public static function listAll(): array {
+        if (!self::isAvailable()) {
+            return [];
+        }
+
         $db = new Database();
         $query = "SELECT key, value, description, updated_by, created_at, updated_at FROM settings ORDER BY key ASC";
         return $db->query($query);
     }
 
     public static function getMany(array $keys): array {
-        if (empty($keys)) {
+        if (empty($keys) || !self::isAvailable()) {
             return [];
         }
 
@@ -36,6 +45,10 @@ class Setting {
     public static function setMany(array $values, ?int $updated_by = null): void {
         if (empty($values)) {
             return;
+        }
+
+        if (!self::isAvailable()) {
+            throw new RuntimeException('Tabela ustawień nie jest dostępna w tej bazie danych.');
         }
 
         $db = new Database();

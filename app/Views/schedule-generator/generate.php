@@ -49,7 +49,11 @@
 
 <?php if ($selected_variant && empty($timetable) && !empty($stops)): ?>
     <div class="alert alert-warning">
-        Brak odjazdow dla wybranego wariantu trasy. Dodaj odjazdy brygadom przypisanym do linii <?php echo e($line['line_number']); ?>.
+        <?php if (!$departures_available): ?>
+            Tabela odjazdow brygad nie jest dostępna w tej bazie danych. Generator nie może policzyć rozkładu dla wybranego kierunku.
+        <?php else: ?>
+            Brak odjazdow dla wybranego wariantu trasy. Dodaj odjazdy brygadom przypisanym do linii <?php echo e($line['line_number']); ?>.
+        <?php endif; ?>
     </div>
 <?php endif; ?>
 

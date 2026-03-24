@@ -1,7 +1,19 @@
 <?php
 
 class Brigade {
+    public static function supportsDepartures(): bool {
+        $db = new Database();
+        return $db->tableExists('brigade_departures');
+    }
+
     private static function departureSummarySelect() {
+        if (!self::supportsDepartures()) {
+            return "
+                NULL AS departures_summary,
+                0 AS departures_count
+            ";
+        }
+
         return "
             (
                 SELECT STRING_AGG(
@@ -243,6 +255,10 @@ class Brigade {
     }
 
     public static function listDepartures($brigade_id) {
+        if (!self::supportsDepartures()) {
+            return [];
+        }
+
         $db = new Database();
         $query = '
             SELECT id, brigade_id, departure_time, direction
@@ -255,6 +271,10 @@ class Brigade {
     }
 
     public static function replaceDepartures($brigade_id, array $departures) {
+        if (!self::supportsDepartures()) {
+            throw new RuntimeException('Tabela odjazdów brygad nie jest dostępna w tej bazie danych.');
+        }
+
         $db = new Database();
         $db->beginTransaction();
 

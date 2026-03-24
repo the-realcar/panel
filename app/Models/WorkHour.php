@@ -1,6 +1,11 @@
 <?php
 
 class WorkHour {
+    public static function isAvailable(): bool {
+        $db = new Database();
+        return $db->tableExists('work_hours');
+    }
+
     public static function listDriverUsers(): array {
         $db = new Database();
         $query = "
@@ -17,6 +22,10 @@ class WorkHour {
     }
 
     public static function listMonthlySummary(string $month): array {
+        if (!self::isAvailable()) {
+            return [];
+        }
+
         $db = new Database();
         $query = "
             SELECT
@@ -42,6 +51,10 @@ class WorkHour {
     }
 
     public static function listEntriesForUserMonth(int $user_id, string $month): array {
+        if (!self::isAvailable()) {
+            return [];
+        }
+
         $db = new Database();
         $query = "
             SELECT wh.*, u.username AS updated_by_username
@@ -59,6 +72,10 @@ class WorkHour {
     }
 
     public static function getMonthlyTotalForUser(int $user_id, string $month): float {
+        if (!self::isAvailable()) {
+            return 0.0;
+        }
+
         $db = new Database();
         $result = $db->queryOne(
             "
@@ -77,6 +94,10 @@ class WorkHour {
     }
 
     public static function upsertEntry(array $data): int {
+        if (!self::isAvailable()) {
+            throw new RuntimeException('Tabela ECP nie jest dostępna w tej bazie danych.');
+        }
+
         $db = new Database();
         $result = $db->queryOne(
             "
@@ -104,11 +125,19 @@ class WorkHour {
     }
 
     public static function findById(int $id) {
+        if (!self::isAvailable()) {
+            return null;
+        }
+
         $db = new Database();
         return $db->queryOne("SELECT * FROM work_hours WHERE id = :id", [':id' => $id]);
     }
 
     public static function deleteById(int $id): bool {
+        if (!self::isAvailable()) {
+            throw new RuntimeException('Tabela ECP nie jest dostępna w tej bazie danych.');
+        }
+
         $db = new Database();
         return $db->execute("DELETE FROM work_hours WHERE id = :id", [':id' => $id]);
     }

@@ -21,6 +21,12 @@
     </div>
 
     <div class="card-body">
+        <?php if (!$departures_available): ?>
+            <div class="alert alert-warning">
+                Tabela odjazdow brygad nie jest dostępna w tej bazie danych. Strona pozostaje dostępna, ale generowanie plików ZIP będzie wyłączone do czasu synchronizacji schematu bazy.
+            </div>
+        <?php endif; ?>
+
         <?php if ($line_filter && !empty($brigades)): ?>
             <form method="POST" action="/admin/brigades/generate-schedule.php?line=<?php echo (int)$line_filter; ?>">
                 <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
@@ -66,7 +72,7 @@
                                         <span class="text-muted">—</span>
                                     <?php endif; ?>
                                 </td>
-                                <td><?php echo $brigade['przewoznik'] ? e($brigade['przewoznik']) : '<span class="text-muted">—</span>'; ?></td>
+                                <td><?php echo !empty($brigade['przewoznik']) ? e($brigade['przewoznik']) : '<span class="text-muted">—</span>'; ?></td>
                                 <td>
                                     <?php if ((int)($brigade['departures_count'] ?? 0) > 0): ?>
                                         <?php echo (int)$brigade['departures_count']; ?> odjazdów
@@ -81,7 +87,7 @@
                 </div>
 
                 <div style="margin-top: 1rem;">
-                    <button type="submit" class="btn btn-primary">📥 Pobierz rozkłady (.zip)</button>
+                    <button type="submit" class="btn btn-primary" <?php echo !$departures_available ? 'disabled' : ''; ?>>📥 Pobierz rozkłady (.zip)</button>
                 </div>
             </form>
         <?php elseif ($line_filter): ?>

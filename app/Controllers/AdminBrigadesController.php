@@ -402,6 +402,11 @@ class AdminBrigadesController extends Controller {
         $brigades = $line_filter ? Brigade::listByLine($line_filter, true) : [];
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!Brigade::supportsDepartures()) {
+                setFlashMessage('error', 'Tabela odjazdów brygad nie jest dostępna w tej bazie danych.');
+                $this->redirectTo('/admin/brigades/generate-schedule.php' . ($line_filter ? '?line=' . $line_filter : ''));
+            }
+
             if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
                 setFlashMessage('error', 'Nieprawidlowy token CSRF.');
                 $this->redirectTo('/admin/brigades/generate-schedule.php');
@@ -457,7 +462,8 @@ class AdminBrigadesController extends Controller {
             'page_title' => 'Generator rozkladow jazdy',
             'lines' => $lines,
             'brigades' => $brigades,
-            'line_filter' => $line_filter
+            'line_filter' => $line_filter,
+            'departures_available' => Brigade::supportsDepartures()
         ]);
     }
 

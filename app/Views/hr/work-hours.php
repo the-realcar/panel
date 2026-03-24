@@ -10,6 +10,12 @@
     </div>
 </div>
 
+<?php if (!$work_hours_available): ?>
+    <div class="alert alert-warning">
+        Tabela ECP <code>work_hours</code> nie jest dostępna w aktualnej bazie danych. Strona pozostaje dostępna, ale odczyt i zapis wpisów są wyłączone do czasu synchronizacji schematu.
+    </div>
+<?php endif; ?>
+
 <div class="card">
     <div class="card-body">
         <form method="GET" class="form-inline">
@@ -59,7 +65,7 @@
 
                     <div class="form-group">
                         <label for="work_date" class="form-label">Data</label>
-                        <input type="date" id="work_date" name="work_date" class="form-control" required>
+                        <input type="date" id="work_date" name="work_date" class="form-control" <?php echo !$work_hours_available ? 'disabled' : ''; ?> required>
                         <?php if (!empty($errors['work_date'])): ?>
                             <div class="form-error"><?php echo e($errors['work_date']); ?></div>
                         <?php endif; ?>
@@ -67,7 +73,7 @@
 
                     <div class="form-group">
                         <label for="hours_worked" class="form-label">Liczba godzin</label>
-                        <input type="number" id="hours_worked" name="hours_worked" class="form-control" min="0" max="24" step="0.25" required>
+                        <input type="number" id="hours_worked" name="hours_worked" class="form-control" min="0" max="24" step="0.25" <?php echo !$work_hours_available ? 'disabled' : ''; ?> required>
                         <?php if (!empty($errors['hours_worked'])): ?>
                             <div class="form-error"><?php echo e($errors['hours_worked']); ?></div>
                         <?php endif; ?>
@@ -75,11 +81,11 @@
 
                     <div class="form-group">
                         <label for="notes" class="form-label">Uwagi</label>
-                        <textarea id="notes" name="notes" class="form-control" rows="3"></textarea>
+                        <textarea id="notes" name="notes" class="form-control" rows="3" <?php echo !$work_hours_available ? 'disabled' : ''; ?>></textarea>
                     </div>
 
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Zapisz wpis</button>
+                        <button type="submit" class="btn btn-primary" <?php echo !$work_hours_available ? 'disabled' : ''; ?>>Zapisz wpis</button>
                     </div>
                 </form>
             </div>

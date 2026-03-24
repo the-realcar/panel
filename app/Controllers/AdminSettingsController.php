@@ -18,6 +18,7 @@ class AdminSettingsController extends Controller {
         }
 
         $errors = [];
+        $settings_available = Setting::isAvailable();
         $form = [
             'company_name' => APP_NAME,
             'base_url' => BASE_URL,
@@ -33,6 +34,11 @@ class AdminSettingsController extends Controller {
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!$settings_available) {
+                setFlashMessage('error', 'Tabela ustawień nie jest dostępna w tej bazie danych.');
+                $this->redirectTo('/admin/settings/index.php');
+            }
+
             if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
                 setFlashMessage('error', 'Nieprawidlowy token CSRF.');
                 $this->redirectTo('/admin/settings/index.php');
@@ -102,7 +108,8 @@ class AdminSettingsController extends Controller {
             'page_title' => 'Ustawienia systemowe',
             'form' => $form,
             'errors' => $errors,
-            'all_settings' => $all_settings
+            'all_settings' => $all_settings,
+            'settings_available' => $settings_available
         ]);
     }
 }

@@ -32,9 +32,13 @@
 
                 <div class="form-group" id="variant-group" style="display:none;">
                     <label for="variant_id">Wariant trasy (kierunek)</label>
-                    <select name="variant_id" id="variant_id" class="form-control" required>
+                    <select name="variant_id" id="variant_id" class="form-control">
                         <option value="">-- wybierz wariant --</option>
                     </select>
+                </div>
+
+                <div id="variant-help" class="alert alert-info" style="display:none;">
+                    Brak aktywnych wariantow dla tej linii. Mozesz przejsc dalej i wybrac wariant pozniej.
                 </div>
 
                 <div class="form-actions" id="submit-group" style="display:none;">
@@ -51,21 +55,24 @@ document.getElementById('line_id').addEventListener('change', function () {
     var variantGroup = document.getElementById('variant-group');
     var submitGroup  = document.getElementById('submit-group');
     var variantSelect = document.getElementById('variant_id');
+    var variantHelp = document.getElementById('variant-help');
 
     variantSelect.innerHTML = '<option value="">-- wybierz wariant --</option>';
     variantGroup.style.display = 'none';
     submitGroup.style.display  = 'none';
+    variantHelp.style.display = 'none';
 
     if (!lineId) {
         return;
     }
 
+    submitGroup.style.display = 'block';
+
     fetch('/management/schedule-generator/get-variants.php?line_id=' + encodeURIComponent(lineId))
         .then(function (res) { return res.json(); })
         .then(function (data) {
             if (data.length === 0) {
-                variantSelect.innerHTML = '<option value="">Brak aktywnych wariantow dla tej linii</option>';
-                variantGroup.style.display = 'block';
+                variantHelp.style.display = 'block';
                 return;
             }
             data.forEach(function (v) {
@@ -75,10 +82,9 @@ document.getElementById('line_id').addEventListener('change', function () {
                 variantSelect.appendChild(opt);
             });
             variantGroup.style.display = 'block';
-            submitGroup.style.display  = 'block';
         })
         .catch(function () {
-            variantGroup.style.display = 'none';
+            variantHelp.style.display = 'block';
         });
 });
 </script>

@@ -7,6 +7,8 @@
 
 class Database {
     private $pdo;
+    private static $tableExistsCache = [];
+    private static $columnExistsCache = [];
 
     private function normalizeResultEncoding($value) {
         if (is_array($value)) {
@@ -171,5 +173,52 @@ class Database {
      */
     public function inTransaction() {
         return $this->pdo->inTransaction();
+    }
+
+    public function tableExists(string $table, string $schema = 'public'): bool {
+        $cache_key = strtolower($schema . '.' . $table);
+        if (array_key_exists($cache_key, self::$tableExistsCache)) {
+            return self::$tableExistsCache[$cache_key];
+        }
+
+        try {
+            $result = $this->queryOne(
+                'SELECT COUNT(*) AS total FROM information_schema.tables WHERE table_schema = :schema AND table_name = :table',
+                [
+                    ':schema' => $schema,
+                    ':table' => $table,
+                ]
+            );
+        } catch (PDOException $e) {
+            self::$tableExistsCache[$cache_key] = false;
+            return false;
+        }
+
+        self::$tableExistsCache[$cache_key] = (int)($result['total'] ?? 0) > 0;
+        return self::$tableExistsCache[$cache_key];
+    }
+
+    public function columnExists(string $table, string $column, string $schema = 'public'): bool {
+        $cache_key = strtolower($schema . '.' . $table . '.' . $column);
+        if (array_key_exists($cache_key, self::$columnExistsCache)) {
+            return self::$columnExistsCache[$cache_key];
+        }
+
+        try {
+            $result = $this->queryOne(
+                'SELECT COUNT(*) AS total FROM information_schema.columns WHERE table_schema = :schema AND table_name = :table AND column_name = :column',
+                [
+                    ':schema' => $schema,
+                    ':table' => $table,
+                    ':column' => $column,
+                ]
+            );
+        } catch (PDOException $e) {
+            self::$columnExistsCache[$cache_key] = false;
+            return false;
+        }
+
+        self::$columnExistsCache[$cache_key] = (int)($result['total'] ?? 0) > 0;
+        return self::$columnExistsCache[$cache_key];
     }
 }

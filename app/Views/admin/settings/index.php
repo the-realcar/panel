@@ -7,6 +7,12 @@
 
 <div class="card">
     <div class="card-body">
+        <?php if (!$settings_available): ?>
+            <div class="alert alert-warning">
+                Tabela <code>settings</code> nie jest dostępna w aktualnej bazie danych. Formularz pozostaje widoczny wyłącznie informacyjnie i zapis jest zablokowany do czasu synchronizacji schematu.
+            </div>
+        <?php endif; ?>
+
         <p class="text-muted">
             Zmiany zapisywane sa w tabeli <code>settings</code> i logowane w audycie.
         </p>
@@ -78,7 +84,7 @@
             </div>
 
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">Zapisz ustawienia</button>
+                <button type="submit" class="btn btn-primary" <?php echo !$settings_available ? 'disabled' : ''; ?>>Zapisz ustawienia</button>
             </div>
         </form>
     </div>
