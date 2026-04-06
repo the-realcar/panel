@@ -17,7 +17,7 @@ define('INCLUDES_PATH', BASE_PATH . '/includes');
 define('CONFIG_PATH', BASE_PATH . '/config');
 
 // URLs
-define('BASE_URL', getenv('BASE_URL') ?: 'http://localhost');
+define('BASE_URL', getenv('BASE_URL') ?: 'https://kot.realcar.pl');
 define('ASSETS_URL', BASE_URL . '/assets');
 
 // OAuth configuration
@@ -90,6 +90,21 @@ function logErrorToDatabase($type, $message, $filePath = null, $lineNumber = nul
 
     $is_logging = true;
 
+    $ip_address = $_SERVER['REMOTE_ADDR'] ?? null;
+    foreach (['HTTP_CF_CONNECTING_IP', 'HTTP_X_REAL_IP', 'HTTP_X_FORWARDED_FOR'] as $header) {
+        if (empty($_SERVER[$header])) {
+            continue;
+        }
+
+        $parts = array_map('trim', explode(',', (string)$_SERVER[$header]));
+        foreach ($parts as $part) {
+            if ($part !== '' && filter_var($part, FILTER_VALIDATE_IP)) {
+                $ip_address = $part;
+                break 2;
+            }
+        }
+    }
+
     try {
         $pdo = getDatabaseConnection();
         $stmt = $pdo->prepare(
@@ -103,7 +118,7 @@ function logErrorToDatabase($type, $message, $filePath = null, $lineNumber = nul
             ':file_path' => $filePath !== null ? (string)$filePath : null,
             ':line_number' => $lineNumber !== null ? (int)$lineNumber : null,
             ':context' => $context !== null ? json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : null,
-            ':ip_address' => $_SERVER['REMOTE_ADDR'] ?? null,
+            ':ip_address' => $ip_address,
             ':user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null,
             ':user_id' => isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null
         ]);
