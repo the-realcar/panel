@@ -29,7 +29,7 @@ class Line {
         $query = "
             SELECT * FROM lines
             $where
-            ORDER BY line_number ASC
+            ORDER BY id ASC
             LIMIT :limit OFFSET :offset
         ";
         $params[':limit'] = $limit;

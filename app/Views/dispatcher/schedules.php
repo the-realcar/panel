@@ -26,7 +26,7 @@
             <p class="text-muted">Brak grafików do wyświetlenia w wybranym okresie.</p>
         <?php else: ?>
             <div class="table-responsive">
-                <table class="table">
+                <table class="data-table">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -42,12 +42,12 @@
                     <tbody>
                         <?php foreach ($schedules as $s): ?>
                         <tr>
-                            <td><?php echo (int)$s['id']; ?></td>
+                            <td data-label="ID"><?php echo (int)$s['id']; ?></td>
                             <td>
                                 <strong><?php echo e(trim(($s['first_name'] ?? '') . ' ' . ($s['last_name'] ?? '')) ?: $s['username']); ?></strong>
                             </td>
-                            <td><?php echo e(date('d.m.Y', strtotime($s['schedule_date']))); ?></td>
-                            <td><?php echo e(substr($s['start_time'], 0, 5) . ' – ' . substr($s['end_time'], 0, 5)); ?></td>
+                            <td data-label="Data"><?php echo e(date('d.m.Y', strtotime($s['schedule_date']))); ?></td>
+                            <td data-label="Godziny"><?php echo e(substr($s['start_time'], 0, 5) . ' – ' . substr($s['end_time'], 0, 5)); ?></td>
                             <td>
                                 <?php if ($s['line_number']): ?>
                                     <strong><?php echo e($s['line_number']); ?></strong>
@@ -56,7 +56,7 @@
                                     —
                                 <?php endif; ?>
                             </td>
-                            <td><?php echo $s['brigade_number'] ? e($s['brigade_number']) : '—'; ?></td>
+                            <td data-label="Brygada"><?php echo $s['brigade_number'] ? e($s['brigade_number']) : '—'; ?></td>
                             <td>
                                 <?php if ($s['nr_poj']): ?>
                                     <?php echo e($s['nr_poj']); ?>
@@ -65,7 +65,7 @@
                                     —
                                 <?php endif; ?>
                             </td>
-                            <td><?php echo getStatusBadge($s['status']); ?></td>
+                            <td data-label="Status"><?php echo getStatusBadge($s['status']); ?></td>
                         </tr>
                         <?php endforeach; ?>
                     </tbody>

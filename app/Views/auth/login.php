@@ -87,42 +87,21 @@
                 </button>
             </form>
 
-            <?php $oauth_enabled = !empty($oauth['discord']) || !empty($oauth['roblox']); ?>
-            <?php if ($oauth_enabled): ?>
-                <div style="margin-top: 1.5rem; text-align: center;">
-                    <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 0.75rem;">
-                        Lub zaloguj sie przez
-                    </p>
-                    <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
-                        <?php if (!empty($oauth['discord'])): ?>
-                            <a class="btn btn-outline" href="/oauth/discord.php">Discord</a>
-                        <?php endif; ?>
-                        <?php if (!empty($oauth['roblox'])): ?>
-                            <a class="btn btn-outline" href="/oauth/roblox.php">Roblox</a>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            <?php endif; ?>
-
+            <div style="margin-top: 1.5rem; text-align: center;">
+                <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 0.75rem;">
             <div style="margin-top: 1.5rem; text-align: center;">
                 <a href="/reset-password.php" style="color: var(--text-muted); font-size: 0.875rem;">
                     Zapomniałeś hasła?
                 </a>
             </div>
 
-            <?php if (defined('SHOW_TEST_CREDENTIALS') && SHOW_TEST_CREDENTIALS): ?>
-            <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
-                <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin: 0;">
-                    <strong>Dane testowe:</strong><br>
-                    admin / password123<br>
-                    kierowca1 / password123<br>
-                    dyspozytor1 / password123
-                </p>
+            <div style="text-align: center; margin-top: 1.5rem; font-size: 0.8rem; color: var(--text-muted);">
+                <a href="/polityka-prywatnosci.php" style="color: var(--text-muted);">Polityka Prywatności</a>
+                &nbsp;·&nbsp;
+                <a href="/regulamin.php" style="color: var(--text-muted);">Regulamin</a>
             </div>
-            <?php endif; ?>
         </div>
     </div>
-
     <script src="/assets/js/dark-mode.js"></script>
 </body>
 </html>

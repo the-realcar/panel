@@ -34,12 +34,12 @@
             <p class="text-muted">Brak zdefiniowanych miast. Dodaj pierwsze miasto powyżej.</p>
         <?php else: ?>
             <div class="table-responsive">
-                <table class="table" id="cities-table">
+                <table class="table" id="cities-table" data-sortable-table data-default-sort="0:asc">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th data-sort-type="number">ID</th>
                             <th>Nazwa</th>
-                            <th>Akcje</th>
+                            <th data-no-sort="true">Akcje</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -72,22 +72,23 @@
 <div class="card">
     <div class="card-header">
         <h2 class="card-title">Przystanki</h2>
+        <input type="text" id="stops-search" class="form-control" placeholder="Szukaj przystanku..." style="max-width: 280px; margin-top: 0.75rem;">
     </div>
     <div class="card-body">
         <?php if (empty($stops)): ?>
             <p class="text-muted">Brak przystanków do wyświetlenia.</p>
         <?php else: ?>
             <div class="table-responsive">
-                <table class="table">
+                <table class="table" id="stops-table" data-sortable-table data-default-sort="0:asc">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th data-sort-type="number">ID</th>
                             <th>Nazwa</th>
                             <th>Miasto</th>
                             <th>Opis</th>
                             <th>Status NZ</th>
                             <th>Status</th>
-                            <th>Akcje</th>
+                            <th data-no-sort="true">Akcje</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -202,6 +203,19 @@ function showCityError(msg) {
     el.textContent = msg;
     el.style.display = '';
 }
+
+(function() {
+    var input = document.getElementById('stops-search');
+    if (!input) return;
+
+    var rows = Array.from(document.querySelectorAll('#stops-table tbody tr'));
+    input.addEventListener('input', function() {
+        var q = input.value.trim().toLowerCase();
+        rows.forEach(function(row) {
+            row.style.display = row.textContent.toLowerCase().indexOf(q) !== -1 ? '' : 'none';
+        });
+    });
+})();
 </script>
 
 <?php View::partial('layouts/footer'); ?>

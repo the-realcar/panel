@@ -107,7 +107,7 @@ class Brigade {
             FROM brigades b
             INNER JOIN lines l ON b.line_id = l.id
             $where
-            ORDER BY l.line_number ASC, b.brigade_number ASC
+            ORDER BY b.id ASC
             LIMIT :limit OFFSET :offset
         ";
         

@@ -25,6 +25,7 @@
                                 <th>Oblozenie</th>
                                 <th>Status limitu</th>
                                 <th>Przypisani uzytkownicy</th>
+                                <th>Kolejnosc</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -88,6 +89,26 @@
                                                 </ul>
                                             <?php endif; ?>
                                         </details>
+                                    </td>
+                                    <td data-label="Kolejnosc">
+                                        <?php if ($rbac->hasPermission('positions', 'update')): ?>
+                                            <div class="btn-group">
+                                                <form method="POST" action="/admin/positions/structure.php" style="display:inline;">
+                                                    <?php echo csrfField(); ?>
+                                                    <input type="hidden" name="position_id" value="<?php echo (int)$position['id']; ?>">
+                                                    <input type="hidden" name="direction" value="up">
+                                                    <button type="submit" class="btn btn-sm btn-secondary">↑</button>
+                                                </form>
+                                                <form method="POST" action="/admin/positions/structure.php" style="display:inline;">
+                                                    <?php echo csrfField(); ?>
+                                                    <input type="hidden" name="position_id" value="<?php echo (int)$position['id']; ?>">
+                                                    <input type="hidden" name="direction" value="down">
+                                                    <button type="submit" class="btn btn-sm btn-secondary">↓</button>
+                                                </form>
+                                            </div>
+                                        <?php else: ?>
+                                            <span class="text-muted">-</span>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

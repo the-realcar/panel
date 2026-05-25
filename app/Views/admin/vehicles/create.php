@@ -1,5 +1,14 @@
 <?php View::partial('layouts/header', ['page_title' => $page_title]); ?>
 
+<?php
+$vehicleTypeLabels = [
+    'bus' => 'Autobus',
+    'tbus' => 'Trolejbus',
+    'tram' => 'Tramwaj',
+    'metro' => 'Metro'
+];
+?>
+
 <div class="page-header">
     <h1>➕ Dodaj pojazd</h1>
     <a href="/admin/vehicles/index.php" class="btn btn-secondary">← Powrót do listy</a>
@@ -66,10 +75,9 @@
                             class="form-control <?php echo isset($errors['vehicle_type']) ? 'is-invalid' : ''; ?>"
                             required>
                         <option value="">-- Wybierz typ --</option>
-                        <option value="bus" <?php echo ($form_data['vehicle_type'] ?? '') === 'bus' ? 'selected' : ''; ?>>Autobus</option>
-                        <option value="tbus" <?php echo ($form_data['vehicle_type'] ?? '') === 'tbus' ? 'selected' : ''; ?>>Trolejbus</option>
-                        <option value="tram" <?php echo ($form_data['vehicle_type'] ?? '') === 'tram' ? 'selected' : ''; ?>>Tramwaj</option>
-                        <option value="metro" <?php echo ($form_data['vehicle_type'] ?? '') === 'metro' ? 'selected' : ''; ?>>Metro</option>
+                        <?php foreach (($dict['vehicle_types'] ?? []) as $type): ?>
+                            <option value="<?php echo e($type); ?>" <?php echo ($form_data['vehicle_type'] ?? '') === $type ? 'selected' : ''; ?>><?php echo e($vehicleTypeLabels[$type] ?? $type); ?></option>
+                        <?php endforeach; ?>
                     </select>
                     <?php if (isset($errors['vehicle_type'])): ?>
                         <div class="invalid-feedback"><?php echo e($errors['vehicle_type']); ?></div>
@@ -117,13 +125,9 @@
                             name="pojemnosc" 
                             class="form-control">
                         <option value="">-- Wybierz pojemność --</option>
-                        <option value="MINI" <?php echo ($form_data['pojemnosc'] ?? '') === 'MINI' ? 'selected' : ''; ?>>MINI</option>
-                        <option value="MIDI" <?php echo ($form_data['pojemnosc'] ?? '') === 'MIDI' ? 'selected' : ''; ?>>MIDI</option>
-                        <option value="MAXI" <?php echo ($form_data['pojemnosc'] ?? '') === 'MAXI' ? 'selected' : ''; ?>>MAXI</option>
-                        <option value="MAXI+" <?php echo ($form_data['pojemnosc'] ?? '') === 'MAXI+' ? 'selected' : ''; ?>>MAXI+</option>
-                        <option value="MEGA" <?php echo ($form_data['pojemnosc'] ?? '') === 'MEGA' ? 'selected' : ''; ?>>MEGA</option>
-                        <option value="MEGA+" <?php echo ($form_data['pojemnosc'] ?? '') === 'MEGA+' ? 'selected' : ''; ?>>MEGA+</option>
-                        <option value="GIGA" <?php echo ($form_data['pojemnosc'] ?? '') === 'GIGA' ? 'selected' : ''; ?>>GIGA</option>
+                        <?php foreach (($dict['vehicle_capacities'] ?? []) as $capacity): ?>
+                            <option value="<?php echo e($capacity); ?>" <?php echo ($form_data['pojemnosc'] ?? '') === $capacity ? 'selected' : ''; ?>><?php echo e($capacity); ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
 
@@ -146,11 +150,9 @@
                             name="typ_napedu" 
                             class="form-control">
                         <option value="">-- Wybierz typ napędu --</option>
-                        <option value="Diesel" <?php echo ($form_data['typ_napedu'] ?? '') === 'Diesel' ? 'selected' : ''; ?>>Diesel</option>
-                        <option value="CNG" <?php echo ($form_data['typ_napedu'] ?? '') === 'CNG' ? 'selected' : ''; ?>>CNG</option>
-                        <option value="Hybrydowy" <?php echo ($form_data['typ_napedu'] ?? '') === 'Hybrydowy' ? 'selected' : ''; ?>>Hybrydowy</option>
-                        <option value="Elektryczny" <?php echo ($form_data['typ_napedu'] ?? '') === 'Elektryczny' ? 'selected' : ''; ?>>Elektryczny</option>
-                        <option value="Wodorowy" <?php echo ($form_data['typ_napedu'] ?? '') === 'Wodorowy' ? 'selected' : ''; ?>>Wodorowy</option>
+                        <?php foreach (($dict['vehicle_drive_types'] ?? []) as $drive): ?>
+                            <option value="<?php echo e($drive); ?>" <?php echo ($form_data['typ_napedu'] ?? '') === $drive ? 'selected' : ''; ?>><?php echo e($drive); ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
 
@@ -177,13 +179,13 @@
 
             <div class="form-row">
                 <div class="form-group col col-12 col-md-4">
-                    <label for="norma_spalania">Norma spalania</label>
-                    <input type="text" 
-                           id="norma_spalania" 
-                           name="norma_spalania" 
-                           class="form-control"
-                           maxlength="10"
-                           value="<?php echo e($form_data['norma_spalania'] ?? ''); ?>">
+                    <label for="norma_spalin">Norma spalin</label>
+                    <select id="norma_spalin" name="norma_spalin" class="form-control">
+                        <option value="">-- Wybierz normę --</option>
+                        <?php foreach (($dict['vehicle_emission_standards'] ?? []) as $standard): ?>
+                            <option value="<?php echo e($standard); ?>" <?php echo ($form_data['norma_spalin'] ?? ($form_data['norma_spalania'] ?? '')) === $standard ? 'selected' : ''; ?>><?php echo e($standard); ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
 
                 <div class="form-group col col-12 col-md-4">
@@ -206,9 +208,9 @@
                             name="zajezdnia" 
                             class="form-control">
                         <option value="">-- Wybierz zajezdnię --</option>
-                        <option value="KM" <?php echo ($form_data['zajezdnia'] ?? '') === 'KM' ? 'selected' : ''; ?>>KM</option>
-                        <option value="KW" <?php echo ($form_data['zajezdnia'] ?? '') === 'KW' ? 'selected' : ''; ?>>KW</option>
-                        <option value="MC" <?php echo ($form_data['zajezdnia'] ?? '') === 'MC' ? 'selected' : ''; ?>>MC</option>
+                        <?php foreach (($dict['vehicle_depots'] ?? []) as $depot): ?>
+                            <option value="<?php echo e($depot); ?>" <?php echo ($form_data['zajezdnia'] ?? '') === $depot ? 'selected' : ''; ?>><?php echo e($depot); ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
 
@@ -218,9 +220,9 @@
                             name="przewoznik" 
                             class="form-control">
                         <option value="">-- Wybierz przewoźnika --</option>
-                        <option value="Ostrans" <?php echo ($form_data['przewoznik'] ?? '') === 'Ostrans' ? 'selected' : ''; ?>>Ostrans</option>
-                        <option value="KujaTrans" <?php echo ($form_data['przewoznik'] ?? '') === 'KujaTrans' ? 'selected' : ''; ?>>KujaTrans</option>
-                        <option value="Ostromunikacja" <?php echo ($form_data['przewoznik'] ?? '') === 'Ostromunikacja' ? 'selected' : ''; ?>>Ostromunikacja</option>
+                        <?php foreach (($dict['vehicle_carriers'] ?? []) as $carrier): ?>
+                            <option value="<?php echo e($carrier); ?>" <?php echo ($form_data['przewoznik'] ?? '') === $carrier ? 'selected' : ''; ?>><?php echo e($carrier); ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
             </div>
@@ -248,12 +250,12 @@
             </div>
 
             <div class="form-group">
-                <label for="dodatkowe_informacje">Dodatkowe informacje</label>
-                <textarea id="dodatkowe_informacje" 
-                          name="dodatkowe_informacje" 
+                <label for="notes">Uwagi</label>
+                <textarea id="notes" 
+                          name="notes" 
                           class="form-control"
                           rows="3"
-                          maxlength="100"><?php echo e($form_data['dodatkowe_informacje'] ?? ''); ?></textarea>
+                          maxlength="500"><?php echo e($form_data['notes'] ?? ($form_data['dodatkowe_informacje'] ?? '')); ?></textarea>
             </div>
 
             <div class="form-actions">

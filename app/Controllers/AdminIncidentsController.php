@@ -95,4 +95,36 @@ class AdminIncidentsController extends Controller {
             'vehicles'   => $vehicles,
         ]);
     }
+
+    public function delete() {
+        requireLogin();
+
+        $rbac = new RBAC();
+        if (!$rbac->isAdmin() && !$rbac->hasAnyRole(['Dyspozytor', 'Nadzór Ruchu', 'Zarząd'])) {
+            setFlashMessage('error', 'Brak dostepu.');
+            $this->redirectTo('/index.php');
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            setFlashMessage('error', 'Nieprawidlowa metoda zadania.');
+            $this->redirectTo('/admin/incidents/index.php');
+        }
+
+        if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+            setFlashMessage('error', 'Blad weryfikacji formularza.');
+            $this->redirectTo('/admin/incidents/index.php');
+        }
+
+        $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+        $incident = Incident::find($id);
+        if (!$incident) {
+            setFlashMessage('error', 'Zgloszenie nie istnieje.');
+            $this->redirectTo('/admin/incidents/index.php');
+        }
+
+        Incident::deleteById($id);
+        AuditLog::log('incident.delete', 'incidents', $id, $incident, null);
+        setFlashMessage('success', 'Zgloszenie zostalo usuniete.');
+        $this->redirectTo('/admin/incidents/index.php');
+    }
 }

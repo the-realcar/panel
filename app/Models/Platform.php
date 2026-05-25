@@ -30,7 +30,7 @@ class Platform {
         }
         
         $query = "
-            SELECT p.*, s.name as stop_name, s.stop_id as stop_code
+            SELECT p.*, s.name as stop_name, CAST(s.id AS VARCHAR) as stop_code
             FROM platforms p
             INNER JOIN stops s ON p.stop_id = s.id
             $where
@@ -43,7 +43,7 @@ class Platform {
     public static function listAll($limit = 50, $offset = 0) {
         $db = new Database();
         $query = "
-            SELECT p.*, s.name as stop_name, s.stop_id as stop_code
+            SELECT p.*, s.name as stop_name, CAST(s.id AS VARCHAR) as stop_code
             FROM platforms p
             INNER JOIN stops s ON p.stop_id = s.id
             ORDER BY s.name ASC, p.platform_number ASC
@@ -59,7 +59,7 @@ class Platform {
     public static function find($id) {
         $db = new Database();
         $query = "
-            SELECT p.*, s.name as stop_name, s.stop_id as stop_code
+            SELECT p.*, s.name as stop_name, CAST(s.id AS VARCHAR) as stop_code
             FROM platforms p
             INNER JOIN stops s ON p.stop_id = s.id
             WHERE p.id = :id
@@ -70,7 +70,7 @@ class Platform {
     public static function findByStopAndNumber($stop_id, $platform_number) {
         $db = new Database();
         $query = "
-            SELECT p.*, s.name as stop_name, s.stop_id as stop_code
+            SELECT p.*, s.name as stop_name, CAST(s.id AS VARCHAR) as stop_code
             FROM platforms p
             INNER JOIN stops s ON p.stop_id = s.id
             WHERE p.stop_id = :stop_id AND p.platform_number = :platform_number

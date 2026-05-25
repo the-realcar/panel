@@ -140,7 +140,7 @@ class RouteVariant {
         $db = new Database();
         $query = "
             SELECT rs.*, p.platform_number, p.platform_type,
-                   s.name as stop_name, s.stop_id as stop_code
+                   s.name as stop_name, CAST(s.id AS VARCHAR) as stop_code
             FROM route_stops rs
             INNER JOIN platforms p ON rs.platform_id = p.id
             INNER JOIN stops s ON p.stop_id = s.id

@@ -1,6 +1,11 @@
 <?php
 
 class Position {
+    private static function hasSortOrderColumn() {
+        $db = new Database();
+        return $db->columnExists('positions', 'sort_order');
+    }
+
     public static function countAll() {
         $db = new Database();
         $query = "SELECT COUNT(*) as total FROM positions";
@@ -16,9 +21,9 @@ class Position {
                    COUNT(up.id) as current_count
             FROM positions p
             LEFT JOIN departments d ON p.department_id = d.id
-            LEFT JOIN user_positions up ON p.id = up.position_id
+            LEFT JOIN user_positions up ON p.id = up.position_id AND up.active = TRUE
             GROUP BY p.id, d.name
-            ORDER BY p.name ASC
+            ORDER BY p.id ASC
             LIMIT :limit OFFSET :offset
         ";
 
@@ -30,13 +35,17 @@ class Position {
 
     public static function listStructureByDepartment() {
         $db = new Database();
+        $order_by = self::hasSortOrderColumn()
+            ? 'd.name ASC NULLS LAST, p.sort_order ASC NULLS LAST, p.name ASC'
+            : 'd.name ASC NULLS LAST, p.name ASC';
+
         $query = "
             SELECT p.*, d.name as department_name, COUNT(up.id) as current_count
             FROM positions p
             LEFT JOIN departments d ON p.department_id = d.id
-            LEFT JOIN user_positions up ON p.id = up.position_id
+            LEFT JOIN user_positions up ON p.id = up.position_id AND up.active = TRUE
             GROUP BY p.id, d.name
-            ORDER BY d.name ASC NULLS LAST, p.name ASC
+            ORDER BY " . $order_by . "
         ";
 
         return $db->query($query);
@@ -118,6 +127,11 @@ class Position {
         ]);
     }
 
+    public static function delete($id) {
+        $db = new Database();
+        return $db->execute('DELETE FROM positions WHERE id = :id', [':id' => $id]);
+    }
+
     public static function listActive() {
         $db = new Database();
         $query = "SELECT id, name FROM positions WHERE active = TRUE ORDER BY name ASC";
@@ -131,7 +145,7 @@ class Position {
             FROM user_positions up
             INNER JOIN positions p ON up.position_id = p.id
             WHERE up.user_id = :user_id
-            ORDER BY p.name ASC
+            ORDER BY p.id ASC
         ";
 
         return $db->query($query, [':user_id' => $user_id]);
@@ -164,5 +178,74 @@ class Position {
         ]);
 
         return (int)($result['count'] ?? 0) > 0;
+    }
+
+    public static function hasAssignments($position_id) {
+        $db = new Database();
+        $result = $db->queryOne(
+            'SELECT COUNT(*) as count FROM user_positions WHERE position_id = :position_id',
+            [':position_id' => $position_id]
+        );
+
+        return (int)($result['count'] ?? 0) > 0;
+    }
+
+    public static function reorderWithinDepartment($position_id, $direction) {
+        if (!self::hasSortOrderColumn()) {
+            throw new RuntimeException('Kolumna sort_order nie jest dostepna w tabeli positions.');
+        }
+
+        $db = new Database();
+        $position = $db->queryOne(
+            'SELECT id, department_id, sort_order FROM positions WHERE id = :id',
+            [':id' => $position_id]
+        );
+
+        if (!$position) {
+            return false;
+        }
+
+        $current_order = (int)($position['sort_order'] ?? 0);
+        $department_id = $position['department_id'];
+
+        $operator = $direction === 'up' ? '<' : '>';
+        $order = $direction === 'up' ? 'DESC' : 'ASC';
+
+        $neighbor = $db->queryOne(
+            'SELECT id, sort_order
+             FROM positions
+             WHERE ((department_id IS NULL AND :department_id IS NULL) OR department_id = :department_id)
+               AND sort_order ' . $operator . ' :sort_order
+             ORDER BY sort_order ' . $order . '
+             LIMIT 1',
+            [
+                ':department_id' => $department_id,
+                ':sort_order' => $current_order
+            ]
+        );
+
+        if (!$neighbor) {
+            return false;
+        }
+
+        $db->beginTransaction();
+        try {
+            $db->execute('UPDATE positions SET sort_order = -1 WHERE id = :id', [':id' => $position_id]);
+            $db->execute('UPDATE positions SET sort_order = :sort_order WHERE id = :id', [
+                ':sort_order' => $current_order,
+                ':id' => $neighbor['id']
+            ]);
+            $db->execute('UPDATE positions SET sort_order = :sort_order WHERE id = :id', [
+                ':sort_order' => (int)$neighbor['sort_order'],
+                ':id' => $position_id
+            ]);
+            $db->commit();
+            return true;
+        } catch (Exception $e) {
+            if ($db->inTransaction()) {
+                $db->rollback();
+            }
+            throw $e;
+        }
     }
 }

@@ -45,24 +45,12 @@ Options -Indexes
 </FilesMatch>
 
 # Deny access to config directory
-<DirectoryMatch "config">
-    Require all denied
-</DirectoryMatch>
 
 # Deny access to core directory
-<DirectoryMatch "core">
-    Require all denied
-</DirectoryMatch>
 
 # Deny access to includes directory
-<DirectoryMatch "includes">
-    Require all denied
-</DirectoryMatch>
 
 # Deny access to database directory
-<DirectoryMatch "database">
-    Require all denied
-</DirectoryMatch>
 
 # PHP settings
 <IfModule mod_php.c>
@@ -110,3 +98,12 @@ Options -Indexes
     # Default
     ExpiresDefault "access plus 1 month"
 </IfModule>
+
+# Global custom error pages
+ErrorDocument 401 /errors/401.php
+ErrorDocument 403 /errors/403.php
+ErrorDocument 404 /errors/404.php
+ErrorDocument 500 /errors/500.php
+ErrorDocument 502 /errors/500.php
+ErrorDocument 503 /errors/500.php
+ErrorDocument 504 /errors/500.php

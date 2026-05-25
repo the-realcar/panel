@@ -24,6 +24,7 @@ class HRController extends Controller {
         foreach ($summary as $row) {
             $total_hours += (float)$row['total_hours'];
         }
+        $total_hours = round($total_hours, 2);
 
         $this->render('hr/dashboard', [
             'page_title' => 'Panel Kadr',
@@ -100,6 +101,7 @@ class HRController extends Controller {
                 $errors['hours_worked'] = 'Liczba godzin musi byc liczba.';
             } else {
                 $hours_worked = (float)$hours_raw;
+                $hours_worked = round($hours_worked * 4) / 4;
                 if ($hours_worked < 0 || $hours_worked > 24) {
                     $errors['hours_worked'] = 'Liczba godzin musi byc z zakresu 0-24.';
                 }

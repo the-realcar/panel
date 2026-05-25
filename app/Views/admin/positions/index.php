@@ -15,8 +15,9 @@
         <?php if (empty($positions)): ?>
             <p class="text-muted">Brak stanowisk do wyświetlenia.</p>
         <?php else: ?>
+            <p style="margin-bottom: 16px; color: var(--text-muted);">Razem stanowisk: <strong><?php echo count($positions); ?></strong></p>
             <div class="table-responsive">
-                <table class="table">
+                <table class="data-table">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -31,7 +32,7 @@
                     <tbody>
                         <?php foreach ($positions as $position): ?>
                         <tr>
-                            <td data-label="ID"><?php echo $position['id']; ?></td>
+                            <td data-label="ID"><strong><?php echo $position['id']; ?></strong></td>
                             <td data-label="Nazwa"><strong><?php echo e($position['name']); ?></strong></td>
                             <td data-label="Dział"><?php echo e($position['department_name'] ?? '-'); ?></td>
                             <td data-label="Limit">
@@ -71,6 +72,13 @@
                                     <a href="/admin/positions/edit.php?id=<?php echo $position['id']; ?>" 
                                        class="btn btn-sm btn-secondary">✏️ Edytuj</a>
                                 <?php endif; ?>
+                                <?php if ($rbac->hasPermission('positions', 'delete')): ?>
+                                    <form method="POST" action="/admin/positions/delete.php" style="display:inline;">
+                                        <?php echo csrfField(); ?>
+                                        <input type="hidden" name="id" value="<?php echo (int)$position['id']; ?>">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Czy na pewno chcesz usunac to stanowisko?');">🗑️ Usun</button>
+                                    </form>
+                                <?php endif; ?>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -78,9 +86,7 @@
                 </table>
             </div>
 
-            <?php if ($total_pages > 1): ?>
-                <?php echo pagination($page, $total_pages, '/admin/positions/index.php'); ?>
-            <?php endif; ?>
+
         <?php endif; ?>
     </div>
 </div>

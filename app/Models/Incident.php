@@ -147,4 +147,12 @@ class Incident {
             ':id'                => $id,
         ]);
     }
+
+    public static function deleteById(int $id): bool {
+        $db = new Database();
+        return (bool)$db->execute(
+            "DELETE FROM incidents WHERE id = :id",
+            [':id' => $id]
+        );
+    }
 }

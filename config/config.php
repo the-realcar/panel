@@ -7,7 +7,7 @@
 // Application settings
 define('APP_NAME', 'Panel Pracowniczy Firma KOT');
 define('APP_VERSION', '1.0.0');
-define('APP_ENV', getenv('APP_ENV') ?: 'production'); // development, production
+define('APP_ENV', getenv('APP_ENV') ?: 'production'); // production, development
 
 // Paths
 define('BASE_PATH', dirname(__DIR__));
@@ -29,7 +29,7 @@ define('DISCORD_SCOPE', getenv('DISCORD_SCOPE') ?: 'identify guilds');
 define('DISCORD_AUTHORIZE_URL', 'https://discord.com/oauth2/authorize');
 define('DISCORD_TOKEN_URL', 'https://discord.com/api/oauth2/token');
 define('DISCORD_USER_URL', 'https://discord.com/api/users/@me');
-define('DISCORD_REDIRECT_URI', OAUTH_REDIRECT_BASE . '/oauth/discord-callback.php');
+define('DISCORD_REDIRECT_URI', 'https://kot.realcar.pl/oauth/discord-callback.php');
 
 define('ROBLOX_CLIENT_ID', getenv('ROBLOX_CLIENT_ID') ?: '');
 define('ROBLOX_CLIENT_SECRET', getenv('ROBLOX_CLIENT_SECRET') ?: '');
@@ -47,7 +47,7 @@ define('LOGIN_LOCKOUT_TIME', 900); // 15 minutes in seconds
 
 $show_test_credentials_env = getenv('SHOW_TEST_CREDENTIALS');
 if ($show_test_credentials_env === false) {
-    define('SHOW_TEST_CREDENTIALS', APP_ENV === 'development');
+    define('SHOW_TEST_CREDENTIALS', false);
 } else {
     define('SHOW_TEST_CREDENTIALS', filter_var($show_test_credentials_env, FILTER_VALIDATE_BOOLEAN));
 }

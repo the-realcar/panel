@@ -62,6 +62,38 @@ class Role {
         ]);
     }
 
+    public static function create(array $data) {
+        $db = new Database();
+        $query = "
+            INSERT INTO roles (name, description, permissions)
+            VALUES (:name, :description, CAST(:permissions AS JSONB))
+        ";
+
+        $db->execute($query, [
+            ':name' => $data['name'],
+            ':description' => $data['description'] !== '' ? $data['description'] : null,
+            ':permissions' => $data['permissions']
+        ]);
+
+        return $db->lastInsertId('roles_id_seq');
+    }
+
+    public static function delete($id) {
+        $db = new Database();
+        $query = "DELETE FROM roles WHERE id = :id";
+        return $db->execute($query, [':id' => $id]);
+    }
+
+    public static function isAssignedToAnyUser($role_id) {
+        $db = new Database();
+        $result = $db->queryOne(
+            'SELECT COUNT(*) AS count FROM user_roles WHERE role_id = :role_id',
+            [':role_id' => $role_id]
+        );
+
+        return (int)($result['count'] ?? 0) > 0;
+    }
+
     public static function getUserRoles($user_id) {
         $db = new Database();
         $query = "

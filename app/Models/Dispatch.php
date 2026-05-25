@@ -28,6 +28,54 @@ class Dispatch {
         return (int)$result['id'];
     }
 
+    public static function createForRecipients(int $sender_id, array $recipient_ids, string $message): int {
+        if (!self::isAvailable()) {
+            throw new RuntimeException('Tabela dyspozycji nie jest dostępna w tej bazie danych.');
+        }
+
+        $recipient_ids = array_values(array_unique(array_map('intval', $recipient_ids)));
+        $recipient_ids = array_filter($recipient_ids, static function ($recipient_id) {
+            return $recipient_id > 0;
+        });
+
+        if (empty($recipient_ids)) {
+            throw new InvalidArgumentException('Brak odbiorcow komunikatu.');
+        }
+
+        $db = new Database();
+        $created = 0;
+
+        try {
+            $db->beginTransaction();
+
+            foreach ($recipient_ids as $recipient_id) {
+                $db->queryOne(
+                    "
+                    INSERT INTO dispatches (sender_id, recipient_id, message)
+                    VALUES (:sender_id, :recipient_id, :message)
+                    RETURNING id
+                    ",
+                    [
+                        ':sender_id' => $sender_id,
+                        ':recipient_id' => $recipient_id,
+                        ':message' => $message
+                    ]
+                );
+                $created++;
+            }
+
+            $db->commit();
+        } catch (Throwable $e) {
+            if ($db->inTransaction()) {
+                $db->rollback();
+            }
+
+            throw $e;
+        }
+
+        return $created;
+    }
+
     public static function listForRecipient(int $recipient_id, int $limit = 20): array {
         if (!self::isAvailable()) {
             return [];
@@ -100,6 +148,44 @@ class Dispatch {
               AND read_at IS NULL
             ",
             [':recipient_id' => $recipient_id]
+        );
+    }
+
+    public static function deleteById(int $dispatch_id, int $sender_id): void {
+        if (!self::isAvailable()) {
+            throw new RuntimeException('Tabela dyspozycji nie jest dostępna.');
+        }
+
+        $db = new Database();
+        $db->execute(
+            "
+            DELETE FROM dispatches
+            WHERE id = :id AND sender_id = :sender_id
+            ",
+            [
+                ':id' => $dispatch_id,
+                ':sender_id' => $sender_id
+            ]
+        );
+    }
+
+    public static function updateById(int $dispatch_id, int $sender_id, string $message): void {
+        if (!self::isAvailable()) {
+            throw new RuntimeException('Tabela dyspozycji nie jest dostępna.');
+        }
+
+        $db = new Database();
+        $db->execute(
+            "
+            UPDATE dispatches
+            SET message = :message
+            WHERE id = :id AND sender_id = :sender_id
+            ",
+            [
+                ':message' => $message,
+                ':id' => $dispatch_id,
+                ':sender_id' => $sender_id
+            ]
         );
     }
 }

@@ -7,8 +7,8 @@ $is_management = $rbac->hasRole('Zarząd');
 $is_nadzor = $rbac->hasRole('Nadzór Ruchu');
 $is_hr = $rbac->hasRole('Kadry');
 $current_path = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?? '';
-$is_brigades_page = str_starts_with($current_path, '/admin/brigades/') && !str_ends_with($current_path, '/generate-schedule.php');
-$is_brigade_generator_page = str_ends_with($current_path, '/admin/brigades/generate-schedule.php');
+$is_brigades_page = strpos($current_path, '/admin/brigades/') === 0 && substr($current_path, -strlen('/generate-schedule.php')) !== '/generate-schedule.php';
+$is_brigade_generator_page = substr($current_path, -strlen('/admin/brigades/generate-schedule.php')) === '/admin/brigades/generate-schedule.php';
 ?>
 <nav class="nav">
     <div class="container">
@@ -119,6 +119,11 @@ $is_brigade_generator_page = str_ends_with($current_path, '/admin/brigades/gener
                         Generator Rozkladow
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="/management/documentation.php" class="<?php echo isActivePage('/management/documentation.php') ? 'active' : ''; ?>">
+                        Dokumenty Zarzadu KOT
+                    </a>
+                </li>
             <?php endif; ?>
 
             <?php if ($is_hr || $is_admin): ?>
@@ -181,8 +186,38 @@ $is_brigade_generator_page = str_ends_with($current_path, '/admin/brigades/gener
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="/admin/departments/index.php" class="<?php echo isActivePage('/admin/departments') ? 'active' : ''; ?>">
+                        Dzialy
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="/admin/roles/index.php" class="<?php echo isActivePage('/admin/roles') ? 'active' : ''; ?>">
                         Role
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/districts/index.php" class="<?php echo isActivePage('/admin/districts') ? 'active' : ''; ?>">
+                        Dzielnice
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/depots/index.php" class="<?php echo isActivePage('/admin/depots') ? 'active' : ''; ?>">
+                        Zajezdnie
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/vehicle-capacities/index.php" class="<?php echo isActivePage('/admin/vehicle-capacities') ? 'active' : ''; ?>">
+                        Pojemnosci
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/vehicle-types/index.php" class="<?php echo isActivePage('/admin/vehicle-types') ? 'active' : ''; ?>">
+                        Typy pojazdow
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/drive-types/index.php" class="<?php echo isActivePage('/admin/drive-types') ? 'active' : ''; ?>">
+                        Typy napedu
                     </a>
                 </li>
                 <li class="nav-item">
@@ -203,6 +238,14 @@ $is_brigade_generator_page = str_ends_with($current_path, '/admin/brigades/gener
                 <li class="nav-item">
                     <a href="/admin/applications/index.php" class="<?php echo isActivePage('/admin/applications') ? 'active' : ''; ?>">
                         Wnioski
+                    </a>
+                </li>
+            <?php endif; ?>
+
+            <?php if (isLoggedIn()): ?>
+                <li class="nav-item">
+                    <a href="/settings.php" class="<?php echo isActivePage('/settings.php') ? 'active' : ''; ?>">
+                        Moje konto
                     </a>
                 </li>
             <?php endif; ?>

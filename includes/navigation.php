@@ -53,6 +53,11 @@ $is_management = $rbac->hasRole('Zarząd');
                         ⚠️ Zgłoszenia
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="/admin/logs.php" class="<?php echo isActivePage('/admin/logs.php') ? 'active' : ''; ?>">
+                        📋 Logi systemowe
+                    </a>
+                </li>
             <?php endif; ?>
             
             <?php if ($is_driver): ?>

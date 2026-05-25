@@ -188,4 +188,12 @@ class Application {
         ", [':id' => $id, ':user_id' => $user_id]);
         return (bool)$result;
     }
+
+    public static function deleteById(int $id): bool {
+        $db = new Database();
+        return (bool)$db->execute(
+            "DELETE FROM applications WHERE id = :id",
+            [':id' => $id]
+        );
+    }
 }

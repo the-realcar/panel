@@ -7,19 +7,14 @@ class AdminPositionsController extends Controller {
         $rbac = new RBAC();
         $rbac->requirePermission('positions', 'read');
 
-        $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
-        $per_page = ITEMS_PER_PAGE;
-        $offset = ($page - 1) * $per_page;
-
+        // Show all positions at once (no pagination)
         $total_items = Position::countAll();
-        $total_pages = (int)ceil($total_items / $per_page);
-        $positions = Position::listWithCounts($per_page, $offset);
+        $positions = Position::listWithCounts(10000, 0);
 
         $this->render('admin/positions/index', [
             'page_title' => 'Zarzadzanie stanowiskami',
             'positions' => $positions,
-            'page' => $page,
-            'total_pages' => $total_pages,
+            'total_items' => $total_items,
             'rbac' => $rbac
         ]);
     }
@@ -169,6 +164,37 @@ class AdminPositionsController extends Controller {
         $rbac = new RBAC();
         $rbac->requirePermission('positions', 'read');
 
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $rbac->requirePermission('positions', 'update');
+
+            if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+                setFlashMessage('error', 'Nieprawidlowy token CSRF.');
+                $this->redirectTo('/admin/positions/structure.php');
+            }
+
+            $position_id = isset($_POST['position_id']) ? (int)$_POST['position_id'] : 0;
+            $direction = $_POST['direction'] ?? '';
+
+            if ($position_id <= 0 || !in_array($direction, ['up', 'down'], true)) {
+                setFlashMessage('error', 'Nieprawidlowe parametry zmiany kolejnosci.');
+                $this->redirectTo('/admin/positions/structure.php');
+            }
+
+            try {
+                $moved = Position::reorderWithinDepartment($position_id, $direction);
+                if ($moved) {
+                    setFlashMessage('success', 'Zmieniono kolejnosc stanowiska.');
+                } else {
+                    setFlashMessage('warning', 'Brak mozliwosci zmiany kolejnosci dla tego stanowiska.');
+                }
+            } catch (Exception $e) {
+                error_log('Error reordering positions structure: ' . $e->getMessage());
+                setFlashMessage('error', 'Nie udalo sie zmienic kolejnosci stanowiska.');
+            }
+
+            $this->redirectTo('/admin/positions/structure.php');
+        }
+
         $structure = $this->buildStructureData();
 
         $this->render('admin/positions/structure', [
@@ -176,6 +202,53 @@ class AdminPositionsController extends Controller {
             'structure' => $structure,
             'rbac' => $rbac
         ]);
+    }
+
+    public function delete() {
+        requireLogin();
+
+        $rbac = new RBAC();
+        $rbac->requirePermission('positions', 'delete');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            setFlashMessage('error', 'Nieprawidlowe zadanie.');
+            $this->redirectTo('/admin/positions/index.php');
+        }
+
+        if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+            setFlashMessage('error', 'Nieprawidlowy token CSRF.');
+            $this->redirectTo('/admin/positions/index.php');
+        }
+
+        $position_id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+        if ($position_id <= 0) {
+            setFlashMessage('error', 'Nieprawidlowy ID stanowiska.');
+            $this->redirectTo('/admin/positions/index.php');
+        }
+
+        $position = Position::find($position_id);
+        if (!$position) {
+            setFlashMessage('error', 'Stanowisko nie zostalo znalezione.');
+            $this->redirectTo('/admin/positions/index.php');
+        }
+
+        if (Position::hasAssignments($position_id)) {
+            setFlashMessage('error', 'Nie mozna usunac stanowiska z przypisanymi uzytkownikami.');
+            $this->redirectTo('/admin/positions/index.php');
+        }
+
+        try {
+            Position::delete($position_id);
+            AuditLog::log('position.delete', 'positions', $position_id, [
+                'name' => $position['name']
+            ], null);
+            setFlashMessage('success', 'Stanowisko zostalo usuniete.');
+        } catch (Exception $e) {
+            error_log('Error deleting position: ' . $e->getMessage());
+            setFlashMessage('error', 'Wystapil blad podczas usuwania stanowiska.');
+        }
+
+        $this->redirectTo('/admin/positions/index.php');
     }
 
     public function exportStructure() {

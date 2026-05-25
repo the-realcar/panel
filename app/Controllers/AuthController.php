@@ -24,10 +24,13 @@ class AuthController extends Controller {
 
             if ($validator->passes()) {
                 $auth = new Auth();
-                $ip_address = $_SERVER['REMOTE_ADDR'] ?? null;
+                $ip_address = getClientIpAddress();
                 $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? null;
 
                 if ($auth->login($username, $password, $ip_address, $user_agent)) {
+                    if (session_status() === PHP_SESSION_ACTIVE) {
+                        session_write_close();
+                    }
                     $redirect = $_GET['redirect'] ?? '/index.php';
                     $this->redirectTo($redirect);
                 } else {
@@ -101,25 +104,29 @@ class AuthController extends Controller {
     }
 
     public function discord() {
-        $this->startOAuth('discord');
+        setFlashMessage('error', 'Logowanie przez Discord jest wylaczone.');
+        $this->redirectTo('/login.php');
     }
 
     public function discordCallback() {
-        $this->handleOAuthCallback('discord');
+        setFlashMessage('error', 'Logowanie przez Discord jest wylaczone.');
+        $this->redirectTo('/login.php');
     }
 
     public function roblox() {
-        $this->startOAuth('roblox');
+        setFlashMessage('error', 'Logowanie przez Roblox jest wylaczone.');
+        $this->redirectTo('/login.php');
     }
 
     public function robloxCallback() {
-        $this->handleOAuthCallback('roblox');
+        setFlashMessage('error', 'Logowanie przez Roblox jest wylaczone.');
+        $this->redirectTo('/login.php');
     }
 
     private function startOAuth($provider) {
         $config = $this->getProviderConfig($provider);
         if (!$config) {
-            setFlashMessage('error', 'Logowanie OAuth jest niedostepne.');
+            setFlashMessage('error', $this->getOAuthUnavailableMessage($provider));
             $this->redirectTo('/login.php');
         }
 
@@ -145,7 +152,7 @@ class AuthController extends Controller {
     private function handleOAuthCallback($provider) {
         $config = $this->getProviderConfig($provider);
         if (!$config) {
-            setFlashMessage('error', 'Logowanie OAuth jest niedostepne.');
+            setFlashMessage('error', $this->getOAuthUnavailableMessage($provider));
             $this->redirectTo('/login.php');
         }
 
@@ -199,7 +206,7 @@ class AuthController extends Controller {
 
         $auth = new Auth();
         $user = $auth->findActiveUserByProviderId($provider, $providerId);
-        $ip_address = $_SERVER['REMOTE_ADDR'] ?? null;
+        $ip_address = getClientIpAddress();
         $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? null;
 
         if (!$user) {
@@ -209,6 +216,9 @@ class AuthController extends Controller {
         }
 
         if ($auth->loginWithUser($user, $ip_address, $user_agent)) {
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                session_write_close();
+            }
             $this->redirectTo('/index.php');
         }
 
@@ -251,6 +261,18 @@ class AuthController extends Controller {
         }
 
         return null;
+    }
+
+    private function getOAuthUnavailableMessage($provider) {
+        if ($provider === 'discord') {
+            return 'Logowanie przez Discord jest niedostepne. Ustaw DISCORD_CLIENT_ID i DISCORD_CLIENT_SECRET.';
+        }
+
+        if ($provider === 'roblox') {
+            return 'Logowanie przez Roblox jest niedostepne. Ustaw ROBLOX_CLIENT_ID i ROBLOX_CLIENT_SECRET.';
+        }
+
+        return 'Logowanie OAuth jest niedostepne.';
     }
 
     private function isValidOauthState($provider, $state) {

@@ -4,7 +4,17 @@
 
 <div class="page-header">
     <h1>📋 Wniosek #<?php echo $app['id']; ?></h1>
-    <a href="/admin/applications/index.php" class="btn btn-secondary">← Powrót do listy</a>
+    <div class="btn-group">
+        <a href="/admin/applications/index.php" class="btn btn-secondary">← Powrót do listy</a>
+        <form method="POST" action="/admin/applications/delete.php" style="display:inline;">
+            <?php echo csrfField(); ?>
+            <input type="hidden" name="id" value="<?php echo (int)$app['id']; ?>">
+            <button type="submit" class="btn btn-danger"
+                    onclick="return confirm('Czy na pewno chcesz usunac ten wniosek? Tej operacji nie mozna cofnac.');">
+                🗑️ Usuń
+            </button>
+        </form>
+    </div>
 </div>
 
 <div class="row" style="align-items: flex-start; gap: 1.5rem;">

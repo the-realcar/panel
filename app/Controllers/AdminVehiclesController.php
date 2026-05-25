@@ -1,6 +1,73 @@
 <?php
 
 class AdminVehiclesController extends Controller {
+    private function vehicleEmissionStandards(): array {
+        return ['>e0', 'e1', 'e2', 'e3', 'e4', 'e5', 'EEV', 'e6', 'nd.'];
+    }
+
+    private function vehicleDictionaries() {
+        $defaults = [
+            'vehicle_types' => ['bus', 'tbus', 'tram', 'metro'],
+            'vehicle_capacities' => ['MINI', 'MIDI', 'MAXI', 'MAXI+', 'MEGA', 'MEGA+', 'GIGA'],
+            'vehicle_drive_types' => ['Diesel', 'CNG', 'Hybrydowy', 'Elektryczny', 'Wodorowy'],
+            'vehicle_depots' => ['KM', 'KW', 'MC'],
+            'vehicle_carriers' => ['Ostrans', 'KujaTrans', 'Ostromunikacja']
+        ];
+
+        if (!Setting::isAvailable()) {
+            return $defaults;
+        }
+
+        return [
+            'vehicle_types' => DictionarySetting::getValues('dict_vehicle_types', $defaults['vehicle_types']),
+            'vehicle_capacities' => DictionarySetting::getValues('dict_vehicle_capacities', $defaults['vehicle_capacities']),
+            'vehicle_drive_types' => DictionarySetting::getValues('dict_vehicle_drive_types', $defaults['vehicle_drive_types']),
+            'vehicle_depots' => DictionarySetting::getValues('dict_vehicle_depots', $defaults['vehicle_depots']),
+            'vehicle_carriers' => DictionarySetting::getValues('dict_vehicle_carriers', $defaults['vehicle_carriers']),
+            'vehicle_emission_standards' => $this->vehicleEmissionStandards()
+        ];
+    }
+
+    private function normalizeOptionalValue($value, array $hidden_values = ['nd.', 'nd', 'n/d', 'null']): ?string {
+        $normalized = trim((string)$value);
+        if ($normalized === '') {
+            return null;
+        }
+
+        $normalized_lower = mb_strtolower($normalized);
+        foreach ($hidden_values as $hidden_value) {
+            if ($normalized_lower === mb_strtolower($hidden_value)) {
+                return null;
+            }
+        }
+
+        return $normalized;
+    }
+
+    private function normalizeVehiclePayload(array $data): array {
+        return [
+            'nr_poj' => trim((string)($data['nr_poj'] ?? '')),
+            'reg_plate' => $this->normalizeOptionalValue($data['reg_plate'] ?? null),
+            'vehicle_type' => trim((string)($data['vehicle_type'] ?? '')),
+            'model' => $this->normalizeOptionalValue($data['model'] ?? null),
+            'rok_prod' => !empty($data['rok_prod']) ? (int)$data['rok_prod'] : null,
+            'pojemnosc' => $this->normalizeOptionalValue($data['pojemnosc'] ?? null),
+            'status' => trim((string)($data['status'] ?? '')),
+            'marka' => $this->normalizeOptionalValue($data['marka'] ?? null),
+            'pulpit' => $this->normalizeOptionalValue($data['pulpit'] ?? null),
+            'engine' => $this->normalizeOptionalValue($data['engine'] ?? null),
+            'gearbox' => $this->normalizeOptionalValue($data['gearbox'] ?? null),
+            'typ_napedu' => $this->normalizeOptionalValue($data['typ_napedu'] ?? null),
+            'norma_spalin' => $this->normalizeOptionalValue($data['norma_spalin'] ?? null),
+            'klimatyzacja' => !empty($data['klimatyzacja']),
+            'zajezdnia' => $this->normalizeOptionalValue($data['zajezdnia'] ?? null),
+            'przewoznik' => $this->normalizeOptionalValue($data['przewoznik'] ?? null),
+            'opiekun_1' => $this->normalizeOptionalValue($data['opiekun_1'] ?? null),
+            'opiekun_2' => $this->normalizeOptionalValue($data['opiekun_2'] ?? null),
+            'notes' => $this->normalizeOptionalValue($data['notes'] ?? null)
+        ];
+    }
+
     private function stripCodeFence($value) {
         $value = trim((string)$value);
         $value = preg_replace('/^```[a-zA-Z0-9_-]*\s*/', '', $value);
@@ -53,12 +120,13 @@ class AdminVehiclesController extends Controller {
             }
         }
 
-        $allowed_vehicle_types = ['bus', 'tram', 'metro', 'tbus'];
-        $allowed_capacity = ['MINI', 'MIDI', 'MAXI', 'MAXI+', 'MEGA', 'MEGA+', 'GIGA'];
+        $dict = $this->vehicleDictionaries();
+        $allowed_vehicle_types = $dict['vehicle_types'];
+        $allowed_capacity = $dict['vehicle_capacities'];
         $allowed_statuses = ['sprawny', 'w naprawie', 'odstawiony', 'zawieszony'];
-        $allowed_drive_types = ['Diesel', 'CNG', 'Hybrydowy', 'Elektryczny', 'Wodorowy'];
-        $allowed_depots = ['KM', 'KW', 'MC'];
-        $allowed_carriers = ['Ostrans', 'KujaTrans', 'Ostromunikacja'];
+        $allowed_drive_types = $dict['vehicle_drive_types'];
+        $allowed_depots = $dict['vehicle_depots'];
+        $allowed_carriers = $dict['vehicle_carriers'];
 
         $rows = [];
         $seen_vehicle_numbers = [];
@@ -172,27 +240,27 @@ class AdminVehiclesController extends Controller {
                 return [];
             }
 
-            $rows[] = [
+            $rows[] = $this->normalizeVehiclePayload([
                 'nr_poj' => $nr_poj,
-                'reg_plate' => $reg_plate !== '' ? $reg_plate : null,
+                'reg_plate' => $reg_plate,
                 'vehicle_type' => $vehicle_type,
-                'model' => ($row['model'] ?? '') !== '' ? $row['model'] : null,
+                'model' => $row['model'] ?? '',
                 'rok_prod' => $rok_prod_int,
-                'pojemnosc' => $pojemnosc !== '' ? $pojemnosc : null,
+                'pojemnosc' => $pojemnosc,
                 'status' => $status,
-                'marka' => ($row['marka'] ?? '') !== '' ? $row['marka'] : null,
-                'pulpit' => ($row['pulpit'] ?? '') !== '' ? $row['pulpit'] : null,
-                'engine' => ($row['engine'] ?? '') !== '' ? $row['engine'] : null,
-                'gearbox' => ($row['gearbox'] ?? '') !== '' ? $row['gearbox'] : null,
-                'typ_napedu' => $typ_napedu !== '' ? $typ_napedu : null,
-                'norma_spalania' => ($row['norma_spalania'] ?? '') !== '' ? $row['norma_spalania'] : null,
+                'marka' => $row['marka'] ?? '',
+                'pulpit' => $row['pulpit'] ?? '',
+                'engine' => $row['engine'] ?? '',
+                'gearbox' => $row['gearbox'] ?? '',
+                'typ_napedu' => $typ_napedu,
+                'norma_spalin' => $row['norma_spalin'] ?? ($row['norma_spalania'] ?? ''),
                 'klimatyzacja' => $klimatyzacja,
-                'zajezdnia' => $zajezdnia !== '' ? $zajezdnia : null,
-                'przewoznik' => $przewoznik !== '' ? $przewoznik : null,
-                'opiekun_1' => ($row['opiekun_1'] ?? '') !== '' ? $row['opiekun_1'] : null,
-                'opiekun_2' => ($row['opiekun_2'] ?? '') !== '' ? $row['opiekun_2'] : null,
-                'dodatkowe_informacje' => ($row['dodatkowe_informacje'] ?? '') !== '' ? $row['dodatkowe_informacje'] : null
-            ];
+                'zajezdnia' => $zajezdnia,
+                'przewoznik' => $przewoznik,
+                'opiekun_1' => $row['opiekun_1'] ?? '',
+                'opiekun_2' => $row['opiekun_2'] ?? '',
+                'notes' => $row['notes'] ?? ($row['dodatkowe_informacje'] ?? '')
+            ]);
         }
 
         if (empty($rows)) {
@@ -280,7 +348,8 @@ class AdminVehiclesController extends Controller {
                 $this->render('admin/vehicles/create', [
                     'page_title' => 'Dodaj pojazd',
                     'errors' => $errors,
-                    'form_data' => $form_data
+                    'form_data' => $form_data,
+                    'dict' => $this->vehicleDictionaries()
                 ]);
                 return;
             }
@@ -312,27 +381,7 @@ class AdminVehiclesController extends Controller {
 
             if (empty($errors)) {
                 try {
-                    $new_vehicle_id = Vehicle::create([
-                        'nr_poj' => $form_data['nr_poj'],
-                        'reg_plate' => !empty($form_data['reg_plate']) ? $form_data['reg_plate'] : null,
-                        'vehicle_type' => $form_data['vehicle_type'],
-                        'model' => !empty($form_data['model']) ? $form_data['model'] : null,
-                        'rok_prod' => !empty($form_data['rok_prod']) ? (int)$form_data['rok_prod'] : null,
-                        'pojemnosc' => !empty($form_data['pojemnosc']) ? $form_data['pojemnosc'] : null,
-                        'status' => $form_data['status'],
-                        'marka' => !empty($form_data['marka']) ? $form_data['marka'] : null,
-                        'pulpit' => !empty($form_data['pulpit']) ? $form_data['pulpit'] : null,
-                        'engine' => !empty($form_data['engine']) ? $form_data['engine'] : null,
-                        'gearbox' => !empty($form_data['gearbox']) ? $form_data['gearbox'] : null,
-                        'typ_napedu' => !empty($form_data['typ_napedu']) ? $form_data['typ_napedu'] : null,
-                        'norma_spalania' => !empty($form_data['norma_spalania']) ? $form_data['norma_spalania'] : null,
-                        'klimatyzacja' => isset($form_data['klimatyzacja']) ? true : false,
-                        'zajezdnia' => !empty($form_data['zajezdnia']) ? $form_data['zajezdnia'] : null,
-                        'przewoznik' => !empty($form_data['przewoznik']) ? $form_data['przewoznik'] : null,
-                        'opiekun_1' => !empty($form_data['opiekun_1']) ? $form_data['opiekun_1'] : null,
-                        'opiekun_2' => !empty($form_data['opiekun_2']) ? $form_data['opiekun_2'] : null,
-                        'dodatkowe_informacje' => !empty($form_data['dodatkowe_informacje']) ? $form_data['dodatkowe_informacje'] : null
-                    ]);
+                    $new_vehicle_id = Vehicle::create($this->normalizeVehiclePayload($form_data));
                     AuditLog::log('vehicle.create', 'vehicles', $new_vehicle_id, null, ['nr_poj' => $form_data['nr_poj'], 'vehicle_type' => $form_data['vehicle_type']]);
 
                     setFlashMessage('success', 'Pojazd zostal dodany pomyslnie.');
@@ -347,7 +396,8 @@ class AdminVehiclesController extends Controller {
         $this->render('admin/vehicles/create', [
             'page_title' => 'Dodaj pojazd',
             'errors' => $errors,
-            'form_data' => $form_data
+            'form_data' => $form_data,
+            'dict' => $this->vehicleDictionaries()
         ]);
     }
 
@@ -411,27 +461,7 @@ class AdminVehiclesController extends Controller {
 
             if (empty($errors)) {
                 try {
-                    Vehicle::update($vehicle_id, [
-                        'nr_poj' => $form_data['nr_poj'],
-                        'reg_plate' => !empty($form_data['reg_plate']) ? $form_data['reg_plate'] : null,
-                        'vehicle_type' => $form_data['vehicle_type'],
-                        'model' => !empty($form_data['model']) ? $form_data['model'] : null,
-                        'rok_prod' => !empty($form_data['rok_prod']) ? (int)$form_data['rok_prod'] : null,
-                        'pojemnosc' => !empty($form_data['pojemnosc']) ? $form_data['pojemnosc'] : null,
-                        'status' => $form_data['status'],
-                        'marka' => !empty($form_data['marka']) ? $form_data['marka'] : null,
-                        'pulpit' => !empty($form_data['pulpit']) ? $form_data['pulpit'] : null,
-                        'engine' => !empty($form_data['engine']) ? $form_data['engine'] : null,
-                        'gearbox' => !empty($form_data['gearbox']) ? $form_data['gearbox'] : null,
-                        'typ_napedu' => !empty($form_data['typ_napedu']) ? $form_data['typ_napedu'] : null,
-                        'norma_spalania' => !empty($form_data['norma_spalania']) ? $form_data['norma_spalania'] : null,
-                        'klimatyzacja' => isset($form_data['klimatyzacja']) ? true : false,
-                        'zajezdnia' => !empty($form_data['zajezdnia']) ? $form_data['zajezdnia'] : null,
-                        'przewoznik' => !empty($form_data['przewoznik']) ? $form_data['przewoznik'] : null,
-                        'opiekun_1' => !empty($form_data['opiekun_1']) ? $form_data['opiekun_1'] : null,
-                        'opiekun_2' => !empty($form_data['opiekun_2']) ? $form_data['opiekun_2'] : null,
-                        'dodatkowe_informacje' => !empty($form_data['dodatkowe_informacje']) ? $form_data['dodatkowe_informacje'] : null
-                    ]);
+                    Vehicle::update($vehicle_id, $this->normalizeVehiclePayload($form_data));
                     AuditLog::log('vehicle.update', 'vehicles', $vehicle_id, ['nr_poj' => $vehicle['nr_poj'], 'status' => $vehicle['status']], ['nr_poj' => $form_data['nr_poj'], 'status' => $form_data['status']]);
 
                     setFlashMessage('success', 'Pojazd zostal zaktualizowany pomyslnie.');
@@ -447,7 +477,8 @@ class AdminVehiclesController extends Controller {
             'page_title' => 'Edytuj pojazd',
             'errors' => $errors,
             'form_data' => $form_data,
-            'vehicle_id' => $vehicle_id
+            'vehicle_id' => $vehicle_id,
+            'dict' => $this->vehicleDictionaries()
         ]);
     }
 

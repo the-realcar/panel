@@ -34,6 +34,8 @@ class AdminUsersController extends Controller {
 
         $errors = [];
         $roles = Role::listAll();
+        $created_credentials = $_SESSION['created_user_credentials'] ?? null;
+        unset($_SESSION['created_user_credentials']);
         $form = [
             'username' => '',
             'email' => '',
@@ -121,9 +123,24 @@ class AdminUsersController extends Controller {
 
                 $new_user_id = User::create($data);
                 Role::assignToUser($new_user_id, (int)$form['role_id']);
+
+                // Assign companies
+                $company_ids = [];
+                if (!empty($_POST['companies']) && is_array($_POST['companies'])) {
+                    foreach ($_POST['companies'] as $company_id) {
+                        $company_ids[] = (int)$company_id;
+                    }
+                }
+                User::syncCompanies($new_user_id, $company_ids);
+
                 AuditLog::log('user.create', 'users', $new_user_id, null, ['username' => $form['username'], 'email' => $form['email']]);
-                setFlashMessage('success', 'Uzytkownik zostal utworzony.');
-                $this->redirectTo('/admin/users/index.php');
+                $_SESSION['created_user_credentials'] = [
+                    'username' => $form['username'],
+                    'email' => $form['email'],
+                    'password' => $password
+                ];
+                setFlashMessage('success', 'Uzytkownik zostal utworzony. Skopiuj dane logowania ponizej.');
+                $this->redirectTo('/admin/users/create.php');
             }
         }
 
@@ -131,7 +148,9 @@ class AdminUsersController extends Controller {
             'page_title' => 'Dodaj uzytkownika',
             'errors' => $errors,
             'form' => $form,
-            'roles' => $roles
+            'roles' => $roles,
+            'companies' => Company::listAll(),
+            'created_credentials' => $created_credentials
         ]);
     }
 
@@ -239,6 +258,15 @@ class AdminUsersController extends Controller {
                     User::updatePassword($user_id, $password_hash);
                 }
 
+                // Sync companies
+                $company_ids = [];
+                if (!empty($_POST['companies']) && is_array($_POST['companies'])) {
+                    foreach ($_POST['companies'] as $company_id) {
+                        $company_ids[] = (int)$company_id;
+                    }
+                }
+                User::syncCompanies($user_id, $company_ids);
+
                 AuditLog::log('user.update', 'users', $user_id, ['username' => $user['username'], 'email' => $user['email']], ['username' => $form['username'], 'email' => $form['email']]);
                 setFlashMessage('success', 'Uzytkownik zostal zaktualizowany.');
                 $this->redirectTo('/admin/users/index.php');
@@ -249,7 +277,9 @@ class AdminUsersController extends Controller {
             'page_title' => 'Edytuj uzytkownika',
             'errors' => $errors,
             'form' => $form,
-            'user_id' => $user_id
+            'user_id' => $user_id,
+            'companies' => Company::listAll(),
+            'user_companies' => User::getCompanies($user_id)
         ]);
     }
 
@@ -305,7 +335,6 @@ class AdminUsersController extends Controller {
                             setFlashMessage('warning', 'Uzytkownik jest juz przypisany do tego stanowiska.');
                         } else {
                             Position::assignToUser($user_id, $position_id);
-                            User::syncRolesFromPositions($user_id);
                             AuditLog::log('user.assign_position', 'user_positions', null, null, ['user_id' => $user_id, 'position_id' => $position_id]);
                             setFlashMessage('success', 'Stanowisko zostalo przypisane pomyslnie.');
                         }
@@ -319,6 +348,7 @@ class AdminUsersController extends Controller {
                         } else {
                             setFlashMessage('error', 'Wystapil blad podczas przypisywania stanowiska.');
                         }
+                        $this->redirectTo('/admin/users/assign-position.php?user_id=' . $user_id);
                     }
                 }
             }
@@ -332,13 +362,13 @@ class AdminUsersController extends Controller {
 
                 try {
                     Position::removeFromUser($assignment_id, $user_id);
-                    User::syncRolesFromPositions($user_id);
                     AuditLog::log('user.remove_position', 'user_positions', $assignment_id, ['user_id' => $user_id], null);
                     setFlashMessage('success', 'Stanowisko zostalo usuniete pomyslnie.');
                     $this->redirectTo('/admin/users/assign-position.php?user_id=' . $user_id);
                 } catch (Exception $e) {
                     error_log('Error removing position: ' . $e->getMessage());
                     setFlashMessage('error', 'Wystapil blad podczas usuwania stanowiska.');
+                    $this->redirectTo('/admin/users/assign-position.php?user_id=' . $user_id);
                 }
             }
         }

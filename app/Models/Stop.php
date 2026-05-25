@@ -25,7 +25,7 @@ class Stop {
             FROM stops s
             " . self::cityJoinSql() . "
             $where
-            ORDER BY s.name ASC
+            ORDER BY s.id ASC
             LIMIT :limit OFFSET :offset
         ";
         return $db->query($query, [':limit' => $limit, ':offset' => $offset]);

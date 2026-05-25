@@ -5,11 +5,11 @@
  */
 
 // Database connection parameters
-define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+define('DB_HOST', getenv('DB_HOST') ?: 'psql01.mikr.us');
 define('DB_PORT', getenv('DB_PORT') ?: '5432');
-define('DB_NAME', getenv('DB_NAME') ?: 'panel_firmakot');
-define('DB_USER', getenv('DB_USER') ?: 'postgres');
-define('DB_PASSWORD', getenv('DB_PASSWORD') ?: 'postgres');
+define('DB_NAME', getenv('DB_NAME') ?: 'db_jack166');
+define('DB_USER', getenv('DB_USER') ?: 'jack166');
+define('DB_PASSWORD', getenv('DB_PASSWORD') ?: '0E64_f55c05');
 define('DB_CHARSET', 'utf8');
 
 // PDO connection string

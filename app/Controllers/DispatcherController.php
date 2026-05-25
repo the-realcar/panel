@@ -10,21 +10,17 @@ class DispatcherController extends Controller {
             $this->redirectTo('/index.php');
         }
 
-        // Dzisiejsze grafiki
         $today = date('Y-m-d');
         $schedules_today = Schedule::listForDate($today);
 
-        // Status floty
         $vehicles_available = Vehicle::countByStatus('sprawny');
         $vehicles_in_use = Vehicle::countByStatus('zawieszony');
         $vehicles_maintenance = Vehicle::countByStatus('w naprawie');
         $vehicles_broken = Vehicle::countByStatus('odstawiony');
 
-        // Otwarte incydenty
         $open_incidents = Incident::countByStatus('open');
         $in_progress_incidents = Incident::countByStatus('in_progress');
 
-        // Statystyki
         $stats = [
             'vehicles_available' => $vehicles_available,
             'vehicles_in_use' => $vehicles_in_use,
@@ -101,7 +97,7 @@ class DispatcherController extends Controller {
         $errors = [];
         $form_data = [];
         
-        $users = User::listByRole('Kierowca');
+        $users = User::listDriversForDispatch();
         $vehicles = Vehicle::listNotBroken();
         $lines = Line::listActive();
         $brigades = Brigade::listActive();
@@ -171,7 +167,7 @@ class DispatcherController extends Controller {
         }
 
         $this->render('dispatcher/assign-schedule', [
-            'page_title' => 'Przydziel Grafik',
+            'page_title' => 'Zarządzaj Grafikami',
             'errors' => $errors,
             'form_data' => $form_data,
             'users' => $users,
@@ -199,14 +195,61 @@ class DispatcherController extends Controller {
                 $this->redirectTo('/dispatcher/messages.php');
             }
 
+            if (isset($_POST['action']) && $_POST['action'] === 'delete') {
+                $dispatch_id = (int)($_POST['dispatch_id'] ?? 0);
+                if ($dispatch_id > 0) {
+                    try {
+                        Dispatch::deleteById($dispatch_id, $sender_id);
+                        AuditLog::log('dispatch.delete', 'dispatches', $dispatch_id, null, ['sender_id' => $sender_id]);
+                        setFlashMessage('success', 'Komunikat zostal usuniety.');
+                    } catch (Exception $e) {
+                        error_log('Error deleting dispatch: ' . $e->getMessage());
+                        setFlashMessage('error', 'Blad podczas usuwania komunikatu.');
+                    }
+                }
+                $this->redirectTo('/dispatcher/messages.php');
+            }
+
+            if (isset($_POST['action']) && $_POST['action'] === 'edit') {
+                $dispatch_id = (int)($_POST['dispatch_id'] ?? 0);
+                $message = trim($_POST['message'] ?? '');
+
+                if ($dispatch_id <= 0) {
+                    setFlashMessage('error', 'Nieprawidlowy identyfikator komunikatu.');
+                    $this->redirectTo('/dispatcher/messages.php');
+                }
+
+                if ($message === '') {
+                    setFlashMessage('error', 'Tresc komunikatu jest wymagana.');
+                    $this->redirectTo('/dispatcher/messages.php');
+                }
+
+                if (mb_strlen($message) > 2000) {
+                    setFlashMessage('error', 'Komunikat moze miec maksymalnie 2000 znakow.');
+                    $this->redirectTo('/dispatcher/messages.php');
+                }
+
+                try {
+                    Dispatch::updateById($dispatch_id, $sender_id, $message);
+                    AuditLog::log('dispatch.update', 'dispatches', $dispatch_id, null, ['sender_id' => $sender_id, 'message_length' => mb_strlen($message)]);
+                    setFlashMessage('success', 'Komunikat zostal zaktualizowany.');
+                } catch (Exception $e) {
+                    error_log('Error updating dispatch: ' . $e->getMessage());
+                    setFlashMessage('error', 'Blad podczas edycji komunikatu.');
+                }
+
+                $this->redirectTo('/dispatcher/messages.php');
+            }
+
             if (!Dispatch::isAvailable()) {
                 $errors['general'] = 'Moduł dyspozycji nie jest dostępny w tej bazie danych.';
             }
 
             $recipient_id = (int)($_POST['recipient_id'] ?? 0);
+            $send_to_all = isset($_POST['send_to_all']) && $_POST['send_to_all'] === '1';
             $message = trim($_POST['message'] ?? '');
 
-            if ($recipient_id <= 0) {
+            if (!$send_to_all && $recipient_id <= 0) {
                 $errors['recipient_id'] = 'Wybierz kierowce.';
             }
 
@@ -217,23 +260,43 @@ class DispatcherController extends Controller {
             }
 
             if (empty($errors)) {
-                $dispatch_id = Dispatch::create([
-                    'sender_id' => $sender_id,
-                    'recipient_id' => $recipient_id,
-                    'message' => $message
-                ]);
+                if ($send_to_all) {
+                    $recipient_ids = array_map(static function ($driver) {
+                        return (int)($driver['id'] ?? 0);
+                    }, User::listDriversForDispatch());
 
-                AuditLog::log('dispatch.create', 'dispatches', $dispatch_id, null, [
-                    'recipient_id' => $recipient_id,
-                    'message_length' => mb_strlen($message)
-                ]);
+                    if (empty($recipient_ids)) {
+                        $errors['recipient_id'] = 'Brak aktywnych kierowcow do wysylki.';
+                    } else {
+                        $created_count = Dispatch::createForRecipients($sender_id, $recipient_ids, $message);
 
-                setFlashMessage('success', 'Komunikat zostal wyslany.');
-                $this->redirectTo('/dispatcher/messages.php');
+                        AuditLog::log('dispatch.broadcast', 'dispatches', null, null, [
+                            'recipient_count' => $created_count,
+                            'message_length' => mb_strlen($message)
+                        ]);
+
+                        setFlashMessage('success', 'Komunikat zostal wyslany do wszystkich kierowcow (' . $created_count . ').');
+                        $this->redirectTo('/dispatcher/messages.php');
+                    }
+                } else {
+                    $dispatch_id = Dispatch::create([
+                        'sender_id' => $sender_id,
+                        'recipient_id' => $recipient_id,
+                        'message' => $message
+                    ]);
+
+                    AuditLog::log('dispatch.create', 'dispatches', $dispatch_id, null, [
+                        'recipient_id' => $recipient_id,
+                        'message_length' => mb_strlen($message)
+                    ]);
+
+                    setFlashMessage('success', 'Komunikat zostal wyslany.');
+                    $this->redirectTo('/dispatcher/messages.php');
+                }
             }
         }
 
-        $drivers = User::listByRole('Kierowca');
+        $drivers = User::listDriversForDispatch();
         $sent_messages = Dispatch::listSentBy($sender_id, 50);
 
         $this->render('dispatcher/messages', [
@@ -244,7 +307,8 @@ class DispatcherController extends Controller {
             'dispatches_available' => Dispatch::isAvailable(),
             'form' => [
                 'recipient_id' => (int)($_POST['recipient_id'] ?? 0),
-                'message' => $_POST['message'] ?? ''
+                'message' => $_POST['message'] ?? '',
+                'send_to_all' => isset($_POST['send_to_all']) && $_POST['send_to_all'] === '1'
             ]
         ]);
     }

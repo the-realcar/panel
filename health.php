@@ -45,5 +45,5 @@ echo json_encode([
         'https_enabled' => $https_enabled,
         'response_ms' => round($total_ms, 2)
     ],
-    'error' => APP_ENV === 'development' ? $db_error : null
+    'error' => null
 ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

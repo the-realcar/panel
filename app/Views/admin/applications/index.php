@@ -76,6 +76,14 @@
                                 <a href="/admin/applications/view.php?id=<?php echo $app['id']; ?>" class="btn btn-sm btn-secondary">
                                     🔍 Szczegóły
                                 </a>
+                                <form method="POST" action="/admin/applications/delete.php" style="display:inline;">
+                                    <?php echo csrfField(); ?>
+                                    <input type="hidden" name="id" value="<?php echo (int)$app['id']; ?>">
+                                    <button type="submit" class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Czy na pewno chcesz usunac ten wniosek?');">
+                                        🗑️ Usuń
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                         <?php endforeach; ?>

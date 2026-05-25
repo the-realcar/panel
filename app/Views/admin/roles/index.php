@@ -2,6 +2,7 @@
 
 <div class="page-header">
     <h1>🔐 Zarzadzanie rolami</h1>
+    <a href="/admin/roles/create.php" class="btn btn-primary">➕ Dodaj role</a>
 </div>
 
 <div class="card">
@@ -26,7 +27,14 @@
                             <td data-label="Opis"><?php echo e($role['description'] ?? '-'); ?></td>
                             <td data-label="Uprawnienia"><small><?php echo e(truncate(json_encode(json_decode($role['permissions'] ?? '{}', true) ?: [], JSON_UNESCAPED_UNICODE), 120)); ?></small></td>
                             <td data-label="Akcje">
-                                <a href="/admin/roles/edit.php?id=<?php echo (int)$role['id']; ?>" class="btn btn-sm btn-primary">✏️ Edytuj</a>
+                                <div class="btn-group">
+                                    <a href="/admin/roles/edit.php?id=<?php echo (int)$role['id']; ?>" class="btn btn-sm btn-primary">✏️ Edytuj</a>
+                                    <form method="POST" action="/admin/roles/delete.php" style="display:inline;">
+                                        <?php echo csrfField(); ?>
+                                        <input type="hidden" name="id" value="<?php echo (int)$role['id']; ?>">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Czy na pewno chcesz usunac te role?');">🗑️ Usun</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         <?php endforeach; ?>

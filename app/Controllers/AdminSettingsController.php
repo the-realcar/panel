@@ -5,7 +5,14 @@ class AdminSettingsController extends Controller {
         'company_name',
         'base_url',
         'support_email',
-        'session_timeout'
+        'session_timeout',
+        'dict_vehicle_types',
+        'dict_vehicle_capacities',
+        'dict_vehicle_drive_types',
+        'dict_vehicle_depots',
+        'dict_vehicle_carriers',
+        'dict_departments',
+        'dict_districts'
     ];
 
     public function index() {
@@ -23,7 +30,14 @@ class AdminSettingsController extends Controller {
             'company_name' => APP_NAME,
             'base_url' => BASE_URL,
             'support_email' => '',
-            'session_timeout' => (string)SESSION_TIMEOUT
+            'session_timeout' => (string)SESSION_TIMEOUT,
+            'dict_vehicle_types' => "bus\ntbus\ntram\nmetro",
+            'dict_vehicle_capacities' => "MINI\nMIDI\nMAXI\nMAXI+\nMEGA\nMEGA+\nGIGA",
+            'dict_vehicle_drive_types' => "Diesel\nCNG\nHybrydowy\nElektryczny\nWodorowy",
+            'dict_vehicle_depots' => "KM\nKW\nMC",
+            'dict_vehicle_carriers' => "Ostrans\nKujaTrans\nOstromunikacja",
+            'dict_departments' => '',
+            'dict_districts' => ''
         ];
 
         $stored = Setting::getMany(self::ALLOWED_KEYS);
@@ -48,6 +62,13 @@ class AdminSettingsController extends Controller {
             $form['base_url'] = trim($_POST['base_url'] ?? '');
             $form['support_email'] = trim($_POST['support_email'] ?? '');
             $form['session_timeout'] = trim($_POST['session_timeout'] ?? '');
+            $form['dict_vehicle_types'] = trim($_POST['dict_vehicle_types'] ?? '');
+            $form['dict_vehicle_capacities'] = trim($_POST['dict_vehicle_capacities'] ?? '');
+            $form['dict_vehicle_drive_types'] = trim($_POST['dict_vehicle_drive_types'] ?? '');
+            $form['dict_vehicle_depots'] = trim($_POST['dict_vehicle_depots'] ?? '');
+            $form['dict_vehicle_carriers'] = trim($_POST['dict_vehicle_carriers'] ?? '');
+            $form['dict_departments'] = trim($_POST['dict_departments'] ?? '');
+            $form['dict_districts'] = trim($_POST['dict_districts'] ?? '');
 
             $validator = new Validator($form);
             $validator->required('company_name', 'Nazwa firmy jest wymagana.')
@@ -81,7 +102,14 @@ class AdminSettingsController extends Controller {
                     'company_name' => $form['company_name'],
                     'base_url' => $form['base_url'],
                     'support_email' => $form['support_email'],
-                    'session_timeout' => $form['session_timeout']
+                    'session_timeout' => $form['session_timeout'],
+                    'dict_vehicle_types' => $form['dict_vehicle_types'],
+                    'dict_vehicle_capacities' => $form['dict_vehicle_capacities'],
+                    'dict_vehicle_drive_types' => $form['dict_vehicle_drive_types'],
+                    'dict_vehicle_depots' => $form['dict_vehicle_depots'],
+                    'dict_vehicle_carriers' => $form['dict_vehicle_carriers'],
+                    'dict_departments' => $form['dict_departments'],
+                    'dict_districts' => $form['dict_districts']
                 ], getCurrentUserId());
 
                 AuditLog::log(
@@ -93,7 +121,14 @@ class AdminSettingsController extends Controller {
                         'company_name' => $form['company_name'],
                         'base_url' => $form['base_url'],
                         'support_email' => $form['support_email'],
-                        'session_timeout' => $form['session_timeout']
+                        'session_timeout' => $form['session_timeout'],
+                        'dict_vehicle_types' => $form['dict_vehicle_types'],
+                        'dict_vehicle_capacities' => $form['dict_vehicle_capacities'],
+                        'dict_vehicle_drive_types' => $form['dict_vehicle_drive_types'],
+                        'dict_vehicle_depots' => $form['dict_vehicle_depots'],
+                        'dict_vehicle_carriers' => $form['dict_vehicle_carriers'],
+                        'dict_departments' => $form['dict_departments'],
+                        'dict_districts' => $form['dict_districts']
                     ]
                 );
 

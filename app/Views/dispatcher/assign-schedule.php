@@ -138,7 +138,7 @@
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Przydziel grafik</button>
+            <button type="submit" class="btn btn-primary">Zapisz przydzial</button>
             <a href="/dispatcher/dashboard.php" class="btn btn-secondary">Anuluj</a>
         </div>
         </form>

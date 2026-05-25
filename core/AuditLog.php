@@ -25,7 +25,7 @@ class AuditLog {
             $db = new Database();
 
             $user_id    = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null;
-            $ip_address = $_SERVER['REMOTE_ADDR'] ?? null;
+            $ip_address = function_exists('getClientIpAddress') ? getClientIpAddress() : ($_SERVER['REMOTE_ADDR'] ?? null);
 
             $sql = "INSERT INTO audit_logs
                         (user_id, action, table_name, record_id, old_values, new_values, ip_address)

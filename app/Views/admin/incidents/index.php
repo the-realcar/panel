@@ -51,6 +51,14 @@
                                 <a href="/admin/incidents/view.php?id=<?php echo $incident['id']; ?>" class="btn btn-sm btn-secondary">
                                     🔍 Szczegóły / Edytuj
                                 </a>
+                                <form method="POST" action="/admin/incidents/delete.php" style="display:inline;">
+                                    <?php echo csrfField(); ?>
+                                    <input type="hidden" name="id" value="<?php echo (int)$incident['id']; ?>">
+                                    <button type="submit" class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Czy na pewno chcesz usunac to zgloszenie?');">
+                                        🗑️ Usuń
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                         <?php endforeach; ?>

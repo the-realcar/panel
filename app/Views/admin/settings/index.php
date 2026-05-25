@@ -83,6 +83,47 @@
                 <?php endif; ?>
             </div>
 
+            <h3 style="margin-top: 1.25rem;">Slowniki systemowe</h3>
+            <p class="text-muted">Podawaj wartosci w osobnych liniach.</p>
+
+            <div class="form-row">
+                <div class="form-group col col-12 col-md-6">
+                    <label for="dict_vehicle_types" class="form-label">Typy pojazdow</label>
+                    <textarea id="dict_vehicle_types" name="dict_vehicle_types" class="form-control" rows="5"><?php echo e($form['dict_vehicle_types']); ?></textarea>
+                </div>
+                <div class="form-group col col-12 col-md-6">
+                    <label for="dict_vehicle_capacities" class="form-label">Pojemnosci pojazdow</label>
+                    <textarea id="dict_vehicle_capacities" name="dict_vehicle_capacities" class="form-control" rows="5"><?php echo e($form['dict_vehicle_capacities']); ?></textarea>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col col-12 col-md-6">
+                    <label for="dict_vehicle_drive_types" class="form-label">Typy napedu</label>
+                    <textarea id="dict_vehicle_drive_types" name="dict_vehicle_drive_types" class="form-control" rows="5"><?php echo e($form['dict_vehicle_drive_types']); ?></textarea>
+                </div>
+                <div class="form-group col col-12 col-md-6">
+                    <label for="dict_vehicle_depots" class="form-label">Zajezdnie</label>
+                    <textarea id="dict_vehicle_depots" name="dict_vehicle_depots" class="form-control" rows="5"><?php echo e($form['dict_vehicle_depots']); ?></textarea>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col col-12 col-md-6">
+                    <label for="dict_vehicle_carriers" class="form-label">Przewoznicy</label>
+                    <textarea id="dict_vehicle_carriers" name="dict_vehicle_carriers" class="form-control" rows="5"><?php echo e($form['dict_vehicle_carriers']); ?></textarea>
+                </div>
+                <div class="form-group col col-12 col-md-6">
+                    <label for="dict_departments" class="form-label">Dzialy (slownik)</label>
+                    <textarea id="dict_departments" name="dict_departments" class="form-control" rows="5"><?php echo e($form['dict_departments']); ?></textarea>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="dict_districts" class="form-label">Dzielnice (slownik)</label>
+                <textarea id="dict_districts" name="dict_districts" class="form-control" rows="5"><?php echo e($form['dict_districts']); ?></textarea>
+            </div>
+
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary" <?php echo !$settings_available ? 'disabled' : ''; ?>>Zapisz ustawienia</button>
             </div>

@@ -132,6 +132,24 @@
                                         <?php endif; ?>
                                     <?php endif; ?>
                                 </div>
+                                <?php if (!empty($user['roblox_id']) || !empty($user['discord_id'])): ?>
+                                <div class="btn-group" style="margin-top:4px;">
+                                    <?php if (!empty($user['roblox_id'])): ?>
+                                        <a href="https://www.roblox.com/users/<?php echo e($user['roblox_id']); ?>/profile"
+                                           target="_blank" rel="noopener noreferrer"
+                                           class="btn btn-sm btn-outline-primary">🎮 Roblox</a>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary"
+                                                onclick="copyId(this, '<?php echo e($user['roblox_id']); ?>')">📋 Roblox ID</button>
+                                    <?php endif; ?>
+                                    <?php if (!empty($user['discord_id'])): ?>
+                                        <a href="https://discord.com/users/<?php echo e($user['discord_id']); ?>"
+                                           target="_blank" rel="noopener noreferrer"
+                                           class="btn btn-sm btn-outline-info">💬 Discord</a>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary"
+                                                onclick="copyId(this, '<?php echo e($user['discord_id']); ?>')">📋 Discord ID</button>
+                                    <?php endif; ?>
+                                </div>
+                                <?php endif; ?>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -146,4 +164,13 @@
     </div>
 </div>
 
+<script>
+function copyId(btn, value) {
+    navigator.clipboard.writeText(value).then(function() {
+        var orig = btn.textContent;
+        btn.textContent = '✅ Skopiowano!';
+        setTimeout(function() { btn.textContent = orig; }, 1500);
+    });
+}
+</script>
 <?php View::partial('layouts/footer'); ?>

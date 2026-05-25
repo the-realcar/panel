@@ -98,6 +98,28 @@ class User {
         return $db->query($query, [':role_name' => $role_name]);
     }
 
+    public static function listDriversForDispatch() {
+        $db = new Database();
+        $query = "
+            SELECT DISTINCT u.id, u.username, u.email, u.first_name, u.last_name
+            FROM users u
+            LEFT JOIN user_roles ur ON ur.user_id = u.id
+            LEFT JOIN roles r ON r.id = ur.role_id
+            LEFT JOIN user_positions up ON up.user_id = u.id AND up.active = TRUE
+            LEFT JOIN positions p ON p.id = up.position_id
+            WHERE u.active = TRUE
+              AND " . self::archivedFalseSql() . "
+              AND (
+                  LOWER(COALESCE(r.name, '')) = 'kierowca'
+                  OR LOWER(COALESCE(p.name, '')) LIKE '%kierowc%'
+                  OR LOWER(COALESCE(p.name, '')) LIKE '%motornicz%'
+              )
+            ORDER BY u.last_name ASC NULLS LAST, u.first_name ASC NULLS LAST, u.username ASC
+        ";
+
+        return $db->query($query);
+    }
+
     public static function findByProviderId($provider, $provider_id) {
         $db = new Database();
         $column = null;
@@ -260,7 +282,7 @@ class User {
 
             $insertQuery = "
                 INSERT INTO user_roles (user_id, role_id, assigned_date)
-                SELECT DISTINCT :user_id, rpm.role_id, CURRENT_TIMESTAMP
+                SELECT DISTINCT up.user_id, rpm.role_id, CURRENT_TIMESTAMP
                 FROM user_positions up
                 INNER JOIN role_position_mapping rpm ON rpm.position_id = up.position_id
                 WHERE up.user_id = :user_id
@@ -321,6 +343,61 @@ class User {
                     }
                 }
             }
+        }
+    }
+
+    // ===== Zarzadzanie spolkami (user_companies) =====
+
+    public static function getCompanies($user_id) {
+        $db = new Database();
+        if (!$db->tableExists('user_companies') || !$db->tableExists('companies')) {
+            return [];
+        }
+
+        $query = "
+            SELECT c.id, c.name, c.description, c.active, uc.assigned_date
+            FROM user_companies uc
+            INNER JOIN companies c ON uc.company_id = c.id
+            WHERE uc.user_id = :user_id
+            ORDER BY c.name ASC
+        ";
+        return $db->query($query, [':user_id' => $user_id]);
+    }
+
+    public static function syncCompanies($user_id, array $company_ids = []) {
+        $db = new Database();
+        if (!$db->tableExists('user_companies') || !$db->tableExists('companies')) {
+            return true;
+        }
+
+        try {
+            $db->beginTransaction();
+
+            $db->execute("DELETE FROM user_companies WHERE user_id = :user_id", [':user_id' => $user_id]);
+
+            if (!empty($company_ids)) {
+                $insertQuery = "INSERT INTO user_companies (user_id, company_id) VALUES ";
+                $params = [':user_id' => $user_id];
+                $values = [];
+
+                foreach ($company_ids as $idx => $company_id) {
+                    $ph = ':company_id_' . $idx;
+                    $values[] = "(:user_id, $ph)";
+                    $params[$ph] = (int)$company_id;
+                }
+
+                $insertQuery .= implode(', ', $values) . " ON CONFLICT (user_id, company_id) DO NOTHING";
+                $db->execute($insertQuery, $params);
+            }
+
+            $db->commit();
+            return true;
+        } catch (Exception $e) {
+            if ($db->inTransaction()) {
+                $db->rollback();
+            }
+            error_log('Error syncing user companies: ' . $e->getMessage());
+            return false;
         }
     }
 }

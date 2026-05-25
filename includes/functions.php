@@ -209,6 +209,36 @@ function truncate($string, $length = 100, $append = '...') {
 }
 
 /**
+ * Resolve client IP address, including reverse proxy headers.
+ *
+ * @return string|null
+ */
+function getClientIpAddress() {
+    $headerCandidates = [
+        'HTTP_CF_CONNECTING_IP',
+        'HTTP_X_REAL_IP',
+        'HTTP_X_FORWARDED_FOR'
+    ];
+
+    foreach ($headerCandidates as $header) {
+        if (empty($_SERVER[$header])) {
+            continue;
+        }
+
+        $raw = (string)$_SERVER[$header];
+        $parts = array_map('trim', explode(',', $raw));
+        foreach ($parts as $part) {
+            if ($part !== '' && filter_var($part, FILTER_VALIDATE_IP)) {
+                return $part;
+            }
+        }
+    }
+
+    $remote = $_SERVER['REMOTE_ADDR'] ?? null;
+    return ($remote && filter_var($remote, FILTER_VALIDATE_IP)) ? $remote : null;
+}
+
+/**
  * Generate CSRF token
  * 
  * @return string

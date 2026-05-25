@@ -9,7 +9,7 @@
 
 <div class="card">
     <div class="card-header">
-        <form method="GET" class="form-inline">
+        <form method="GET" class="form-inline" style="gap: 0.75rem; flex-wrap: wrap;">
             <label for="type">Filtruj po typie:</label>
             <select name="type" id="type" class="form-control" onchange="this.form.submit()">
                 <option value="">Wszystkie</option>
@@ -17,6 +17,7 @@
                 <option value="tram" <?php echo $type_filter === 'tram' ? 'selected' : ''; ?>>Tramwaj</option>
                 <option value="metro" <?php echo $type_filter === 'metro' ? 'selected' : ''; ?>>Metro</option>
             </select>
+            <input type="text" id="lines-search" class="form-control" placeholder="Szukaj linii..." style="min-width: 220px;">
         </form>
     </div>
     <div class="card-body">
@@ -24,15 +25,15 @@
             <p class="text-muted">Brak linii do wyświetlenia.</p>
         <?php else: ?>
             <div class="table-responsive">
-                <table class="table">
+                <table class="table" id="lines-table" data-sortable-table data-default-sort="0:asc">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th data-sort-type="number">ID</th>
                             <th>Numer linii</th>
                             <th>Nazwa</th>
                             <th>Typ</th>
                             <th>Status</th>
-                            <th>Akcje</th>
+                            <th data-no-sort="true">Akcje</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -79,5 +80,22 @@
         <?php endif; ?>
     </div>
 </div>
+
+<script>
+(function() {
+    const input = document.getElementById('lines-search');
+    if (!input) {
+        return;
+    }
+
+    const rows = Array.from(document.querySelectorAll('table tbody tr'));
+    input.addEventListener('input', function() {
+        const q = input.value.trim().toLowerCase();
+        rows.forEach(function(row) {
+            row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+    });
+})();
+</script>
 
 <?php View::partial('layouts/footer'); ?>

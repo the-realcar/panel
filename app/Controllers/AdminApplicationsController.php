@@ -77,4 +77,36 @@ class AdminApplicationsController extends Controller {
             'rbac'        => $rbac,
         ]);
     }
+
+    public function delete() {
+        requireLogin();
+
+        $rbac = new RBAC();
+        if (!$rbac->isAdmin() && !$rbac->hasAnyRole(['Zarząd', 'Nadzór Ruchu', 'Kadry', 'Dyspozytor'])) {
+            setFlashMessage('error', 'Brak dostepu.');
+            $this->redirectTo('/index.php');
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            setFlashMessage('error', 'Nieprawidlowa metoda zadania.');
+            $this->redirectTo('/admin/applications/index.php');
+        }
+
+        if (!verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+            setFlashMessage('error', 'Blad weryfikacji formularza.');
+            $this->redirectTo('/admin/applications/index.php');
+        }
+
+        $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+        $application = Application::find($id);
+        if (!$application) {
+            setFlashMessage('error', 'Wniosek nie istnieje.');
+            $this->redirectTo('/admin/applications/index.php');
+        }
+
+        Application::deleteById($id);
+        AuditLog::log('application.delete', 'applications', $id, $application, null);
+        setFlashMessage('success', 'Wniosek zostal usuniety.');
+        $this->redirectTo('/admin/applications/index.php');
+    }
 }
